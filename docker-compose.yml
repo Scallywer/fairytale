@@ -4,7 +4,7 @@ services:
     container_name: fairytale-app
     restart: unless-stopped
     ports:
-      - "3000:3000"
+      - "8889:80"
     volumes:
       - ./data:/app/data
     healthcheck:
