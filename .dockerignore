@@ -51,8 +51,7 @@ docker-compose*.yml
 # OS
 Thumbs.db
 
-# Scripts (not needed in production)
-scripts/
+# Scripts - keep scripts/ for seeding
 *.md
 prompt*.txt
 prompt*.md
