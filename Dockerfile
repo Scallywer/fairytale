@@ -40,7 +40,8 @@ COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 
 # Copy pre-populated database file from builder to use as default
-COPY --from=builder --chown=nextjs:nodejs /app/data/stories.db /app/data/.default-stories.db
+# Place it outside /app/data so it survives volume mounts
+COPY --from=builder --chown=nextjs:nodejs /app/data/stories.db /app/.default-stories.db
 
 # Copy entrypoint script
 COPY docker-entrypoint.sh ./
