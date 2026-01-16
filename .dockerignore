@@ -56,8 +56,12 @@ Thumbs.db
 prompt*.txt
 prompt*.md
 
-# Database files - we'll include stories.db in the image
+# Database files - we'll include data/stories.db in the image, but exclude dev.db and other temp files
+# Note: data/stories.db is NOT ignored so it gets copied into the Docker image
 dev.db
+*.db-journal
+*.db-wal
+*.db-shm
 
 # Prisma
 prisma/

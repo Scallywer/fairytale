@@ -20,9 +20,6 @@ COPY . .
 ENV NEXT_TELEMETRY_DISABLED 1
 RUN npm run build
 
-# Seed the database during build if it doesn't exist
-RUN mkdir -p /app/data && (test -f /app/data/stories.db || npm run seed || true)
-
 # Production image, copy all the files and run next
 FROM base AS runner
 WORKDIR /app
@@ -39,9 +36,9 @@ COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 
-# Copy pre-populated database file from builder to use as default
+# Copy pre-populated database file directly from build context
 # Place it outside /app/data so it survives volume mounts
-COPY --from=builder --chown=nextjs:nodejs /app/data/stories.db /app/.default-stories.db
+COPY --chown=nextjs:nodejs data/stories.db /app/.default-stories.db
 
 # Copy entrypoint script
 COPY docker-entrypoint.sh ./
