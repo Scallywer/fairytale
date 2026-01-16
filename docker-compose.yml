@@ -1,24 +1,15 @@
-version: '3.8'
-
 services:
-  app:
+  fairytale-app:
     image: ghcr.io/scallywer/fairytale:latest
     container_name: fairytale-app
     restart: unless-stopped
     ports:
       - "3000:3000"
-    environment:
-      - NODE_ENV=production
-      - PORT=3000
-      - HOSTNAME=0.0.0.0
     volumes:
-      # Persist SQLite database
       - ./data:/app/data
-      # Persist public images (optional, if you want to keep images)
-      - ./public/images:/app/public/images:ro
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/api/stories"]
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 40s
+      start_period: 10s
