@@ -20,6 +20,9 @@ COPY . .
 ENV NEXT_TELEMETRY_DISABLED 1
 RUN npm run build
 
+# Seed the database during build if it doesn't exist
+RUN mkdir -p /app/data && (test -f /app/data/stories.db || npm run seed || true)
+
 # Production image, copy all the files and run next
 FROM base AS runner
 WORKDIR /app
@@ -36,20 +39,14 @@ COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 
-# Copy seed script and database files for initial seeding
-COPY --from=builder /app/scripts ./scripts
-COPY --from=builder /app/lib ./lib
-COPY --from=builder /app/package.json ./package.json
-COPY --from=builder /app/tsconfig.json ./tsconfig.json
+# Copy pre-populated database file from builder to use as default
+COPY --from=builder --chown=nextjs:nodejs /app/data/stories.db /app/data/.default-stories.db
 
-# Install tsx for running TypeScript seed script (as devDependency, small install)
-RUN npm install --production=false tsx typescript @types/node
-
-# Copy and make entrypoint executable
+# Copy entrypoint script
 COPY docker-entrypoint.sh ./
 RUN chmod +x docker-entrypoint.sh
 
-# Create data directory for SQLite database
+# Create data directory for SQLite database and set permissions
 RUN mkdir -p /app/data && chown -R nextjs:nodejs /app/data
 
 USER nextjs

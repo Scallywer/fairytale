@@ -56,9 +56,7 @@ Thumbs.db
 prompt*.txt
 prompt*.md
 
-# Database files (will be created at runtime)
-data/*.db
-*.db
+# Database files - we'll include stories.db in the image
 dev.db
 
 # Prisma
