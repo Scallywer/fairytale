@@ -51,7 +51,7 @@ docker-compose*.yml
 # OS
 Thumbs.db
 
-# Scripts - keep scripts/ for seeding
+# Scripts and docs
 *.md
 prompt*.txt
 prompt*.md
