@@ -1,124 +1,121 @@
-# Kids Nighttime Stories (Priče za laku noć)
+# Priče za laku noć - Kids Nighttime Stories
 
-A beautiful dark-mode web application for Croatian bedtime stories, built with Next.js, Prisma, and SQLite.
+A beautiful web application for Croatian children's bedtime stories, built with Next.js, SQLite, and Tailwind CSS.
 
 ## Features
 
-- 🌙 **Dark Mode Theme** - Deep navy and amber colors perfect for nighttime reading
-- 📚 **Story Collection** - Browse approved bedtime stories
-- ✅ **Read Tracking** - Mark stories as read using browser LocalStorage
-- 📝 **Story Submission** - Users can submit new stories
-- 🔐 **Admin Panel** - Password-protected approval system
-- 📱 **Mobile Friendly** - Optimized for reading on tablets and phones
+- 📚 Collection of 42 Croatian bedtime stories for kids ages 5-10
+- 🌙 Dark mode theme with navy, slate, and amber accents
+- ⭐ 5-star rating system with averaged ratings stored in database
+- 📖 List and Gallery view modes
+- ✅ Mark stories as read with grayed-out styling
+- 🔙 Back to top button for easy navigation
+- 📱 Mobile-friendly responsive design
+- 🎨 AI-generated illustrations for each story
 
 ## Tech Stack
 
-- **Next.js 16** (App Router)
-- **Prisma 7** with SQLite
-- **TypeScript**
-- **Tailwind CSS**
+- **Framework**: Next.js 16 (App Router)
+- **Database**: SQLite with `better-sqlite3`
+- **Styling**: Tailwind CSS 4
+- **Language**: TypeScript
+- **Image Generation**: OpenAI DALL-E 3 (optional)
 
-## Setup
+## Getting Started
 
-1. **Install dependencies:**
-   ```bash
-   npm install
-   ```
+### Prerequisites
 
-2. **Set up environment variables:**
-   Create a `.env` file in the root directory:
-   ```
-   DATABASE_URL="file:./dev.db"
-   ADMIN_PASSWORD="your-secure-password-here"
-   ```
+- Node.js 20+ 
+- npm or yarn
 
-3. **Run database migrations:**
-   ```bash
-   npx prisma migrate dev
-   ```
+### Local Development
 
-4. **Generate Prisma Client:**
-   ```bash
-   npx prisma generate
-   ```
-
-5. **Seed the database (optional):**
-   You can manually add stories through the admin panel, or if the seed script works:
-   ```bash
-   npx prisma db seed
-   ```
-   
-   **Note:** If the seed script has issues, you can add stories manually:
-   - Start the dev server
-   - Go to `/submit` to add stories
-   - Go to `/admin` to approve them
-
-6. **Start the development server:**
-   ```bash
-   npm run dev
-   ```
-
-7. **Open your browser:**
-   Navigate to [http://localhost:3000](http://localhost:3000)
-
-## Usage
-
-### Adding Stories
-
-1. Navigate to `/submit`
-2. Fill in the form (Title, Author, Body, Country)
-3. Submit - the story will be pending approval
-
-### Admin Panel
-
-1. Navigate to `/admin`
-2. Enter the admin password (set in `.env`)
-3. View pending stories and approve/reject them
-4. Manage all stories
-
-### Reading Stories
-
-- Browse stories on the homepage
-- Click any story to read it
-- Mark stories as read - they'll show a checkmark on the homepage
-- Read tracking is stored in browser LocalStorage
-
-## Project Structure
-
-```
-fairytale/
-├── app/
-│   ├── api/          # API routes
-│   ├── admin/        # Admin panel
-│   ├── story/[id]/   # Story reading page
-│   ├── submit/       # Story submission form
-│   └── page.tsx      # Homepage
-├── components/       # React components
-├── lib/              # Utilities (Prisma client, auth)
-├── prisma/           # Database schema and migrations
-└── public/           # Static assets
+1. Clone the repository:
+```bash
+git clone https://github.com/Scallywer/fairytale.git
+cd fairytale
 ```
 
-## Database
+2. Install dependencies:
+```bash
+npm install
+```
 
-The app uses SQLite stored in `prisma/dev.db`. This file is automatically created when you run migrations.
+3. (Optional) Set up environment variables:
+```bash
+cp .env.example .env
+# Add your OPENAI_API_KEY if you want to generate images
+```
 
-**Important:** Add `prisma/*.db` and `prisma/*.db-journal` to `.gitignore` (already included).
+4. Seed the database:
+```bash
+npm run seed
+```
 
-## Environment Variables
+5. Run the development server:
+```bash
+npm run dev
+```
 
-- `DATABASE_URL` - SQLite connection string (default: `file:./dev.db`)
-- `ADMIN_PASSWORD` - Password for admin panel access
+6. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-## Development
+## Docker Deployment
+
+### Using Docker Compose (Recommended)
+
+1. Pull the latest image or build it:
+```bash
+docker-compose pull
+# OR build locally
+docker-compose build
+```
+
+2. Start the application:
+```bash
+docker-compose up -d
+```
+
+3. The application will be available at [http://localhost:3000](http://localhost:3000)
+
+### Using Docker directly
+
+```bash
+docker run -d \
+  --name fairytale-app \
+  -p 3000:3000 \
+  -v $(pwd)/data:/app/data \
+  ghcr.io/scallywer/fairytale:latest
+```
+
+### Data Persistence
+
+The SQLite database is stored in the `./data` directory, which is mounted as a volume in Docker. Make sure to backup this directory regularly.
+
+## GitHub Actions
+
+Docker images are automatically built and pushed to GitHub Container Registry on every commit to `master` branch:
+
+- Image: `ghcr.io/scallywer/fairytale:latest`
+- Automatically tagged with branch name, SHA, and version tags
+
+## Database Schema
+
+The application uses SQLite with two main tables:
+
+- **stories**: Contains story metadata (title, author, body, country, imageUrl, isApproved)
+- **ratings**: Stores user ratings (storyId, userId, rating 1-5)
+
+Average ratings are calculated on-the-fly using SQL `AVG()` function.
+
+## Scripts
 
 - `npm run dev` - Start development server
 - `npm run build` - Build for production
 - `npm run start` - Start production server
-- `npx prisma studio` - Open Prisma Studio to view/edit database
+- `npm run seed` - Seed the database with stories
+- `npm run generate-images` - Generate images for stories (requires OpenAI API key)
+- `npm run export-prompts` - Export all DALL-E prompts to file
 
-## Notes
+## License
 
-- Stories are stored in Croatian language
-- Read tracking uses browser LocalStorage (per-device)
-- Admin password is simple - consider using proper authentication for production
+Private project - All rights reserved
