@@ -46,6 +46,8 @@ next-env.d.ts
 data/
 *.db
 *.db-journal
+# Allow data/stories.db to be committed (needed for Docker image)
+!data/stories.db
 
 # generated images (optional - remove if you want to commit them)
 # public/images/stories/
