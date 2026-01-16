@@ -30,7 +30,7 @@ WORKDIR /app
 ENV NODE_ENV production
 ENV NEXT_TELEMETRY_DISABLED 1
 
-RUN apk add --no-cache sqlite libc6-compat
+RUN apk add --no-cache sqlite libc6-compat su-exec
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
@@ -50,7 +50,8 @@ RUN chmod +x docker-entrypoint.sh
 # Create data directory for SQLite database and set permissions
 RUN mkdir -p /app/data && chown -R nextjs:nodejs /app/data
 
-USER nextjs
+# Don't switch to nextjs user here - let entrypoint handle it
+# This allows entrypoint to fix volume permissions as root
 
 EXPOSE 3000
 
