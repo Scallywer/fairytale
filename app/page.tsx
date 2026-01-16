@@ -4,7 +4,9 @@ import StoriesList from '@/components/StoriesList'
 import BackToTop from '@/components/BackToTop'
 
 export default function Home() {
+  console.log('[PAGE] Home component rendering, calling getApprovedStories...')
   const stories = prisma.getApprovedStories()
+  console.log(`[PAGE] Received ${stories.length} stories from database`)
 
   return (
     <div className="min-h-screen">

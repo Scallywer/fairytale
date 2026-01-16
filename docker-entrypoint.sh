@@ -20,18 +20,30 @@ fi
 if [ ! -f /app/data/stories.db ]; then
   if [ -f /app/.default-stories.db ]; then
     echo "[ENTRYPOINT] Copying default database to volume..."
+    DB_SIZE=$(stat -f%z /app/.default-stories.db 2>/dev/null || stat -c%s /app/.default-stories.db 2>/dev/null || echo "unknown")
+    echo "[ENTRYPOINT] Default DB size: $DB_SIZE bytes"
     cp /app/.default-stories.db /app/data/stories.db
     # Fix ownership if running as root
     if [ "$(id -u)" = "0" ]; then
       chown nextjs:nodejs /app/data/stories.db
       chmod 644 /app/data/stories.db
     fi
-    echo "[ENTRYPOINT] Database copied successfully"
+    NEW_DB_SIZE=$(stat -f%z /app/data/stories.db 2>/dev/null || stat -c%s /app/data/stories.db 2>/dev/null || echo "unknown")
+    echo "[ENTRYPOINT] Copied DB size: $NEW_DB_SIZE bytes"
+    
+    # Verify database has content by checking file size (empty SQLite DB is ~8KB, populated should be much larger)
+    if [ "$NEW_DB_SIZE" != "unknown" ] && [ "$NEW_DB_SIZE" -lt 10000 ]; then
+      echo "[ENTRYPOINT] WARNING: Copied database appears to be empty or very small (<10KB)"
+    else
+      echo "[ENTRYPOINT] Database copied successfully and appears to have content"
+    fi
   else
     echo "[ENTRYPOINT] WARNING: Default database not found at /app/.default-stories.db"
   fi
 else
   echo "[ENTRYPOINT] Database already exists in volume, skipping copy"
+  EXISTING_DB_SIZE=$(stat -f%z /app/data/stories.db 2>/dev/null || stat -c%s /app/data/stories.db 2>/dev/null || echo "unknown")
+  echo "[ENTRYPOINT] Existing DB size: $EXISTING_DB_SIZE bytes"
 fi
 
 # Switch to nextjs user before starting server (if we're root)
