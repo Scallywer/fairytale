@@ -44,6 +44,28 @@ else
   echo "[ENTRYPOINT] Database already exists in volume, skipping copy"
   EXISTING_DB_SIZE=$(stat -f%z /app/data/stories.db 2>/dev/null || stat -c%s /app/data/stories.db 2>/dev/null || echo "unknown")
   echo "[ENTRYPOINT] Existing DB size: $EXISTING_DB_SIZE bytes"
+  
+  # Verify database has content by checking story count
+  if command -v sqlite3 >/dev/null 2>&1; then
+    TOTAL_STORIES=$(sqlite3 /app/data/stories.db "SELECT COUNT(*) FROM stories;" 2>/dev/null || echo "error")
+    APPROVED_STORIES=$(sqlite3 /app/data/stories.db "SELECT COUNT(*) FROM stories WHERE isApproved = 1;" 2>/dev/null || echo "error")
+    echo "[ENTRYPOINT] Database check: total stories=$TOTAL_STORIES, approved=$APPROVED_STORIES"
+    
+    # If database is empty or has no approved stories, replace with default
+    if [ "$TOTAL_STORIES" = "0" ] || [ "$APPROVED_STORIES" = "0" ]; then
+      if [ -f /app/.default-stories.db ]; then
+        echo "[ENTRYPOINT] WARNING: Database exists but has no approved stories, replacing with default..."
+        cp /app/.default-stories.db /app/data/stories.db
+        if [ "$(id -u)" = "0" ]; then
+          chown nextjs:nodejs /app/data/stories.db
+          chmod 644 /app/data/stories.db
+        fi
+        echo "[ENTRYPOINT] Database replaced with default"
+      fi
+    fi
+  else
+    echo "[ENTRYPOINT] sqlite3 not available, cannot verify database content"
+  fi
 fi
 
 # Switch to nextjs user before starting server (if we're root)
