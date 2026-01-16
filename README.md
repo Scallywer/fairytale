@@ -25,39 +25,7 @@ A beautiful web application for Croatian children's bedtime stories, built with 
 
 ### Prerequisites
 
-- Node.js 20+ 
-- npm or yarn
-
-### Local Development
-
-1. Clone the repository:
-```bash
-git clone https://github.com/Scallywer/fairytale.git
-cd fairytale
-```
-
-2. Install dependencies:
-```bash
-npm install
-```
-
-3. (Optional) Set up environment variables:
-```bash
-cp .env.example .env
-# Add your OPENAI_API_KEY if you want to generate images
-```
-
-4. Seed the database:
-```bash
-npm run seed
-```
-
-5. Run the development server:
-```bash
-npm run dev
-```
-
-6. Open [http://localhost:3000](http://localhost:3000) in your browser.
+- Docker and Docker Compose installed
 
 ## Docker Deployment
 
@@ -65,31 +33,31 @@ npm run dev
 
 1. Pull the latest image or build it:
 ```bash
-docker-compose pull
+docker compose pull
 # OR build locally
-docker-compose build
+docker compose build
 ```
 
 2. Start the application:
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
 
-3. The application will be available at [http://localhost:3000](http://localhost:3000)
+3. The application will be available at [http://localhost:8889](http://localhost:8889)
 
 ### Using Docker directly
 
 ```bash
 docker run -d \
   --name fairytale-app \
-  -p 3000:3000 \
+  -p 8889:3000 \
   -v $(pwd)/data:/app/data \
   ghcr.io/scallywer/fairytale:latest
 ```
 
 ### Data Persistence
 
-The SQLite database is stored in the `./data` directory, which is mounted as a volume in Docker. Make sure to backup this directory regularly.
+The SQLite database is stored in the `./data` directory, which is mounted as a volume in Docker. The database is pre-populated with all stories, so it will be automatically copied to the volume on first run if it doesn't exist. Make sure to backup this directory regularly.
 
 ## GitHub Actions
 
@@ -102,19 +70,21 @@ Docker images are automatically built and pushed to GitHub Container Registry on
 
 The application uses SQLite with two main tables:
 
-- **stories**: Contains story metadata (title, author, body, country, imageUrl, isApproved)
-- **ratings**: Stores user ratings (storyId, userId, rating 1-5)
+- **stories**: Contains story metadata (title, author, body, country, imageUrl, isApproved, averageRating, ratingCount)
+- **ratings**: Stores individual user ratings (storyId, userId, rating 1-5)
 
-Average ratings are calculated on-the-fly using SQL `AVG()` function.
+Average ratings are calculated automatically when ratings are submitted and stored in the `stories` table for quick access.
 
 ## Scripts
+
+Available npm scripts (for development/maintenance):
 
 - `npm run dev` - Start development server
 - `npm run build` - Build for production
 - `npm run start` - Start production server
-- `npm run seed` - Seed the database with stories
 - `npm run generate-images` - Generate images for stories (requires OpenAI API key)
 - `npm run export-prompts` - Export all DALL-E prompts to file
+- `npm run update-image-links` - Update image URLs in database from local files
 
 ## License
 
