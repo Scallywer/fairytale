@@ -36,7 +36,7 @@ export default function BackToTop() {
     <button
       onClick={scrollToTop}
       className="fixed bottom-8 right-8 z-50 p-3 bg-amber-600 hover:bg-amber-700 text-white rounded-full shadow-lg transition-all duration-300 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:ring-offset-slate-900"
-      aria-label="Back to top"
+      aria-label="Povratak na vrh"
     >
       <svg
         className="w-6 h-6"

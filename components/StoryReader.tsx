@@ -2,19 +2,20 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Comments from './Comments'
 
 interface StoryReaderProps {
   storyId: string
   title: string
   author: string
   body: string
-  country: string
   imageUrl?: string
   averageRating?: number
   ratingCount?: number
+  readingTime?: number
 }
 
-export default function StoryReader({ storyId, title, author, body, country, imageUrl, averageRating, ratingCount }: StoryReaderProps) {
+export default function StoryReader({ storyId, title, author, body, imageUrl, averageRating, ratingCount, readingTime }: StoryReaderProps) {
   const [isRead, setIsRead] = useState(false)
   const [showRating, setShowRating] = useState(false)
   const [rating, setRating] = useState(0)
@@ -130,9 +131,19 @@ export default function StoryReader({ storyId, title, author, body, country, ima
             Povratak na početnu
           </button>
           <h1 className="text-2xl md:text-3xl font-bold text-amber-200 mb-1">{title}</h1>
-          <p className="text-amber-300/70 text-sm">
-            by {author} • {country}
-          </p>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+            <p className="text-amber-300/70 text-sm">
+              {author}
+            </p>
+            {readingTime && (
+              <div className="flex items-center gap-1 text-sm text-amber-400/70">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>{readingTime} min čitanja</span>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -251,7 +262,7 @@ export default function StoryReader({ storyId, title, author, body, country, ima
                     onMouseEnter={() => setHoverRating(star)}
                     onMouseLeave={() => setHoverRating(0)}
                     className="transition-transform hover:scale-110"
-                    aria-label={`Ocjeni ${star} zvijezda`}
+                    aria-label={`Ocijeni ${star} zvijezda`}
                   >
                     <StarIcon filled={star <= (hoverRating || rating)} />
                   </button>
@@ -293,6 +304,9 @@ export default function StoryReader({ storyId, title, author, body, country, ima
             </div>
           </div>
         )}
+
+        {/* Comments Section */}
+        <Comments storyId={storyId} />
       </div>
     </div>
   )

@@ -7,14 +7,14 @@ interface StoryCardProps {
   id: string
   title: string
   author: string
-  country: string
   imageUrl?: string
   viewMode?: 'list' | 'gallery'
   averageRating?: number
   ratingCount?: number
+  readingTime?: number
 }
 
-export default function StoryCard({ id, title, author, country, imageUrl, viewMode = 'list', averageRating, ratingCount }: StoryCardProps) {
+export default function StoryCard({ id, title, author, imageUrl, viewMode = 'list', averageRating, ratingCount, readingTime }: StoryCardProps) {
   const [isRead, setIsRead] = useState(false)
 
   useEffect(() => {
@@ -83,12 +83,17 @@ export default function StoryCard({ id, title, author, country, imageUrl, viewMo
             <h3 className="text-lg font-semibold text-amber-200 group-hover:text-amber-100 mb-1 line-clamp-2">
               {title}
             </h3>
-            <p className="text-sm text-amber-300/70 mb-1">
-              by {author}
+            <p className="text-sm text-amber-300/70 mb-2">
+              {author}
             </p>
-            <p className="text-xs text-amber-400/50 mb-2">
-              {country}
-            </p>
+            {readingTime && (
+              <div className="flex items-center gap-1 text-xs text-amber-400/70 mb-2">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>{readingTime} min čitanja</span>
+              </div>
+            )}
             {averageRating && averageRating > 0 && (
               <div className="flex items-center gap-2">
                 <div className="flex gap-0.5">
@@ -165,11 +170,16 @@ export default function StoryCard({ id, title, author, country, imageUrl, viewMo
           {/* Content */}
           <div className="flex flex-col gap-1">
             <p className="text-sm text-amber-300/70">
-              by {author}
+              {author}
             </p>
-            <p className="text-xs text-amber-400/50">
-              {country}
-            </p>
+            {readingTime && (
+              <div className="flex items-center gap-1 text-sm text-amber-400/70 mt-1">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>{readingTime} min čitanja</span>
+              </div>
+            )}
             {averageRating && averageRating > 0 && (
               <div className="flex items-center gap-2 mt-2">
                 <div className="flex gap-0.5">

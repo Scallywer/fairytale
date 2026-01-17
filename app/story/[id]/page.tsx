@@ -16,10 +16,10 @@ export default async function StoryPage({ params }: { params: Promise<{ id: stri
       title={story.title}
       author={story.author}
       body={story.body}
-      country={story.country}
       imageUrl={story.imageUrl}
       averageRating={story.averageRating}
       ratingCount={story.ratingCount}
+      readingTime={story.readingTime}
     />
   )
 }

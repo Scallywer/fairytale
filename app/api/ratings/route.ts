@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
     const { storyId, rating, userId } = body
 
     if (!storyId || !rating || rating < 1 || rating > 5) {
-      return NextResponse.json({ error: 'Invalid storyId or rating' }, { status: 400 })
+      return NextResponse.json({ error: 'Nevažeći ID priče ili ocjena' }, { status: 400 })
     }
 
     // Use provided userId or generate one (for server-side requests, we'll need userId from client)
@@ -40,6 +40,6 @@ export async function POST(request: NextRequest) {
     })
   } catch (error) {
     console.error('Error submitting rating:', error)
-    return NextResponse.json({ error: 'Failed to submit rating' }, { status: 500 })
+    return NextResponse.json({ error: 'Greška pri slanju ocjene' }, { status: 500 })
   }
 }

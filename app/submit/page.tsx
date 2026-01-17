@@ -10,7 +10,6 @@ export default function SubmitPage() {
     title: '',
     author: '',
     body: '',
-    country: '',
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
@@ -29,7 +28,7 @@ export default function SubmitPage() {
 
       if (response.ok) {
         setMessage({ type: 'success', text: 'Priča je uspješno poslana! Čeka odobrenje.' })
-        setFormData({ title: '', author: '', body: '', country: '' })
+        setFormData({ title: '', author: '', body: '' })
         setTimeout(() => {
           router.push('/')
         }, 2000)
@@ -89,20 +88,6 @@ export default function SubmitPage() {
               required
               value={formData.author}
               onChange={(e) => setFormData({ ...formData, author: e.target.value })}
-              className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-amber-100 focus:outline-none focus:border-amber-500"
-            />
-          </div>
-
-          <div>
-            <label htmlFor="country" className="block text-sm font-medium text-amber-200 mb-2">
-              Zemlja *
-            </label>
-            <input
-              type="text"
-              id="country"
-              required
-              value={formData.country}
-              onChange={(e) => setFormData({ ...formData, country: e.target.value })}
               className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-amber-100 focus:outline-none focus:border-amber-500"
             />
           </div>

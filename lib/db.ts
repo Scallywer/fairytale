@@ -2,6 +2,7 @@ import Database from 'better-sqlite3'
 import path from 'path'
 import fs from 'fs'
 import { randomUUID } from 'crypto'
+import { calculateReadingTime } from './utils'
 
 const dbPath = path.join(process.cwd(), 'data', 'stories.db')
 
@@ -21,7 +22,6 @@ db.exec(`
     title TEXT NOT NULL,
     author TEXT NOT NULL,
     body TEXT NOT NULL,
-    country TEXT NOT NULL,
     imageUrl TEXT,
     isApproved INTEGER NOT NULL DEFAULT 0,
     createdAt TEXT NOT NULL DEFAULT (datetime('now')),
@@ -40,6 +40,19 @@ db.exec(`
 
   CREATE INDEX IF NOT EXISTS idx_ratings_storyId ON ratings(storyId);
   CREATE INDEX IF NOT EXISTS idx_ratings_userId ON ratings(userId);
+
+  CREATE TABLE IF NOT EXISTS comments (
+    id TEXT PRIMARY KEY,
+    storyId TEXT NOT NULL,
+    authorName TEXT NOT NULL,
+    content TEXT NOT NULL,
+    isApproved INTEGER NOT NULL DEFAULT 1,
+    createdAt TEXT NOT NULL DEFAULT (datetime('now')),
+    FOREIGN KEY (storyId) REFERENCES stories(id) ON DELETE CASCADE
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_comments_storyId ON comments(storyId);
+  CREATE INDEX IF NOT EXISTS idx_comments_createdAt ON comments(createdAt);
 `)
 
 export interface Story {
@@ -47,11 +60,11 @@ export interface Story {
   title: string
   author: string
   body: string
-  country: string
   imageUrl?: string
   isApproved: boolean
   averageRating?: number
   ratingCount?: number
+  readingTime?: number
   createdAt: string
   updatedAt: string
 }
@@ -61,6 +74,15 @@ export interface Rating {
   storyId: string
   rating: number
   userId: string
+  createdAt: string
+}
+
+export interface Comment {
+  id: string
+  storyId: string
+  authorName: string
+  content: string
+  isApproved: boolean
   createdAt: string
 }
 
@@ -109,7 +131,8 @@ export const dbHelpers = {
         ...story,
         isApproved: Boolean(story.isApproved),
         averageRating: ratingInfo?.averageRating,
-        ratingCount: ratingInfo?.ratingCount || 0
+        ratingCount: ratingInfo?.ratingCount || 0,
+        readingTime: calculateReadingTime(story.body)
       }
     })
   },
@@ -133,7 +156,8 @@ export const dbHelpers = {
       ...story,
       isApproved: Boolean(story.isApproved),
       averageRating: ratingInfo?.averageRating,
-      ratingCount: ratingInfo?.ratingCount || 0
+      ratingCount: ratingInfo?.ratingCount || 0,
+      readingTime: calculateReadingTime(story.body)
     }
   },
 
@@ -143,14 +167,13 @@ export const dbHelpers = {
     const now = new Date().toISOString()
     
     db.prepare(`
-      INSERT INTO stories (id, title, author, body, country, imageUrl, isApproved, createdAt, updatedAt)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO stories (id, title, author, body, imageUrl, isApproved, createdAt, updatedAt)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `).run(
       id,
       data.title,
       data.author,
       data.body,
-      data.country,
       data.imageUrl || null,
       data.isApproved ? 1 : 0,
       now,
@@ -173,6 +196,55 @@ export const dbHelpers = {
     )
 
     return this.getStoryById(id)!
+  },
+
+  // Get comments for a story
+  getCommentsByStoryId(storyId: string): Comment[] {
+    const comments = db.prepare(`
+      SELECT * FROM comments 
+      WHERE storyId = ? AND isApproved = 1 
+      ORDER BY createdAt DESC
+    `).all(storyId) as any[]
+    
+    return comments.map(comment => ({
+      ...comment,
+      isApproved: Boolean(comment.isApproved)
+    }))
+  },
+
+  // Create a new comment
+  createComment(data: Omit<Comment, 'id' | 'createdAt' | 'isApproved'>): Comment {
+    const id = randomUUID()
+    const now = new Date().toISOString()
+    
+    db.prepare(`
+      INSERT INTO comments (id, storyId, authorName, content, isApproved, createdAt)
+      VALUES (?, ?, ?, ?, 1, ?)
+    `).run(
+      id,
+      data.storyId,
+      data.authorName || 'Anonimno',
+      data.content,
+      now
+    )
+
+    const comment = db.prepare('SELECT * FROM comments WHERE id = ?').get(id) as any
+    return {
+      ...comment,
+      isApproved: Boolean(comment.isApproved)
+    }
+  },
+
+  // Get comment count for rate limiting (comments in last hour from same IP/story)
+  getRecentCommentCount(storyId: string, timeWindowMinutes: number = 60): number {
+    const cutoffTime = new Date(Date.now() - timeWindowMinutes * 60 * 1000).toISOString()
+    const result = db.prepare(`
+      SELECT COUNT(*) as count 
+      FROM comments 
+      WHERE storyId = ? AND createdAt > ?
+    `).get(storyId, cutoffTime) as any
+    
+    return result?.count || 0
   }
 }
 

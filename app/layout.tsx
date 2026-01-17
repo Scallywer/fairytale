@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Kids Nighttime Stories",
-  description: "Bedtime stories for kids in Croatian",
+  title: "Priče za laku noć",
+  description: "Lijepe priče za djecu prije spavanja",
 };
 
 export default function RootLayout({

@@ -8,7 +8,6 @@ interface Story {
   title: string
   author: string
   body: string
-  country: string
   isApproved: boolean
   createdAt: string
 }
@@ -168,7 +167,7 @@ export default function AdminPage() {
                         <div className="flex-1">
                           <h3 className="text-xl font-semibold text-amber-200 mb-2">{story.title}</h3>
                           <p className="text-amber-300/70 text-sm mb-1">
-                            Autor: {story.author} • Zemlja: {story.country}
+                            Autor: {story.author}
                           </p>
                           <p className="text-amber-300/50 text-xs">
                             {new Date(story.createdAt).toLocaleDateString('hr-HR')}
@@ -210,7 +209,7 @@ export default function AdminPage() {
                         <div className="flex-1">
                           <h3 className="text-xl font-semibold text-amber-200 mb-2">{story.title}</h3>
                           <p className="text-amber-300/70 text-sm">
-                            Autor: {story.author} • Zemlja: {story.country}
+                            Autor: {story.author}
                           </p>
                         </div>
                         <button
