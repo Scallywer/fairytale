@@ -1,7 +1,7 @@
 # DALL-E Prompts for All Stories
 
 Generated: 2026-01-16T18:21:33.112Z
-Total stories: 42
+Total stories: 47
 
 NOTE: All story summaries are now in English.
 ================================================================================
@@ -685,6 +685,86 @@ A beautiful, magical illustration for a children's bedtime story titled "Šuma S
 Story summary: In ancient times, there existed a forest that everyone called Stribor's Forest. It was a magical forest full of tall trees, mysterious sounds and magical creatures that lived in its depths. In this forest...
 
 The illustration should depict the scene from the story featuring the main character Ana.
+The image should be warm, cozy, suitable for children ages 5-10, with a nighttime/dreamy bedtime story atmosphere.
+Style: children's book illustration, soft colors, dreamy, magical, gentle and peaceful, bedtime aesthetic.
+Dark mode friendly color palette with deep blues, purples, navy, slate, and warm amber/gold accents.
+The illustration should evoke wonder, peace, and dreams, perfect for bedtime reading. No text, words, or letters in the image.
+
+
+================================================================================
+43. Baš-Čelik
+   Author: Tradicionalna priča
+================================================================================
+
+A beautiful, magical illustration for a children's bedtime story titled "Baš-Čelik".
+
+Story summary: In ancient times, in a distant kingdom, there lived an evil wizard named Baš-Čelik. He was a terrible enemy, strong as steel, and no one could defeat him in battle. Baš-Čelik kidnapped a beautiful princess and locked her in his dark tower at the top of the highest mountain. Everyone feared Baš-Čelik, for he was invincible and cruel. A young prince named Marko set out to rescue the princess, seeking help from three magical sisters - the queen of dragons, the queen of eagles, and the queen of falcons. With their magical gifts of a sword, shield, and ring, Marko bravely faced Baš-Čelik and defeated him, proving that courage, love, and friendship are stronger than any evil power.
+
+The illustration should depict the scene from the story featuring the main character Marko and the princess.
+The image should be warm, cozy, suitable for children ages 5-10, with a nighttime/dreamy bedtime story atmosphere.
+Style: children's book illustration, soft colors, dreamy, magical, gentle and peaceful, bedtime aesthetic.
+Dark mode friendly color palette with deep blues, purples, navy, slate, and warm amber/gold accents.
+The illustration should evoke wonder, peace, and dreams, perfect for bedtime reading. No text, words, or letters in the image.
+
+
+================================================================================
+44. Vila Planinka
+   Author: Tradicionalna priča
+================================================================================
+
+A beautiful, magical illustration for a children's bedtime story titled "Vila Planinka".
+
+Story summary: High in the mountains of Bosnia, where the sky touches the peaks, there lived a magical fairy named Planinka. She was a good and wise fairy who protected all mountain animals, plants, and people who came to the mountains. Her dress was white as snow, and her hair sparkled like gold in the sun. One day, Planinka noticed a young shepherd named Davor who was sad because he had lost his sheep in thick fog. Planinka helped him find his sheep and taught him about the secrets of nature. They became friends, and together they learned that friendship with nature is the greatest treasure, and that love and care can heal many wounds.
+
+The illustration should depict the scene from the story featuring the main character Planinka and Davor.
+The image should be warm, cozy, suitable for children ages 5-10, with a nighttime/dreamy bedtime story atmosphere.
+Style: children's book illustration, soft colors, dreamy, magical, gentle and peaceful, bedtime aesthetic.
+Dark mode friendly color palette with deep blues, purples, navy, slate, and warm amber/gold accents.
+The illustration should evoke wonder, peace, and dreams, perfect for bedtime reading. No text, words, or letters in the image.
+
+
+================================================================================
+45. Aždaha i selo
+   Author: Tradicionalna priča
+================================================================================
+
+A beautiful, magical illustration for a children's bedtime story titled "Aždaha i selo".
+
+Story summary: In a small village in Bosnia, people lived happily and contentedly with their simple lives. The village was nestled in a valley, surrounded by green hills and clear streams. But one day, everything changed when a terrible aždaha - a huge dragon with scales like steel and eyes that shone like fire - came from the depths of the forest. The dragon was evil and greedy, demanding that the villagers give him everything they had. The villagers were terrified, but a wise old man named Stjepan and a clever young girl named Marija came up with a plan. Together, they tricked the dragon with fake treasure and trapped him in a pit. The dragon learned to respect the villagers' courage and wisdom, and the village was safe once more, teaching everyone that together they can defeat any evil using their intelligence and bravery.
+
+The illustration should depict the scene from the story featuring the main characters Stjepan, Marija, and the aždaha.
+The image should be warm, cozy, suitable for children ages 5-10, with a nighttime/dreamy bedtime story atmosphere.
+Style: children's book illustration, soft colors, dreamy, magical, gentle and peaceful, bedtime aesthetic.
+Dark mode friendly color palette with deep blues, purples, navy, slate, and warm amber/gold accents.
+The illustration should evoke wonder, peace, and dreams, perfect for bedtime reading. No text, words, or letters in the image.
+
+
+================================================================================
+46. Vila i pastir
+   Author: Tradicionalna priča
+================================================================================
+
+A beautiful, magical illustration for a children's bedtime story titled "Vila i pastir".
+
+Story summary: In the mountains of Bosnia, where forests stretch endlessly, there lived a young shepherd named Luka. Luka was good and hardworking, and he loved his sheep more than anything. Every day he would take them to graze, watch over them, and sing songs to them as they grazed on green meadows. One summer day, while Luka sat under an old oak tree watching his sheep, he heard a beautiful voice singing in the distance. Following the voice, he discovered a beautiful fairy named Vila Zora sitting on a large rock in the middle of a small lake. Vila Zora taught Luka how to sing like a fairy and showed him that nature is full of music - every animal has its song, every tree has its voice. Through their friendship, Luka learned that friendship with nature is the greatest wealth, and that music and love can connect all lives in the world.
+
+The illustration should depict the scene from the story featuring the main character Luka and Vila Zora.
+The image should be warm, cozy, suitable for children ages 5-10, with a nighttime/dreamy bedtime story atmosphere.
+Style: children's book illustration, soft colors, dreamy, magical, gentle and peaceful, bedtime aesthetic.
+Dark mode friendly color palette with deep blues, purples, navy, slate, and warm amber/gold accents.
+The illustration should evoke wonder, peace, and dreams, perfect for bedtime reading. No text, words, or letters in the image.
+
+
+================================================================================
+47. Čarobna voda
+   Author: Tradicionalna priča
+================================================================================
+
+A beautiful, magical illustration for a children's bedtime story titled "Čarobna voda".
+
+Story summary: In ancient times, in a small village in Bosnia, there lived an old woman named Anka. Anka was sick and weak, and everyone thought she would not live long. Her grandson, a young man named Petar, was sad because he loved his grandmother more than anything in the world. Determined to save her, Petar heard a story about magical water hidden in the deepest forest that could cure any illness. He set out on a dangerous journey through dark forests, across fast rivers, and through dangerous valleys. When he finally found the magical spring, its guardian gave him magical water, but reminded him that love and care are the greatest medicines. Petar returned home and gave the water to his grandmother, sitting by her side and telling her stories. Through his love and the magical water, Anka recovered, teaching Petar that love and care are the greatest powers in the world, and that when we love someone, we can work miracles.
+
+The illustration should depict the scene from the story featuring the main character Petar and Anka.
 The image should be warm, cozy, suitable for children ages 5-10, with a nighttime/dreamy bedtime story atmosphere.
 Style: children's book illustration, soft colors, dreamy, magical, gentle and peaceful, bedtime aesthetic.
 Dark mode friendly color palette with deep blues, purples, navy, slate, and warm amber/gold accents.
