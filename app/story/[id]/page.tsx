@@ -7,22 +7,12 @@ export const dynamicParams = true
 export const runtime = 'nodejs'
 
 export default async function StoryPage({ params }: { params: Promise<{ id: string }> }) {
-  console.log('[StoryPage] Route handler called')
   const { id } = await params
-  console.log(`[StoryPage] Resolved id: ${id}`)
   
   try {
-    console.log(`[StoryPage] Fetching story with id: ${id}`)
     const story = prisma.getStoryById(id)
-    console.log(`[StoryPage] Story found:`, story ? { id: story.id, title: story.title, isApproved: story.isApproved } : 'null')
 
-    if (!story) {
-      console.log(`[StoryPage] Story not found for id: ${id}`)
-      notFound()
-    }
-
-    if (!story.isApproved) {
-      console.log(`[StoryPage] Story ${id} is not approved`)
+    if (!story || !story.isApproved) {
       notFound()
     }
 
