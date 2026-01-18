@@ -7,8 +7,9 @@ services:
       - "8889:3000"
     environment:
       - ADMIN_PASSWORD=654321
-    volumes:
-      - ./data:/app/data
+    # Database is included in the Docker image, no volume mount needed
+    # volumes:
+    #   - ./data:/app/data
     healthcheck:
       test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/"]
       interval: 30s
