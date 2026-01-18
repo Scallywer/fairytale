@@ -2,6 +2,8 @@ import { notFound } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import StoryReader from '@/components/StoryReader'
 
+export const dynamic = 'force-dynamic'
+
 export default async function StoryPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const story = prisma.getStoryById(id)
