@@ -132,6 +132,11 @@ export const dbHelpers = {
   getApprovedStories(): Story[] {
     const stories = db.prepare('SELECT * FROM stories WHERE isApproved = 1 ORDER BY createdAt DESC').all() as any[]
     
+    if (process.env.NODE_ENV === 'production' && stories.length > 0) {
+      const last5Ids = stories.slice(0, 5).map((s: any) => s.id)
+      console.log(`[DB] Last 5 approved story IDs (by createdAt): ${last5Ids.join(', ')}`)
+    }
+    
     return stories.map(story => {
       const ratingInfo = this.getAverageRating(story.id)
       return {
@@ -156,15 +161,28 @@ export const dbHelpers = {
   // Get story by ID with average rating
   getStoryById(id: string): Story | null {
     if (process.env.NODE_ENV === 'production') {
-      const allIds = db.prepare('SELECT id FROM stories LIMIT 5').all() as any[]
-      console.log(`[DB] Sample story IDs: ${allIds.map((s: any) => s.id).join(', ')}`)
+      const last5Stories = db.prepare('SELECT id, title, isApproved FROM stories ORDER BY createdAt DESC LIMIT 5').all() as any[]
+      console.log(`[DB] Last 5 stories in DB (by createdAt):`)
+      last5Stories.forEach((s: any) => {
+        console.log(`  - ID: ${s.id}, Title: ${s.title}, Approved: ${s.isApproved}`)
+      })
       console.log(`[DB] Looking for story ID: ${id}`)
+      
+      // Check if this ID exists at all (even if not approved)
+      const existsCheck = db.prepare('SELECT id, isApproved FROM stories WHERE id = ?').get(id) as any
+      if (existsCheck) {
+        console.log(`[DB] Story ${id} EXISTS in DB but isApproved = ${existsCheck.isApproved}`)
+      } else {
+        console.log(`[DB] Story ${id} does NOT EXIST in database`)
+      }
     }
     const story = db.prepare('SELECT * FROM stories WHERE id = ?').get(id) as any
     if (!story) {
       if (process.env.NODE_ENV === 'production') {
         const totalStories = db.prepare('SELECT COUNT(*) as count FROM stories').get() as any
+        const approvedStories = db.prepare('SELECT COUNT(*) as count FROM stories WHERE isApproved = 1').get() as any
         console.log(`[DB] Total stories in database: ${totalStories?.count || 0}`)
+        console.log(`[DB] Approved stories in database: ${approvedStories?.count || 0}`)
       }
       return null
     }

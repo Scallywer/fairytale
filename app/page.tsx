@@ -5,6 +5,12 @@ import BackToTop from '@/components/BackToTop'
 
 export default function Home() {
   const stories = prisma.getApprovedStories()
+  
+  // Log story IDs for debugging
+  if (process.env.NODE_ENV === 'production') {
+    console.log(`[HomePage] Found ${stories.length} stories`)
+    console.log(`[HomePage] Story IDs: ${stories.slice(0, 5).map(s => s.id).join(', ')}`)
+  }
 
   return (
     <div className="min-h-screen">
