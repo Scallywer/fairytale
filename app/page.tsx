@@ -8,8 +8,11 @@ export default function Home() {
   
   // Log story IDs for debugging
   if (process.env.NODE_ENV === 'production') {
-    console.log(`[HomePage] Found ${stories.length} stories`)
-    console.log(`[HomePage] Story IDs: ${stories.slice(0, 5).map(s => s.id).join(', ')}`)
+    console.log(`[HomePage] Found ${stories.length} approved stories`)
+    const first5Ids = stories.slice(0, 5).map(s => s.id)
+    const last5Ids = stories.slice(-5).map(s => s.id)
+    console.log(`[HomePage] First 5 story IDs: ${first5Ids.join(', ')}`)
+    console.log(`[HomePage] Last 5 story IDs: ${last5Ids.join(', ')}`)
   }
 
   return (
