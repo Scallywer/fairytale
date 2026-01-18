@@ -17,12 +17,14 @@ interface StoryReaderProps {
 
 export default function StoryReader({ storyId, title, author, body, imageUrl, averageRating, ratingCount, readingTime }: StoryReaderProps) {
   const [isRead, setIsRead] = useState(false)
+  const [mounted, setMounted] = useState(false)
   const [showRating, setShowRating] = useState(false)
   const [rating, setRating] = useState(0)
   const [hoverRating, setHoverRating] = useState(0)
   const router = useRouter()
 
   useEffect(() => {
+    setMounted(true)
     if (typeof window !== 'undefined') {
       const readStories = JSON.parse(localStorage.getItem('readStories') || '[]')
       const storyRatings = JSON.parse(localStorage.getItem('storyRatings') || '{}')
@@ -192,7 +194,7 @@ export default function StoryReader({ storyId, title, author, body, imageUrl, av
 
         {/* Mark as Read Button */}
         <div className="mt-8 pt-8 border-t border-slate-700">
-          {!isRead ? (
+          {!mounted || !isRead ? (
             <button
               onClick={markAsRead}
               className="px-6 py-3 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-medium transition-colors flex items-center gap-2"
