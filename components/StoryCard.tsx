@@ -16,8 +16,10 @@ interface StoryCardProps {
 
 export default function StoryCard({ id, title, author, imageUrl, viewMode = 'list', averageRating, ratingCount, readingTime }: StoryCardProps) {
   const [isRead, setIsRead] = useState(false)
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
+    setMounted(true)
     if (typeof window !== 'undefined') {
       const readStories = JSON.parse(localStorage.getItem('readStories') || '[]')
       setIsRead(readStories.includes(id))
@@ -44,7 +46,7 @@ export default function StoryCard({ id, title, author, imageUrl, viewMode = 'lis
   if (viewMode === 'gallery') {
     return (
       <Link href={`/story/${id}`}>
-        <div className={`group relative rounded-lg border border-slate-700 bg-slate-800 overflow-hidden transition-all hover:border-amber-500 hover:bg-slate-700 cursor-pointer ${isRead ? 'opacity-40 grayscale-[60%]' : ''}`}>
+        <div className={`group relative rounded-lg border border-slate-700 bg-slate-800 overflow-hidden transition-all hover:border-amber-500 hover:bg-slate-700 cursor-pointer ${mounted && isRead ? 'opacity-40 grayscale-[60%]' : ''}`}>
           {/* Thumbnail */}
           <div className="relative">
             {imageUrl ? (
@@ -59,7 +61,7 @@ export default function StoryCard({ id, title, author, imageUrl, viewMode = 'lis
               </div>
             )}
             {/* Read Checkmark overlay */}
-            {isRead && (
+            {mounted && isRead && (
               <div className="absolute top-2 right-2 bg-slate-900/70 rounded-full p-1">
                 <svg
                   className="h-5 w-5 text-amber-400"
@@ -124,8 +126,8 @@ export default function StoryCard({ id, title, author, imageUrl, viewMode = 'lis
 
   // List mode layout (default)
   return (
-    <Link href={`/story/${id}`}>
-      <div className={`group relative rounded-lg border border-slate-700 bg-slate-800 p-6 transition-all hover:border-amber-500 hover:bg-slate-700 cursor-pointer ${isRead ? 'opacity-40 grayscale-[60%]' : ''}`}>
+      <Link href={`/story/${id}`}>
+        <div className={`group relative rounded-lg border border-slate-700 bg-slate-800 p-6 transition-all hover:border-amber-500 hover:bg-slate-700 cursor-pointer ${mounted && isRead ? 'opacity-40 grayscale-[60%]' : ''}`}>
         <div className="flex flex-col gap-4">
           {/* Title and Checkmark */}
           <div className="flex items-start justify-between gap-4">
@@ -133,7 +135,7 @@ export default function StoryCard({ id, title, author, imageUrl, viewMode = 'lis
               {title}
             </h3>
             {/* Read Checkmark */}
-            {isRead && (
+            {mounted && isRead && (
               <div className="shrink-0">
                 <svg
                   className="h-6 w-6 text-amber-400"

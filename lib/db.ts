@@ -12,6 +12,13 @@ if (!fs.existsSync(dataDir)) {
   fs.mkdirSync(dataDir, { recursive: true })
 }
 
+// Log database path for debugging
+if (process.env.NODE_ENV === 'production') {
+  console.log(`[DB] Database path: ${dbPath}`)
+  console.log(`[DB] process.cwd(): ${process.cwd()}`)
+  console.log(`[DB] Database exists: ${fs.existsSync(dbPath)}`)
+}
+
 // Create database connection
 const db = new Database(dbPath)
 
@@ -148,8 +155,19 @@ export const dbHelpers = {
 
   // Get story by ID with average rating
   getStoryById(id: string): Story | null {
+    if (process.env.NODE_ENV === 'production') {
+      const allIds = db.prepare('SELECT id FROM stories LIMIT 5').all() as any[]
+      console.log(`[DB] Sample story IDs: ${allIds.map((s: any) => s.id).join(', ')}`)
+      console.log(`[DB] Looking for story ID: ${id}`)
+    }
     const story = db.prepare('SELECT * FROM stories WHERE id = ?').get(id) as any
-    if (!story) return null
+    if (!story) {
+      if (process.env.NODE_ENV === 'production') {
+        const totalStories = db.prepare('SELECT COUNT(*) as count FROM stories').get() as any
+        console.log(`[DB] Total stories in database: ${totalStories?.count || 0}`)
+      }
+      return null
+    }
     
     const ratingInfo = this.getAverageRating(id)
     return {

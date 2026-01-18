@@ -7,7 +7,9 @@ export const dynamicParams = true
 export const runtime = 'nodejs'
 
 export default async function StoryPage({ params }: { params: Promise<{ id: string }> }) {
+  console.log('[StoryPage] Route handler called')
   const { id } = await params
+  console.log(`[StoryPage] Resolved id: ${id}`)
   
   try {
     console.log(`[StoryPage] Fetching story with id: ${id}`)
