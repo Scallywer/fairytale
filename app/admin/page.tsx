@@ -22,7 +22,9 @@ export default function AdminPage() {
     // Check if already authenticated
     if (typeof window !== 'undefined') {
       const auth = sessionStorage.getItem('adminAuth')
-      if (auth === 'true') {
+      const savedPassword = sessionStorage.getItem('adminPassword')
+      if (auth === 'true' && savedPassword) {
+        setPassword(savedPassword)
         setIsAuthenticated(true)
         fetchStories()
       } else {
@@ -41,6 +43,7 @@ export default function AdminPage() {
 
     if (response.ok) {
       sessionStorage.setItem('adminAuth', 'true')
+      sessionStorage.setItem('adminPassword', password)
       setIsAuthenticated(true)
       fetchStories()
     } else {
@@ -74,6 +77,24 @@ export default function AdminPage() {
       fetchStories()
     } else {
       alert('Greška pri ažuriranju')
+    }
+  }
+
+  const deleteStory = async (storyId: string, storyTitle: string) => {
+    if (!confirm(`Jeste li sigurni da želite obrisati priču "${storyTitle}"?\n\nOva akcija je trajna i ne može se poništiti.`)) {
+      return
+    }
+
+    const response = await fetch('/api/admin', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ storyId, action: 'deleteStory', password }),
+    })
+
+    if (response.ok) {
+      fetchStories()
+    } else {
+      alert('Greška pri brisanju')
     }
   }
 
@@ -173,12 +194,20 @@ export default function AdminPage() {
                             {new Date(story.createdAt).toLocaleDateString('hr-HR')}
                           </p>
                         </div>
-                        <button
-                          onClick={() => toggleApproval(story.id, story.isApproved)}
-                          className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium transition-colors"
-                        >
-                          Odobri
-                        </button>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => toggleApproval(story.id, story.isApproved)}
+                            className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium transition-colors"
+                          >
+                            Odobri
+                          </button>
+                          <button
+                            onClick={() => deleteStory(story.id, story.title)}
+                            className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors"
+                          >
+                            Obriši
+                          </button>
+                        </div>
                       </div>
                       <div className="bg-slate-900 rounded p-4 max-h-48 overflow-y-auto">
                         <p className="text-amber-100 text-sm whitespace-pre-line line-clamp-6">
@@ -212,12 +241,20 @@ export default function AdminPage() {
                             Autor: {story.author}
                           </p>
                         </div>
-                        <button
-                          onClick={() => toggleApproval(story.id, story.isApproved)}
-                          className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors"
-                        >
-                          Poništi odobrenje
-                        </button>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => toggleApproval(story.id, story.isApproved)}
+                            className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors"
+                          >
+                            Poništi odobrenje
+                          </button>
+                          <button
+                            onClick={() => deleteStory(story.id, story.title)}
+                            className="px-4 py-2 bg-red-800 hover:bg-red-900 text-white rounded-lg text-sm font-medium transition-colors"
+                          >
+                            Obriši
+                          </button>
+                        </div>
                       </div>
                     </div>
                   ))}

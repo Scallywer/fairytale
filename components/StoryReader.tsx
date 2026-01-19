@@ -121,7 +121,7 @@ export default function StoryReader({ storyId, title, author, body, imageUrl, av
   return (
     <div className="min-h-screen">
       {/* Header */}
-      <div className="border-b border-slate-700 bg-slate-800/50 backdrop-blur-sm sticky top-0 z-10">
+      <div className="border-b border-slate-700 bg-slate-800/50 backdrop-blur-sm md:sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-4 py-4">
           <button
             onClick={() => router.push('/')}

@@ -45,6 +45,19 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(updatedStory)
     }
 
+    if (action === 'deleteStory') {
+      if (!verifyAdminPassword(password)) {
+        return NextResponse.json({ error: 'Neovlašteno' }, { status: 401 })
+      }
+
+      if (!storyId) {
+        return NextResponse.json({ error: 'Potreban ID priče' }, { status: 400 })
+      }
+
+      prisma.deleteStory(storyId)
+      return NextResponse.json({ success: true })
+    }
+
     return NextResponse.json({ error: 'Nevažeća akcija' }, { status: 400 })
   } catch (error) {
     console.error('Error in admin POST:', error)

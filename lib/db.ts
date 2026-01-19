@@ -15,6 +15,9 @@ if (!fs.existsSync(dataDir)) {
 // Create database connection
 const db = new Database(dbPath)
 
+// Enable foreign keys (required for CASCADE deletes)
+db.pragma('foreign_keys = ON')
+
 // Initialize database schema
 db.exec(`
   CREATE TABLE IF NOT EXISTS stories (
@@ -198,6 +201,25 @@ export const dbHelpers = {
     )
 
     return this.getStoryById(id)!
+  },
+
+  // Delete a story (ratings and comments will be cascade deleted)
+  deleteStory(id: string): void {
+    const story = this.getStoryById(id)
+    if (!story) throw new Error('Story not found')
+    
+    // Temporarily disable foreign key checks to handle any mismatch issues
+    db.pragma('foreign_keys = OFF')
+    
+    try {
+      // Manually delete related records first
+      db.prepare('DELETE FROM ratings WHERE storyId = ?').run(id)
+      db.prepare('DELETE FROM comments WHERE storyId = ?').run(id)
+      db.prepare('DELETE FROM stories WHERE id = ?').run(id)
+    } finally {
+      // Re-enable foreign keys
+      db.pragma('foreign_keys = ON')
+    }
   },
 
   // Get comments for a story
