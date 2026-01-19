@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { logger } from '@/lib/logger'
 
 // Simple rate limiting: max 5 comments per hour per story
 const MAX_COMMENTS_PER_HOUR = 5
@@ -40,7 +41,7 @@ export async function GET(request: NextRequest) {
     const comments = prisma.getCommentsByStoryId(storyId)
     return NextResponse.json(comments)
   } catch (error) {
-    console.error('Error fetching comments:', error)
+    logger.error('Error fetching comments:', error)
     return NextResponse.json({ error: 'Greška pri dohvaćanju komentara' }, { status: 500 })
   }
 }
@@ -97,7 +98,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(comment, { status: 201 })
   } catch (error) {
-    console.error('Error creating comment:', error)
+    logger.error('Error creating comment:', error)
     return NextResponse.json({ error: 'Greška pri kreiranju komentara' }, { status: 500 })
   }
 }

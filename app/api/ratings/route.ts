@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { dbHelpers } from '@/lib/db'
+import { logger } from '@/lib/logger'
 
 // Generate a simple user ID based on browser fingerprint
 function getUserId(): string {
@@ -39,7 +40,7 @@ export async function POST(request: NextRequest) {
       ratingCount: ratingInfo?.ratingCount || 0
     })
   } catch (error) {
-    console.error('Error submitting rating:', error)
+    logger.error('Error submitting rating:', error)
     return NextResponse.json({ error: 'Greška pri slanju ocjene' }, { status: 500 })
   }
 }

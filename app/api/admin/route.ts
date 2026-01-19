@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { verifyAdminPassword } from '@/lib/auth'
+import { logger } from '@/lib/logger'
 
 export async function GET(request: NextRequest) {
   try {
@@ -14,7 +15,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ error: 'Nevažeća akcija' }, { status: 400 })
   } catch (error) {
-    console.error('Error in admin GET:', error)
+    logger.error('Error in admin GET:', error)
     return NextResponse.json({ error: 'Greška pri obradi zahtjeva' }, { status: 500 })
   }
 }
@@ -60,7 +61,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ error: 'Nevažeća akcija' }, { status: 400 })
   } catch (error) {
-    console.error('Error in admin POST:', error)
+    logger.error('Error in admin POST:', error)
     return NextResponse.json({ error: 'Greška pri obradi zahtjeva' }, { status: 500 })
   }
 }

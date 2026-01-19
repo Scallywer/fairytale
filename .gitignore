@@ -51,3 +51,6 @@ data/
 
 # generated images (optional - remove if you want to commit them)
 # public/images/stories/
+
+# generated files
+story-prompts-list.txt

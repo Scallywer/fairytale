@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import StoryReader from '@/components/StoryReader'
+import { logger } from '@/lib/logger'
 
 export const dynamic = 'force-dynamic'
 export const dynamicParams = true
@@ -29,7 +30,7 @@ export default async function StoryPage({ params }: { params: Promise<{ id: stri
       />
     )
   } catch (error) {
-    console.error('Error loading story:', error)
+    logger.error('Error loading story:', error)
     notFound()
   }
 }

@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { logger } from '@/lib/logger'
 
 interface Comment {
   id: string
@@ -53,7 +54,7 @@ export default function Comments({ storyId }: CommentsProps) {
         setComments(data)
       }
     } catch (error) {
-      console.error('Error fetching comments:', error)
+      logger.error('Error fetching comments:', error)
     } finally {
       setLoading(false)
     }

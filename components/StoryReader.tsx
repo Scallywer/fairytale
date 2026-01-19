@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Comments from './Comments'
+import { logger } from '@/lib/logger'
 
 interface StoryReaderProps {
   storyId: string
@@ -68,7 +69,7 @@ export default function StoryReader({ storyId, title, author, body, imageUrl, av
             body: JSON.stringify({ storyId, rating, userId })
           })
         } catch (error) {
-          console.error('Error submitting rating:', error)
+          logger.error('Error submitting rating:', error)
         }
       }
       

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { logger } from '@/lib/logger'
 
 interface Story {
   id: string
@@ -60,7 +61,7 @@ export default function AdminPage() {
         setStories(data)
       }
     } catch (error) {
-      console.error('Error fetching stories:', error)
+      logger.error('Error fetching stories:', error)
     } finally {
       setLoading(false)
     }
