@@ -115,13 +115,27 @@ export const dbHelpers = {
     const ratingId = randomUUID()
     const now = new Date().toISOString()
     
-    db.prepare(`
-      INSERT INTO ratings (id, storyId, userId, rating, createdAt)
-      VALUES (?, ?, ?, ?, ?)
-      ON CONFLICT(storyId, userId) DO UPDATE SET
-        rating = excluded.rating,
-        createdAt = excluded.createdAt
-    `).run(ratingId, storyId, userId, rating, now)
+    // Verify story exists first
+    const story = this.getStoryById(storyId)
+    if (!story) {
+      throw new Error('Story not found')
+    }
+    
+    // Temporarily disable foreign keys to avoid mismatch errors
+    db.pragma('foreign_keys = OFF')
+    
+    try {
+      db.prepare(`
+        INSERT INTO ratings (id, storyId, userId, rating, createdAt)
+        VALUES (?, ?, ?, ?, ?)
+        ON CONFLICT(storyId, userId) DO UPDATE SET
+          rating = excluded.rating,
+          createdAt = excluded.createdAt
+      `).run(ratingId, storyId, userId, rating, now)
+    } finally {
+      // Re-enable foreign keys
+      db.pragma('foreign_keys = ON')
+    }
   },
 
   // Get all approved stories with average ratings

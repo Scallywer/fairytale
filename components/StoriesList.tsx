@@ -120,7 +120,7 @@ export default function StoriesList({ stories }: StoriesListProps) {
     }
 
     return filtered
-  }, [stories, searchQuery, selectedAuthor, minRating, readStatus, sortBy, hasActiveFilters])
+  }, [stories, searchQuery, selectedAuthor, minRating, maxReadingTime, readStatus, sortBy])
 
   // Clear all filters
   const clearFilters = () => {
