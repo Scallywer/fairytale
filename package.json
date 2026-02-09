@@ -12,7 +12,8 @@
     "regenerate-specific": "tsx scripts/regenerate-specific.ts",
     "export-prompts": "tsx scripts/export-prompts.ts",
     "update-image-links": "tsx scripts/update-image-links.ts",
-    "expand-stories": "tsx scripts/expand-stories.ts"
+    "expand-stories": "tsx scripts/expand-stories.ts",
+    "export-stories-list": "tsx scripts/export-stories-list.ts"
   },
   "dependencies": {
     "axios": "^1.13.2",
