@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Comments from './Comments'
 import { logger } from '@/lib/logger'
+import { splitIntoParagraphs } from '@/lib/utils'
 
 interface StoryReaderProps {
   storyId: string
@@ -155,21 +156,20 @@ export default function StoryReader({ storyId, title, author, body, imageUrl, av
         <div className="prose prose-invert prose-lg max-w-none">
           <div className="text-amber-100 leading-relaxed text-lg md:text-xl font-serif">
             {(() => {
-              // Split body into paragraphs
-              const paragraphs = body.split(/\n\n+/).filter(p => p.trim().length > 0)
-              
+              const paragraphs = splitIntoParagraphs(body)
+
               if (paragraphs.length === 0) {
                 return <div className="whitespace-pre-line">{body}</div>
               }
-              
+
               const firstParagraph = paragraphs[0]
               const remainingParagraphs = paragraphs.slice(1)
-              
+
               return (
                 <>
                   {/* First Paragraph */}
-                  <p className="mb-6">{firstParagraph.trim()}</p>
-                  
+                  <p className="mb-6">{firstParagraph}</p>
+
                   {/* Story Image */}
                   {imageUrl && (
                     <div className="my-8 flex justify-center">
@@ -180,11 +180,11 @@ export default function StoryReader({ storyId, title, author, body, imageUrl, av
                       />
                     </div>
                   )}
-                  
+
                   {/* Remaining Paragraphs */}
                   {remainingParagraphs.map((paragraph, index) => (
-                    <p key={index} className={index === 0 ? 'mb-6' : 'mb-6'}>
-                      {paragraph.trim()}
+                    <p key={index} className="mb-6">
+                      {paragraph}
                     </p>
                   ))}
                 </>

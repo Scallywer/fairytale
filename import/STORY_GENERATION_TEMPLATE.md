@@ -19,7 +19,7 @@ You will receive either:
 ### Content Guidelines
 
 1. **Length**: 
-   - Stories should be 500-1000 words
+   - Stories should be 700-1000 words
    - Reading time should be approximately 3-5 minutes
    - Use multiple paragraphs with natural breaks
 

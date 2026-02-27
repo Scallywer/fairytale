@@ -18,3 +18,27 @@ export function calculateReadingTime(body: string, wordsPerMinute: number = 200)
 
   return readingTime
 }
+
+/**
+ * Split story body text into logical paragraphs.
+ *
+ * Rules:
+ * - Normalizes Windows newlines to `\n`
+ * - Treats one or more blank lines (optionally containing spaces) as a paragraph separator
+ * - Trims each paragraph and removes empty paragraphs
+ */
+export function splitIntoParagraphs(body: string): string[] {
+  if (!body) {
+    return []
+  }
+
+  const normalized = body.replace(/\r\n/g, '\n').trim()
+  if (!normalized) {
+    return []
+  }
+
+  return normalized
+    .split(/\n\s*\n+/)
+    .map(paragraph => paragraph.trim())
+    .filter(paragraph => paragraph.length > 0)
+}
