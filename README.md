@@ -86,6 +86,12 @@ Available npm scripts (for development/maintenance):
 - `npm run export-prompts` - Export all DALL-E prompts to file
 - `npm run update-image-links` - Update image URLs in database from local files
 
+## Testing
+
+- `npm test` - Run tests (Vitest)
+
+After adding new stories or images, run `npm run update-image-links` to assign images, then `npm test` to verify the story→image mapping. The test fails if any story points to a missing file, to the wrong image (when a correctly named one exists), or to another story’s image.
+
 ## License
 
 Private project - All rights reserved

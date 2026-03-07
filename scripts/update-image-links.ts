@@ -2,6 +2,7 @@ import 'dotenv/config'
 import { dbHelpers } from '../lib/db'
 import fs from 'fs'
 import path from 'path'
+import { normalizedBaseName, normalizeTitle, normalizeStoryTitle } from '../lib/image-mapping'
 
 // Story order based on story-prompts-list.txt (used only when no name-based match exists)
 const storyOrder = [
@@ -68,20 +69,27 @@ const storyOrder = [
   'Mudra_baka_i_vuk',
 ]
 
-/** Normalize for matching: spaces -> underscores, remove diacritics and punctuation, lowercase */
-function normalizeTitle(s: string): string {
-  return s
-    .normalize('NFD')
-    .replace(/\p{Diacritic}/gu, '')
-    .replace(/[\s]+/g, '_')
-    .replace(/[^\p{L}\p{N}_]/gu, '') // remove punctuation and other non-letter/non-number (except _)
-    .replace(/_+/g, '_')             // collapse multiple underscores
-    .replace(/^_|_$/g, '')           // trim leading/trailing underscores
-    .toLowerCase()
+/** Story titles that use different image filenames (e.g. English/alternate spelling). Map: story title -> image filename. */
+const storyTitleToImage: Record<string, string> = {
+  'Pinokio': '1_Pinocchio.png',
+  'Čarobna Obitelj Madrigal': '4_Encanto.png',
+  'Priča o Igračkama': '6_ToyStory.png',
+  'Pronalaženje Nema': '8_FindingNemo.png',
+  'Aladin': '9_Aladdin.png',
+  'Ljepotica i Zvijer': '10_BeautyAndTheBeast.png',
+  'Mala Sirena': '11_TheLittleMermaid.png',
+  'Kralj Lavova': '12_TheLionKing.png',
+  'Pepeljuga': '19_Cindarella.png',
+  'Crvenkapica': '20_LittleRedRidingHood.png',
+  'Snjeguljica i sedam patuljaka': '21_SnowWhite.png',
+  'Ivica i Marica': '22_HanselAndGretel.png',
+  'Devojka postala iz pomaranče': '32_DjevojkaNastalaIzNarance.png',
+  'Toporko lutalica i devet župančića': '35_ToporkoLutalica.png',
+  'Mali domić u staroj kući': '37_MaliDomicUStarojKuci.png',
+  'Zvijezda iznad Zagreba': '38_ZvijezdaIznadZagreba.png',
 }
 
 async function main() {
-  console.log('Updating image links in database...\n')
 
   const allStories = dbHelpers.getAllStories()
   const imagesDir = path.join(process.cwd(), 'public', 'images')
@@ -97,19 +105,37 @@ async function main() {
   let byName = 0
   let byOrder = 0
   const db = require('../lib/db').default
-  const storiesAlreadyAssigned = new Set<string>(
-    allStories.filter(s => s.imageUrl).map(s => s.id)
-  )
+  // Start empty so name-based phase can overwrite wrong assignments; only stories we assign get added
+  const storiesAlreadyAssigned = new Set<string>()
   const usedImageFiles = new Set<string>()
 
-  // 1) Name-based: match image filename (without extension) to story title (normalized)
-  for (const imageFile of imageFiles) {
-    const baseName = path.basename(imageFile, path.extname(imageFile))
-    const baseNormalized = normalizeTitle(baseName)
-    const story = allStories.find(
-      s => normalizeTitle(s.title) === baseNormalized
+  // 1a) Manual map: story title -> image filename (for Disney/English filenames that don't match by normalization)
+  const imageFileSet = new Set(imageFiles)
+  for (const [storyTitle, imageFile] of Object.entries(storyTitleToImage)) {
+    if (!imageFileSet.has(imageFile)) continue
+    const story = allStories.find(s => s.title === storyTitle)
+    if (!story || storiesAlreadyAssigned.has(story.id)) continue
+    const imageUrl = `/images/${imageFile}`
+    db.prepare('UPDATE stories SET imageUrl = ?, updatedAt = ? WHERE id = ?').run(
+      imageUrl,
+      new Date().toISOString(),
+      story.id
     )
-    if (story) {
+    storiesAlreadyAssigned.add(story.id)
+    usedImageFiles.add(imageFile)
+    console.log(`✓ [map] ${story.title} -> ${imageUrl}`)
+    updated++
+    byName++
+  }
+
+  // 1b) Name-based: match image filename to story title (strip leading number from filename, e.g. 31_Pirgo.png -> Pirgo)
+  for (const imageFile of imageFiles) {
+    if (usedImageFiles.has(imageFile)) continue
+    const baseNormalized = normalizedBaseName(imageFile)
+    const story = allStories.find(
+      s => normalizeStoryTitle(s.title) === baseNormalized
+    )
+    if (story && !storiesAlreadyAssigned.has(story.id)) {
       const imageUrl = `/images/${imageFile}`
       db.prepare('UPDATE stories SET imageUrl = ?, updatedAt = ? WHERE id = ?').run(
         imageUrl,
