@@ -27,6 +27,7 @@ db.exec(`
     body TEXT NOT NULL,
     imageUrl TEXT,
     isApproved INTEGER NOT NULL DEFAULT 0,
+    readCount INTEGER NOT NULL DEFAULT 0,
     createdAt TEXT NOT NULL DEFAULT (datetime('now')),
     updatedAt TEXT NOT NULL DEFAULT (datetime('now'))
   );
@@ -57,6 +58,12 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_comments_createdAt ON comments(createdAt);
 `)
 
+try {
+  db.exec('ALTER TABLE stories ADD COLUMN readCount INTEGER NOT NULL DEFAULT 0')
+} catch {
+  // Column already exists
+}
+
 export interface Story {
   id: string
   title: string
@@ -67,6 +74,7 @@ export interface Story {
   averageRating?: number
   ratingCount?: number
   readingTime?: number
+  readCount?: number
   createdAt: string
   updatedAt: string
 }
@@ -304,6 +312,10 @@ export const dbHelpers = {
     `).get(storyId, cutoffTime) as { count: number } | undefined
 
     return result?.count ?? 0
+  },
+
+  incrementReadCount(storyId: string): void {
+    db.prepare('UPDATE stories SET readCount = readCount + 1 WHERE id = ?').run(storyId)
   }
 }
 

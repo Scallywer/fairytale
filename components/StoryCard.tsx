@@ -13,9 +13,10 @@ interface StoryCardProps {
   averageRating?: number
   ratingCount?: number
   readingTime?: number
+  readCount?: number
 }
 
-export default function StoryCard({ id, title, author, imageUrl, viewMode = 'list', averageRating, ratingCount, readingTime }: StoryCardProps) {
+export default function StoryCard({ id, title, author, imageUrl, viewMode = 'list', averageRating, ratingCount, readingTime, readCount }: StoryCardProps) {
   const [isRead, setIsRead] = useState(false)
   const [mounted, setMounted] = useState(false)
 
@@ -96,13 +97,16 @@ export default function StoryCard({ id, title, author, imageUrl, viewMode = 'lis
             <p className="text-sm text-amber-300/70 mb-2">
               {author}
             </p>
-            {readingTime && (
+            {readingTime != null && readingTime > 0 && (
               <div className="flex items-center gap-1 text-xs text-amber-400/70 mb-2">
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 <span>{readingTime} min čitanja</span>
               </div>
+            )}
+            {readCount != null && readCount > 0 && (
+              <p className="text-xs text-amber-400/70 mb-2">{readCount} puta pročitano</p>
             )}
             {averageRating && averageRating > 0 && (
               <div className="flex items-center gap-2">
@@ -192,13 +196,16 @@ export default function StoryCard({ id, title, author, imageUrl, viewMode = 'lis
             <p className="text-sm text-amber-300/70">
               {author}
             </p>
-            {readingTime && (
+            {readingTime != null && readingTime > 0 && (
               <div className="flex items-center gap-1 text-sm text-amber-400/70 mt-1">
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 <span>{readingTime} min čitanja</span>
               </div>
+            )}
+            {readCount != null && readCount > 0 && (
+              <p className="text-sm text-amber-400/70 mt-1">{readCount} puta pročitano</p>
             )}
             {averageRating && averageRating > 0 && (
               <div className="flex items-center gap-2 mt-2">

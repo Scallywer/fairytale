@@ -132,17 +132,18 @@ export default async function StoryPage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <StoryReader
-        storyId={story.id}
-        title={story.title}
-        author={story.author}
-        body={story.body}
-        imageUrl={story.imageUrl}
-        averageRating={story.averageRating}
-        ratingCount={story.ratingCount}
-        readingTime={story.readingTime}
-        relatedStories={related}
-      />
+        <StoryReader
+          storyId={story.id}
+          title={story.title}
+          author={story.author}
+          body={story.body}
+          imageUrl={story.imageUrl}
+          averageRating={story.averageRating}
+          ratingCount={story.ratingCount}
+          readingTime={story.readingTime}
+          readCount={story.readCount}
+          relatedStories={related}
+        />
     </>
   );
 }

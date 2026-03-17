@@ -2,11 +2,13 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Comments from './Comments'
 import { logger } from '@/lib/logger'
 import { splitIntoParagraphs } from '@/lib/utils'
+
+const READ_COUNT_THRESHOLD_MS = 5000
 
 interface RelatedStory {
   id: string
@@ -24,16 +26,31 @@ interface StoryReaderProps {
   averageRating?: number
   ratingCount?: number
   readingTime?: number
+  readCount?: number
   relatedStories?: RelatedStory[]
 }
 
-export default function StoryReader({ storyId, title, author, body, imageUrl, averageRating, ratingCount, readingTime, relatedStories = [] }: StoryReaderProps) {
+export default function StoryReader({ storyId, title, author, body, imageUrl, averageRating, ratingCount, readingTime, readCount, relatedStories = [] }: StoryReaderProps) {
   const [isRead, setIsRead] = useState(false)
   const [mounted, setMounted] = useState(false)
   const [showRating, setShowRating] = useState(false)
   const [rating, setRating] = useState(0)
   const [hoverRating, setHoverRating] = useState(0)
   const router = useRouter()
+  const readCountSentRef = useRef(false)
+
+  useEffect(() => {
+    readCountSentRef.current = false
+    const timerId = setTimeout(() => {
+      if (readCountSentRef.current) return
+      readCountSentRef.current = true
+      fetch(`/api/stories/${storyId}/read`, {
+        method: 'POST',
+        credentials: 'include',
+      }).catch(() => {})
+    }, READ_COUNT_THRESHOLD_MS)
+    return () => clearTimeout(timerId)
+  }, [storyId])
 
   useEffect(() => {
     queueMicrotask(() => {
@@ -152,12 +169,17 @@ export default function StoryReader({ storyId, title, author, body, imageUrl, av
             <p className="text-amber-300/70 text-sm">
               {author}
             </p>
-            {readingTime && (
+            {readingTime != null && readingTime > 0 && (
               <div className="flex items-center gap-1 text-sm text-amber-400/70">
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 <span>{readingTime} min čitanja</span>
+              </div>
+            )}
+            {readCount != null && readCount > 0 && (
+              <div className="flex items-center gap-1 text-sm text-amber-400/70">
+                <span>{readCount} puta pročitano</span>
               </div>
             )}
           </div>

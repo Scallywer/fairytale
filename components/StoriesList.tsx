@@ -11,6 +11,7 @@ interface Story {
   averageRating?: number
   ratingCount?: number
   readingTime?: number
+  readCount?: number
   createdAt?: string
 }
 
@@ -351,6 +352,7 @@ export default function StoriesList({ stories }: StoriesListProps) {
                 averageRating={story.averageRating}
                 ratingCount={story.ratingCount}
                 readingTime={story.readingTime}
+                readCount={story.readCount}
               />
             ))}
           </div>

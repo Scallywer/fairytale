@@ -49,4 +49,11 @@ export const storiesService = {
   delete(id: string): void {
     return dbHelpers.deleteStory(id)
   },
+
+  /** Increment read count for an approved story. No-op if story not found or not approved. */
+  recordRead(id: string): void {
+    const story = this.getApprovedById(id)
+    if (!story) throw new Error('Story not found or not approved')
+    dbHelpers.incrementReadCount(id)
+  },
 }
