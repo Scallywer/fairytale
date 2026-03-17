@@ -1,5 +1,5 @@
 import 'dotenv/config'
-import { dbHelpers } from '../lib/db'
+import { storiesService } from '../lib/storiesService'
 import fs from 'fs'
 
 // Helper to get English title where appropriate
@@ -90,7 +90,7 @@ The illustration should evoke wonder, peace, and dreams, perfect for bedtime rea
 async function main() {
   console.log('Exporting prompts for all stories...\n')
   
-  const allStories = dbHelpers.getAllStories()
+  const allStories = storiesService.getAllStories()
   const prompts: { title: string; englishTitle: string; author: string; prompt: string }[] = []
   
   for (const story of allStories) {

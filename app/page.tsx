@@ -1,10 +1,13 @@
 import Link from 'next/link'
-import { prisma } from '@/lib/prisma'
+import { storiesService } from '@/lib/storiesService'
 import StoriesList from '@/components/StoriesList'
+import RecommendedTonight from '@/components/RecommendedTonight'
 import BackToTop from '@/components/BackToTop'
 
+export const revalidate = 60
+
 export default function Home() {
-  const stories = prisma.getApprovedStories()
+  const stories = storiesService.getApprovedStories()
 
   return (
     <div className="min-h-screen">
@@ -40,6 +43,7 @@ export default function Home() {
 
       {/* Stories */}
       <main className="max-w-7xl mx-auto px-4 py-8">
+        <RecommendedTonight stories={stories} />
         <StoriesList stories={stories} />
       </main>
 

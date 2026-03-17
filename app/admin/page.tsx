@@ -19,19 +19,27 @@ export default function AdminPage() {
   const [stories, setStories] = useState<Story[]>([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    // Check if already authenticated
-    if (typeof window !== 'undefined') {
-      const auth = sessionStorage.getItem('adminAuth')
-      const savedPassword = sessionStorage.getItem('adminPassword')
-      if (auth === 'true' && savedPassword) {
-        setPassword(savedPassword)
+  const fetchStories = async () => {
+    setLoading(true)
+    try {
+      const response = await fetch('/api/admin?action=getStories', { credentials: 'include' })
+      if (response.ok) {
+        const data = await response.json()
+        setStories(data)
         setIsAuthenticated(true)
-        fetchStories()
       } else {
-        setLoading(false)
+        setIsAuthenticated(false)
       }
+    } catch (error) {
+      logger.error('Error fetching stories:', error)
+      setIsAuthenticated(false)
+    } finally {
+      setLoading(false)
     }
+  }
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') fetchStories()
   }, [])
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -39,46 +47,30 @@ export default function AdminPage() {
     const response = await fetch('/api/admin', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify({ password, action: 'login' }),
     })
 
     if (response.ok) {
-      sessionStorage.setItem('adminAuth', 'true')
-      sessionStorage.setItem('adminPassword', password)
       setIsAuthenticated(true)
       fetchStories()
     } else {
-      alert('Netočna lozinka')
+      const data = await response.json().catch(() => ({}))
+      if (response.status === 429) alert(data.error ?? 'Previše pokušaja. Pokušajte kasnije.')
+      else alert(data.error ?? 'Netočna lozinka')
     }
   }
 
-  const fetchStories = async () => {
-    setLoading(true)
-    try {
-      const response = await fetch('/api/admin?action=getStories')
-      if (response.ok) {
-        const data = await response.json()
-        setStories(data)
-      }
-    } catch (error) {
-      logger.error('Error fetching stories:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const toggleApproval = async (storyId: string, currentStatus: boolean) => {
+  const toggleApproval = async (storyId: string) => {
     const response = await fetch('/api/admin', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ storyId, action: 'toggleApproval', password }),
+      credentials: 'include',
+      body: JSON.stringify({ storyId, action: 'toggleApproval' }),
     })
 
-    if (response.ok) {
-      fetchStories()
-    } else {
-      alert('Greška pri ažuriranju')
-    }
+    if (response.ok) fetchStories()
+    else alert('Greška pri ažuriranju')
   }
 
   const deleteStory = async (storyId: string, storyTitle: string) => {
@@ -89,14 +81,12 @@ export default function AdminPage() {
     const response = await fetch('/api/admin', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ storyId, action: 'deleteStory', password }),
+      credentials: 'include',
+      body: JSON.stringify({ storyId, action: 'deleteStory' }),
     })
 
-    if (response.ok) {
-      fetchStories()
-    } else {
-      alert('Greška pri brisanju')
-    }
+    if (response.ok) fetchStories()
+    else alert('Greška pri brisanju')
   }
 
   if (!isAuthenticated) {
@@ -197,7 +187,7 @@ export default function AdminPage() {
                         </div>
                         <div className="flex gap-2">
                           <button
-                            onClick={() => toggleApproval(story.id, story.isApproved)}
+                            onClick={() => toggleApproval(story.id)}
                             className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium transition-colors"
                           >
                             Odobri
@@ -244,7 +234,7 @@ export default function AdminPage() {
                         </div>
                         <div className="flex gap-2">
                           <button
-                            onClick={() => toggleApproval(story.id, story.isApproved)}
+                            onClick={() => toggleApproval(story.id)}
                             className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors"
                           >
                             Poništi odobrenje

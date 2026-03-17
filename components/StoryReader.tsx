@@ -1,10 +1,19 @@
 'use client'
 
+import Image from 'next/image'
+import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Comments from './Comments'
 import { logger } from '@/lib/logger'
 import { splitIntoParagraphs } from '@/lib/utils'
+
+interface RelatedStory {
+  id: string
+  title: string
+  author: string
+  readingTime?: number
+}
 
 interface StoryReaderProps {
   storyId: string
@@ -15,9 +24,10 @@ interface StoryReaderProps {
   averageRating?: number
   ratingCount?: number
   readingTime?: number
+  relatedStories?: RelatedStory[]
 }
 
-export default function StoryReader({ storyId, title, author, body, imageUrl, averageRating, ratingCount, readingTime }: StoryReaderProps) {
+export default function StoryReader({ storyId, title, author, body, imageUrl, averageRating, ratingCount, readingTime, relatedStories = [] }: StoryReaderProps) {
   const [isRead, setIsRead] = useState(false)
   const [mounted, setMounted] = useState(false)
   const [showRating, setShowRating] = useState(false)
@@ -126,8 +136,9 @@ export default function StoryReader({ storyId, title, author, body, imageUrl, av
       <div className="border-b border-slate-700 bg-slate-800/50 backdrop-blur-sm md:sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-4 py-4">
           <button
+            type="button"
             onClick={() => router.push('/')}
-            className="text-amber-300 hover:text-amber-200 mb-2 text-sm flex items-center gap-1"
+            className="text-amber-300 hover:text-amber-200 mb-2 text-sm flex items-center gap-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800 rounded"
           >
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -173,11 +184,16 @@ export default function StoryReader({ storyId, title, author, body, imageUrl, av
                   {/* Story Image */}
                   {imageUrl && (
                     <div className="my-8 flex justify-center">
-                      <img
-                        src={imageUrl}
-                        alt={title}
-                        className="rounded-lg shadow-2xl max-w-md w-full h-auto object-cover"
-                      />
+                      <div className="relative w-full max-w-md h-80 rounded-lg overflow-hidden shadow-2xl">
+                        <Image
+                          src={imageUrl}
+                          alt={title}
+                          fill
+                          sizes="(min-width: 768px) 28rem, 100vw"
+                          className="object-cover"
+                          priority={false}
+                        />
+                      </div>
                     </div>
                   )}
 
@@ -197,8 +213,9 @@ export default function StoryReader({ storyId, title, author, body, imageUrl, av
         <div className="mt-8 pt-8 border-t border-slate-700">
           {!mounted || !isRead ? (
             <button
+              type="button"
               onClick={markAsRead}
-              className="px-6 py-3 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-medium transition-colors flex items-center gap-2"
+              className="px-6 py-3 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-medium transition-colors flex items-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 rounded"
             >
               <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -215,13 +232,18 @@ export default function StoryReader({ storyId, title, author, body, imageUrl, av
               </div>
               {averageRating && averageRating > 0 && (
                 <div className="flex items-center gap-2">
-                  <div className="flex gap-0.5">
+                  <div
+                    className="flex gap-0.5"
+                    role="img"
+                    aria-label={`Ocjena: ${averageRating.toFixed(1)} od 5 zvijezda`}
+                  >
                     {[1, 2, 3, 4, 5].map((star) => (
                       <svg
                         key={star}
                         className={`w-5 h-5 ${star <= Math.round(averageRating) ? 'text-amber-400' : 'text-slate-600'}`}
                         fill="currentColor"
                         viewBox="0 0 20 20"
+                        aria-hidden
                       >
                         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                       </svg>
@@ -236,8 +258,9 @@ export default function StoryReader({ storyId, title, author, body, imageUrl, av
                 </div>
               )}
               <button
+                type="button"
                 onClick={handleUnmarkAsRead}
-                className="px-4 py-2 border border-slate-600 hover:border-slate-500 text-amber-300 rounded-lg text-sm transition-colors"
+                className="px-4 py-2 border border-slate-600 hover:border-slate-500 text-amber-300 rounded-lg text-sm transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 rounded"
               >
                 Poništi oznaku
               </button>
@@ -257,15 +280,21 @@ export default function StoryReader({ storyId, title, author, body, imageUrl, av
               </p>
               
               {/* Star Rating */}
-              <div className="flex justify-center gap-2 mb-6">
+              <div
+                className="flex justify-center gap-2 mb-6"
+                role="group"
+                aria-label="Ocijeni priču od 1 do 5 zvijezda"
+              >
                 {[1, 2, 3, 4, 5].map((star) => (
                   <button
                     key={star}
+                    type="button"
                     onClick={() => setRating(star)}
                     onMouseEnter={() => setHoverRating(star)}
                     onMouseLeave={() => setHoverRating(0)}
-                    className="transition-transform hover:scale-110"
+                    className="transition-transform hover:scale-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800 rounded"
                     aria-label={`Ocijeni ${star} zvijezda`}
+                    aria-pressed={rating === star}
                   >
                     <StarIcon filled={star <= (hoverRating || rating)} />
                   </button>
@@ -281,25 +310,28 @@ export default function StoryReader({ storyId, title, author, body, imageUrl, av
               {/* Buttons */}
               <div className="flex gap-3 justify-end">
                 <button
+                  type="button"
                   onClick={() => {
                     setShowRating(false)
                     setRating(0)
                     sessionStorage.removeItem('scrollPosition')
                   }}
-                  className="px-4 py-2 border border-slate-600 hover:border-slate-500 text-amber-300 rounded-lg transition-colors"
+                  className="px-4 py-2 border border-slate-600 hover:border-slate-500 text-amber-300 rounded-lg transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800 rounded"
                 >
                   Odustani
                 </button>
                 <button
+                  type="button"
                   onClick={handleSkipRating}
-                  className="px-4 py-2 border border-slate-600 hover:border-slate-500 text-amber-300 rounded-lg transition-colors"
+                  className="px-4 py-2 border border-slate-600 hover:border-slate-500 text-amber-300 rounded-lg transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800 rounded"
                 >
                   Preskoči
                 </button>
                 <button
+                  type="button"
                   onClick={handleRatingSubmit}
                   disabled={rating === 0}
-                  className="px-6 py-2 bg-amber-600 hover:bg-amber-700 disabled:bg-slate-700 disabled:text-slate-500 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors"
+                  className="px-6 py-2 bg-amber-600 hover:bg-amber-700 disabled:bg-slate-700 disabled:text-slate-500 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800 rounded"
                 >
                   Spremi
                 </button>
@@ -308,8 +340,45 @@ export default function StoryReader({ storyId, title, author, body, imageUrl, av
           </div>
         )}
 
+        {/* Related stories */}
+        {relatedStories.length > 0 && (
+          <section aria-label="Ostale priče" className="mt-10 pt-8 border-t border-slate-700">
+            <h2 className="text-xl font-bold text-amber-200 mb-4">Ostale priče</h2>
+            <ul className="space-y-2">
+              {relatedStories.map((s) => (
+                <li key={s.id}>
+                  <Link
+                    href={`/story/${s.id}`}
+                    className="block py-2 px-4 rounded-lg border border-slate-700 bg-slate-800/80 hover:border-amber-500 hover:bg-slate-700/80 text-amber-200 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
+                  >
+                    <span className="font-medium">{s.title}</span>
+                    {s.readingTime != null && (
+                      <span className="text-amber-300/60 text-sm ml-2">({s.readingTime} min)</span>
+                    )}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        {/* Scroll to comments */}
+        <div className="mt-6">
+          <a
+            href="#comments"
+            className="inline-flex items-center gap-2 text-amber-400 hover:text-amber-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 rounded"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20v-4a7 7 0 014-6.305V7a7 7 0 1114 0v.695A7 7 0 0121 12z" />
+            </svg>
+            Skok na komentare
+          </a>
+        </div>
+
         {/* Comments Section */}
-        <Comments storyId={storyId} />
+        <section id="comments" aria-label="Komentari">
+          <Comments storyId={storyId} />
+        </section>
       </div>
     </div>
   )

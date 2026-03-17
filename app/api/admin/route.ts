@@ -1,7 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
-import { verifyAdminPassword } from '@/lib/auth'
+import { storiesService } from '@/lib/storiesService'
+import { verifyAdminPassword, verifyAdminCookie, createAdminSessionCookie } from '@/lib/auth'
+import { getClientIp, checkAdminLoginRateLimit } from '@/lib/rateLimit'
+import {
+  adminLoginSchema,
+  adminToggleApprovalSchema,
+  adminDeleteStorySchema,
+} from '@/lib/schemas'
 import { logger } from '@/lib/logger'
+
+function requireAdmin(request: NextRequest): NextResponse | null {
+  const cookieHeader = request.headers.get('cookie')
+  if (!verifyAdminCookie(cookieHeader)) {
+    return NextResponse.json({ error: 'Neovlašteno' }, { status: 401 })
+  }
+  return null
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -9,7 +23,9 @@ export async function GET(request: NextRequest) {
     const action = searchParams.get('action')
 
     if (action === 'getStories') {
-      const stories = prisma.getAllStories()
+      const err = requireAdmin(request)
+      if (err) return err
+      const stories = storiesService.getAllStories()
       return NextResponse.json(stories)
     }
 
@@ -22,40 +38,49 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const ip = getClientIp(request)
     const body = await request.json()
-    const { password, action, storyId } = body
+    const action = body?.action
 
     if (action === 'login') {
-      if (verifyAdminPassword(password)) {
-        return NextResponse.json({ success: true })
-      } else {
+      const parsed = adminLoginSchema.safeParse(body)
+      if (!parsed.success) {
+        return NextResponse.json({ error: 'Nevaljani podaci' }, { status: 400 })
+      }
+      if (!checkAdminLoginRateLimit(ip)) {
+        return NextResponse.json(
+          { error: 'Previše pokušaja. Pokušajte ponovno za sat vremena.' },
+          { status: 429 }
+        )
+      }
+      if (!verifyAdminPassword(parsed.data.password)) {
         return NextResponse.json({ error: 'Netočna lozinka' }, { status: 401 })
       }
+      const cookie = createAdminSessionCookie()
+      const res = NextResponse.json({ success: true })
+      res.cookies.set(cookie.name, cookie.value, cookie.options)
+      return res
     }
 
     if (action === 'toggleApproval') {
-      if (!verifyAdminPassword(password)) {
-        return NextResponse.json({ error: 'Neovlašteno' }, { status: 401 })
-      }
-
-      if (!storyId) {
+      const err = requireAdmin(request)
+      if (err) return err
+      const parsed = adminToggleApprovalSchema.safeParse(body)
+      if (!parsed.success) {
         return NextResponse.json({ error: 'Potreban ID priče' }, { status: 400 })
       }
-
-      const updatedStory = prisma.toggleApproval(storyId)
+      const updatedStory = storiesService.toggleApproval(parsed.data.storyId)
       return NextResponse.json(updatedStory)
     }
 
     if (action === 'deleteStory') {
-      if (!verifyAdminPassword(password)) {
-        return NextResponse.json({ error: 'Neovlašteno' }, { status: 401 })
-      }
-
-      if (!storyId) {
+      const err = requireAdmin(request)
+      if (err) return err
+      const parsed = adminDeleteStorySchema.safeParse(body)
+      if (!parsed.success) {
         return NextResponse.json({ error: 'Potreban ID priče' }, { status: 400 })
       }
-
-      prisma.deleteStory(storyId)
+      storiesService.delete(parsed.data.storyId)
       return NextResponse.json({ success: true })
     }
 

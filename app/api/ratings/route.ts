@@ -1,45 +1,40 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { dbHelpers } from '@/lib/db'
+import { ratingsService } from '@/lib/ratingsService'
+import { submitRatingSchema } from '@/lib/schemas'
 import { logger } from '@/lib/logger'
-
-// Generate a simple user ID based on browser fingerprint
-function getUserId(): string {
-  if (typeof window === 'undefined') {
-    return 'anonymous'
-  }
-  
-  // Try to get or create a user ID from localStorage
-  let userId = localStorage.getItem('userId')
-  if (!userId) {
-    userId = `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-    localStorage.setItem('userId', userId)
-  }
-  return userId
-}
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { storyId, rating, userId } = body
-
-    if (!storyId || !rating || rating < 1 || rating > 5) {
-      return NextResponse.json({ error: 'Nevažeći ID priče ili ocjena' }, { status: 400 })
+    const parsed = submitRatingSchema.safeParse(body)
+    if (!parsed.success) {
+      const msg = parsed.error.flatten().fieldErrors.storyId?.[0]
+        ?? parsed.error.flatten().fieldErrors.rating?.[0]
+        ?? 'Nevažeći ID priče ili ocjena'
+      return NextResponse.json({ error: msg }, { status: 400 })
     }
 
-    // Use provided userId or generate one (for server-side requests, we'll need userId from client)
-    const finalUserId = userId || 'anonymous'
-    
-    dbHelpers.submitRating(storyId, finalUserId, rating)
-    
-    // Get updated average rating
-    const ratingInfo = dbHelpers.getAverageRating(storyId)
-    
-    return NextResponse.json({ 
+    const { storyId, rating, userId } = parsed.data
+    const finalUserId = userId ?? 'anonymous'
+    const { averageRating, ratingCount } = ratingsService.submitRating(storyId, finalUserId, rating)
+
+    return new NextResponse(JSON.stringify({
       success: true,
-      averageRating: ratingInfo?.averageRating,
-      ratingCount: ratingInfo?.ratingCount || 0
+      averageRating,
+      ratingCount
+    }), {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8',
+        // Rating responses should not be cached
+        'Cache-Control': 'no-store',
+      },
     })
   } catch (error) {
+    const msg = error instanceof Error ? error.message : ''
+    if (msg === 'Story not found' || msg === 'Cannot rate an unapproved story') {
+      return NextResponse.json({ error: msg }, { status: 404 })
+    }
     logger.error('Error submitting rating:', error)
     return NextResponse.json({ error: 'Greška pri slanju ocjene' }, { status: 500 })
   }

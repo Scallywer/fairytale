@@ -119,7 +119,7 @@ export default function Comments({ storyId }: CommentsProps) {
 
   return (
     <div className="mt-12 pt-8 border-t border-slate-700">
-      <h2 className="text-2xl font-bold text-amber-200 mb-6">Komentari</h2>
+      <h2 id="comments-heading" className="text-2xl font-bold text-amber-200 mb-6">Komentari</h2>
 
       {/* Comments List */}
       {loading ? (
@@ -166,7 +166,7 @@ export default function Comments({ storyId }: CommentsProps) {
               id="authorName"
               value={formData.authorName}
               onChange={(e) => setFormData({ ...formData, authorName: e.target.value })}
-              className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-amber-100 focus:outline-none focus:border-amber-500"
+              className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-amber-100 focus:outline-none focus:border-amber-500 focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
               placeholder="Ako ostavite prazno, bit ćete prikazani kao 'Anonimno'"
               maxLength={50}
             />
@@ -182,7 +182,7 @@ export default function Comments({ storyId }: CommentsProps) {
               rows={4}
               value={formData.content}
               onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-              className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-amber-100 focus:outline-none focus:border-amber-500"
+              className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-amber-100 focus:outline-none focus:border-amber-500 focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
               placeholder="Podijelite svoje misli o ovoj priči..."
               maxLength={1000}
             />
@@ -196,14 +196,20 @@ export default function Comments({ storyId }: CommentsProps) {
               <label htmlFor="mathAnswer" className="block text-sm font-medium text-amber-200 mb-2">
                 {mathQuestion.question} *
               </label>
+              <p id="math-caption" className="text-xs text-amber-300/60 mb-1">
+                Jednostavno pitanje za zaštitu od robota. Unesite broj (0–20).
+              </p>
               <input
                 type="number"
                 id="mathAnswer"
                 required
                 value={formData.mathAnswer}
                 onChange={(e) => setFormData({ ...formData, mathAnswer: e.target.value })}
-                className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-amber-100 focus:outline-none focus:border-amber-500"
+                className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-amber-100 focus:outline-none focus:border-amber-500 focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
                 placeholder="Unesite odgovor"
+                aria-describedby="math-caption"
+                min={0}
+                max={20}
               />
             </div>
           )}
@@ -235,7 +241,7 @@ export default function Comments({ storyId }: CommentsProps) {
           <button
             type="submit"
             disabled={submitting}
-            className="w-full sm:w-auto px-6 py-3 bg-amber-600 hover:bg-amber-700 disabled:bg-amber-800 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors"
+            className="w-full sm:w-auto px-6 py-3 bg-amber-600 hover:bg-amber-700 disabled:bg-amber-800 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 rounded"
           >
             {submitting ? 'Šalje se...' : 'Pošalji komentar'}
           </button>

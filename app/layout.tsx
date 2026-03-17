@@ -12,9 +12,30 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const siteName = "Priče za laku noć";
+const siteDescription = "Lijepe priče za djecu prije spavanja";
+const baseUrl =
+  process.env.NEXT_PUBLIC_SITE_URL || "https://pricezalakunoc.hr";
+
 export const metadata: Metadata = {
-  title: "Priče za laku noć",
-  description: "Lijepe priče za djecu prije spavanja",
+  metadataBase: new URL(baseUrl),
+  title: {
+    default: siteName,
+    template: "%s | Priče za laku noć",
+  },
+  description: siteDescription,
+  openGraph: {
+    type: "website",
+    siteName,
+    title: siteName,
+    description: siteDescription,
+    url: baseUrl,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: siteName,
+    description: siteDescription,
+  },
 };
 
 export default function RootLayout({

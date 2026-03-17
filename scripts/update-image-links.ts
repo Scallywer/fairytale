@@ -1,5 +1,5 @@
 import 'dotenv/config'
-import { dbHelpers } from '../lib/db'
+import { storiesService } from '../lib/storiesService'
 import fs from 'fs'
 import path from 'path'
 import { normalizedBaseName, normalizeTitle, normalizeStoryTitle } from '../lib/image-mapping'
@@ -91,7 +91,7 @@ const storyTitleToImage: Record<string, string> = {
 
 async function main() {
 
-  const allStories = dbHelpers.getAllStories()
+  const allStories = storiesService.getAllStories()
   const imagesDir = path.join(process.cwd(), 'public', 'images')
 
   // Get all image files (keep original case)

@@ -21,6 +21,7 @@ interface StoriesListProps {
 
 export default function StoriesList({ stories }: StoriesListProps) {
   const [viewMode, setViewMode] = useState<'list' | 'gallery'>('list')
+  const [visibleCount, setVisibleCount] = useState(20)
   
   // Filter state
   const [searchQuery, setSearchQuery] = useState('')
@@ -121,6 +122,18 @@ export default function StoriesList({ stories }: StoriesListProps) {
 
     return filtered
   }, [stories, searchQuery, selectedAuthor, minRating, maxReadingTime, readStatus, sortBy])
+
+  const visibleStories = useMemo(
+    () => filteredStories.slice(0, visibleCount),
+    [filteredStories, visibleCount]
+  )
+  const hasMore = filteredStories.length > visibleCount
+  const loadMore = () => setVisibleCount((c) => c + 20)
+
+  // Reset visible count when filters change so "Load more" state is consistent
+  useEffect(() => {
+    setVisibleCount(20)
+  }, [searchQuery, selectedAuthor, minRating, maxReadingTime, readStatus, sortBy])
 
   // Clear all filters
   const clearFilters = () => {
@@ -326,21 +339,34 @@ export default function StoriesList({ stories }: StoriesListProps) {
           )}
         </div>
       ) : (
-        <div className={viewMode === 'list' ? 'flex flex-col gap-6' : 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'}>
-          {filteredStories.map((story) => (
-            <StoryCard
-              key={story.id}
-              id={story.id}
-              title={story.title}
-              author={story.author}
-              imageUrl={story.imageUrl}
-              viewMode={viewMode}
-              averageRating={story.averageRating}
-              ratingCount={story.ratingCount}
-              readingTime={story.readingTime}
-            />
-          ))}
-        </div>
+        <>
+          <div className={viewMode === 'list' ? 'flex flex-col gap-6' : 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'}>
+            {visibleStories.map((story) => (
+              <StoryCard
+                key={story.id}
+                id={story.id}
+                title={story.title}
+                author={story.author}
+                imageUrl={story.imageUrl}
+                viewMode={viewMode}
+                averageRating={story.averageRating}
+                ratingCount={story.ratingCount}
+                readingTime={story.readingTime}
+              />
+            ))}
+          </div>
+          {hasMore && (
+            <div className="mt-8 flex justify-center">
+              <button
+                type="button"
+                onClick={loadMore}
+                className="px-6 py-3 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-medium transition-colors"
+              >
+                Prikaži još
+              </button>
+            </div>
+          )}
+        </>
       )}
     </>
   )

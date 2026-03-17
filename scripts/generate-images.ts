@@ -1,5 +1,5 @@
 import 'dotenv/config'
-import { dbHelpers } from '../lib/db'
+import { storiesService } from '../lib/storiesService'
 import fs from 'fs'
 import path from 'path'
 import sharp from 'sharp'
@@ -215,7 +215,7 @@ async function main() {
     console.log('Using local image generation (colored placeholders)\n')
   }
   
-  const allStories = dbHelpers.getAllStories()
+  const allStories = storiesService.getAllStories()
   
   // Filter stories that are missing images or have placeholder images
   const storiesNeedingImages = allStories.filter(story => 

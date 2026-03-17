@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { useEffect, useState } from 'react'
 
 interface StoryCardProps {
@@ -50,11 +51,16 @@ export default function StoryCard({ id, title, author, imageUrl, viewMode = 'lis
           {/* Thumbnail */}
           <div className="relative">
             {imageUrl ? (
-              <img
-                src={imageUrl}
-                alt={title}
-                className="w-full h-64 object-cover border-b border-slate-600"
-              />
+              <div className="relative w-full h-64 border-b border-slate-600">
+                <Image
+                  src={imageUrl}
+                  alt={title}
+                  fill
+                  sizes="(min-width: 1024px) 25rem, (min-width: 640px) 50vw, 100vw"
+                  className="object-cover"
+                  priority={false}
+                />
+              </div>
             ) : (
               <div className={`${getThumbnailColor(title)} flex h-64 items-center justify-center text-5xl font-bold text-white`}>
                 {firstLetter}
@@ -98,13 +104,18 @@ export default function StoryCard({ id, title, author, imageUrl, viewMode = 'lis
             )}
             {averageRating && averageRating > 0 && (
               <div className="flex items-center gap-2">
-                <div className="flex gap-0.5">
+                <div
+                  className="flex gap-0.5"
+                  role="img"
+                  aria-label={`Ocjena: ${averageRating.toFixed(1)} od 5 zvijezda`}
+                >
                   {[1, 2, 3, 4, 5].map((star) => (
                     <svg
                       key={star}
                       className={`w-4 h-4 ${star <= Math.round(averageRating) ? 'text-amber-400' : 'text-slate-600'}`}
                       fill="currentColor"
                       viewBox="0 0 20 20"
+                      aria-hidden
                     >
                       <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                     </svg>
@@ -157,11 +168,16 @@ export default function StoryCard({ id, title, author, imageUrl, viewMode = 'lis
           {/* Thumbnail */}
           <div className="flex justify-center">
             {imageUrl ? (
-              <img
-                src={imageUrl}
-                alt={title}
-                className="h-72 w-72 rounded-lg object-cover border border-slate-600"
-              />
+              <div className="relative h-72 w-72 rounded-lg overflow-hidden border border-slate-600">
+                <Image
+                  src={imageUrl}
+                  alt={title}
+                  fill
+                  sizes="18rem"
+                  className="object-cover"
+                  priority={false}
+                />
+              </div>
             ) : (
               <div className={`${getThumbnailColor(title)} flex h-72 w-72 items-center justify-center rounded-lg text-6xl font-bold text-white`}>
                 {firstLetter}
@@ -184,13 +200,18 @@ export default function StoryCard({ id, title, author, imageUrl, viewMode = 'lis
             )}
             {averageRating && averageRating > 0 && (
               <div className="flex items-center gap-2 mt-2">
-                <div className="flex gap-0.5">
+                <div
+                  className="flex gap-0.5"
+                  role="img"
+                  aria-label={`Ocjena: ${averageRating.toFixed(1)} od 5 zvijezda`}
+                >
                   {[1, 2, 3, 4, 5].map((star) => (
                     <svg
                       key={star}
                       className={`w-5 h-5 ${star <= Math.round(averageRating) ? 'text-amber-400' : 'text-slate-600'}`}
                       fill="currentColor"
                       viewBox="0 0 20 20"
+                      aria-hidden
                     >
                       <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                     </svg>

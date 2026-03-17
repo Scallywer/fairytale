@@ -138,18 +138,35 @@ export const dbHelpers = {
     }
   },
 
+  getApprovedStoryIds(): string[] {
+    const rows = db.prepare('SELECT id FROM stories WHERE isApproved = 1 ORDER BY createdAt DESC').all() as { id: string }[]
+    return rows.map(r => r.id)
+  },
+
   // Get all approved stories with average ratings
   getApprovedStories(): Story[] {
-    const stories = db.prepare('SELECT * FROM stories WHERE isApproved = 1 ORDER BY createdAt DESC').all() as any[]
-    
-    return stories.map(story => {
+    return this.getApprovedStoriesPage(undefined, undefined)
+  },
+
+  getApprovedStoriesPage(limit?: number, offset?: number): Story[] {
+    const sql = 'SELECT * FROM stories WHERE isApproved = 1 ORDER BY createdAt DESC'
+    const stmt =
+      limit != null && offset != null
+        ? db.prepare(`${sql} LIMIT ? OFFSET ?`)
+        : db.prepare(sql)
+    const stories = (
+      limit != null && offset != null
+        ? stmt.all(limit, offset)
+        : stmt.all()
+    ) as any[]
+    return stories.map((story) => {
       const ratingInfo = this.getAverageRating(story.id)
       return {
         ...story,
         isApproved: Boolean(story.isApproved),
         averageRating: ratingInfo?.averageRating,
         ratingCount: ratingInfo?.ratingCount || 0,
-        readingTime: calculateReadingTime(story.body)
+        readingTime: calculateReadingTime(story.body),
       }
     })
   },

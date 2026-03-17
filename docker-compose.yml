@@ -6,7 +6,9 @@ services:
     ports:
       - "8889:3000"
     environment:
-      - ADMIN_PASSWORD=654321
+      # Admin password should be provided via environment, not hardcoded.
+      # Set ADMIN_PASSWORD in your local .env or deployment secrets.
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
     # Database is included in the Docker image, no volume mount needed
     # volumes:
     #   - ./data:/app/data

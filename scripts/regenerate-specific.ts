@@ -1,5 +1,5 @@
 import 'dotenv/config'
-import { dbHelpers } from '../lib/db'
+import { storiesService } from '../lib/storiesService'
 import fs from 'fs'
 import path from 'path'
 import axios from 'axios'
@@ -170,7 +170,7 @@ async function main() {
     console.log('\nOr regenerating first 3 stories by default...\n')
     
     // Get first 3 stories by creation date
-    const allStories = dbHelpers.getAllStories()
+    const allStories = storiesService.getAllStories()
     const firstThree = allStories
       .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
       .slice(0, 3)

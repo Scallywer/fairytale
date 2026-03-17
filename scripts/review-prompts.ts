@@ -1,5 +1,5 @@
 import 'dotenv/config'
-import { dbHelpers } from '../lib/db'
+import { storiesService } from '../lib/storiesService'
 import fs from 'fs'
 
 // Copy of createStoryPrompt function to review prompts
@@ -121,7 +121,7 @@ The illustration should evoke wonder, peace, and dreams, perfect for bedtime rea
 async function main() {
   console.log('Reviewing prompts for all stories...\n')
   
-  const allStories = dbHelpers.getAllStories()
+  const allStories = storiesService.getAllStories()
   const prompts: { title: string; prompt: string }[] = []
   
   for (const story of allStories) {
