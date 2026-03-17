@@ -6,7 +6,8 @@ import { logger } from '@/lib/logger'
 
 export async function GET(request: NextRequest) {
   try {
-    const searchParams = request.nextUrl.searchParams
+    const url = request.nextUrl?.href ?? request.url ?? 'http://localhost/'
+    const searchParams = new URL(url).searchParams
     const storyId = searchParams.get('storyId')
 
     if (!storyId) {
@@ -38,7 +39,13 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const body = await request.json()
+    let body: unknown
+    try {
+      body = await request.json()
+    } catch {
+      return NextResponse.json({ error: 'Nevaljani JSON u zahtjevu' }, { status: 400 })
+    }
+
     const parsed = createCommentSchema.safeParse(body)
     if (!parsed.success) {
       const first = parsed.error.flatten().fieldErrors
@@ -57,6 +64,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(comment, { status: 201 })
   } catch (error) {
     const msg = error instanceof Error ? error.message : ''
+    const code = (error as { code?: string })?.code
     if (msg === 'RATE_LIMIT') {
       return NextResponse.json({
         error: 'Previše komentara u kratkom vremenu. Molimo pokušajte kasnije.'
@@ -64,6 +72,9 @@ export async function POST(request: NextRequest) {
     }
     if (msg === 'Story not found or not approved') {
       return NextResponse.json({ error: 'Priča nije pronađena' }, { status: 404 })
+    }
+    if (code === 'SQLITE_ERROR' && typeof msg === 'string' && msg.includes('foreign key')) {
+      return NextResponse.json({ error: 'Priča nije pronađena ili nije odobrena' }, { status: 404 })
     }
     logger.error('Error creating comment:', error)
     return NextResponse.json({ error: 'Greška pri kreiranju komentara' }, { status: 500 })

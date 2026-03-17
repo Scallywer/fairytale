@@ -80,7 +80,7 @@ export default function Comments({ storyId }: CommentsProps) {
           storyId,
           authorName: formData.authorName,
           content: formData.content,
-          mathAnswer: formData.mathAnswer,
+          mathAnswer: Number(formData.mathAnswer),
           honeypot: formData.honeypot
         })
       })

@@ -44,16 +44,15 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_ratings_storyId ON ratings(storyId);
   CREATE INDEX IF NOT EXISTS idx_ratings_userId ON ratings(userId);
 
-  CREATE TABLE IF NOT EXISTS comments (
+  DROP TABLE IF EXISTS comments;
+  CREATE TABLE comments (
     id TEXT PRIMARY KEY,
     storyId TEXT NOT NULL,
     authorName TEXT NOT NULL,
     content TEXT NOT NULL,
     isApproved INTEGER NOT NULL DEFAULT 1,
-    createdAt TEXT NOT NULL DEFAULT (datetime('now')),
-    FOREIGN KEY (storyId) REFERENCES stories(id) ON DELETE CASCADE
+    createdAt TEXT NOT NULL DEFAULT (datetime('now'))
   );
-
   CREATE INDEX IF NOT EXISTS idx_comments_storyId ON comments(storyId);
   CREATE INDEX IF NOT EXISTS idx_comments_createdAt ON comments(createdAt);
 `)
