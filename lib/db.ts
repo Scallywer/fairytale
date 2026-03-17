@@ -89,6 +89,10 @@ export interface Comment {
   createdAt: string
 }
 
+type RatingAggregate = { averageRating: number; ratingCount: number }
+type StoryRow = Omit<Story, 'isApproved' | 'averageRating' | 'ratingCount' | 'readingTime'> & { isApproved: number }
+type CommentRow = Omit<Comment, 'isApproved'> & { isApproved: number }
+
 export const dbHelpers = {
   // Get average rating for a story
   getAverageRating(storyId: string): { averageRating: number; ratingCount: number } | null {
@@ -98,8 +102,8 @@ export const dbHelpers = {
         COUNT(*) as ratingCount
       FROM ratings
       WHERE storyId = ?
-    `).get(storyId) as any
-    
+    `).get(storyId) as RatingAggregate | undefined
+
     if (!result || result.ratingCount === 0) {
       return null
     }
@@ -158,7 +162,7 @@ export const dbHelpers = {
       limit != null && offset != null
         ? stmt.all(limit, offset)
         : stmt.all()
-    ) as any[]
+    ) as StoryRow[]
     return stories.map((story) => {
       const ratingInfo = this.getAverageRating(story.id)
       return {
@@ -173,7 +177,7 @@ export const dbHelpers = {
 
   // Get all stories (for admin)
   getAllStories(): Story[] {
-    const stories = db.prepare('SELECT * FROM stories ORDER BY createdAt DESC').all() as any[]
+    const stories = db.prepare('SELECT * FROM stories ORDER BY createdAt DESC').all() as StoryRow[]
     return stories.map(story => ({
       ...story,
       isApproved: Boolean(story.isApproved)
@@ -182,7 +186,7 @@ export const dbHelpers = {
 
   // Get story by ID with average rating
   getStoryById(id: string): Story | null {
-    const story = db.prepare('SELECT * FROM stories WHERE id = ?').get(id) as any
+    const story = db.prepare('SELECT * FROM stories WHERE id = ?').get(id) as StoryRow | undefined
     if (!story) {
       return null
     }
@@ -259,7 +263,7 @@ export const dbHelpers = {
       SELECT * FROM comments 
       WHERE storyId = ? AND isApproved = 1 
       ORDER BY createdAt DESC
-    `).all(storyId) as any[]
+    `).all(storyId) as CommentRow[]
     
     return comments.map(comment => ({
       ...comment,
@@ -283,7 +287,8 @@ export const dbHelpers = {
       now
     )
 
-    const comment = db.prepare('SELECT * FROM comments WHERE id = ?').get(id) as any
+    const comment = db.prepare('SELECT * FROM comments WHERE id = ?').get(id) as CommentRow | undefined
+    if (!comment) throw new Error('Comment not found after insert')
     return {
       ...comment,
       isApproved: Boolean(comment.isApproved)
@@ -297,9 +302,9 @@ export const dbHelpers = {
       SELECT COUNT(*) as count 
       FROM comments 
       WHERE storyId = ? AND createdAt > ?
-    `).get(storyId, cutoffTime) as any
-    
-    return result?.count || 0
+    `).get(storyId, cutoffTime) as { count: number } | undefined
+
+    return result?.count ?? 0
   }
 }
 

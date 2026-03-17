@@ -6,7 +6,7 @@ const db = new Database(dbPath)
 
 const storyId = process.argv[2] || '1d33844f-252c-43ab-ade2-a4c3003f6b7c' // Kralj Lavova as default
 
-const story = db.prepare('SELECT id, title, author, body FROM stories WHERE id = ?').get(storyId) as any
+const story = db.prepare('SELECT id, title, author, body FROM stories WHERE id = ?').get(storyId) as { id: string; title: string; author: string; body: string } | undefined
 
 if (story) {
   console.log(`\nTitle: ${story.title}`)

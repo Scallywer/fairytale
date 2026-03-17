@@ -155,8 +155,9 @@ async function generateImageWithOpenAI(title: string, storyBody: string, index: 
     
     fs.writeFileSync(imagePath, imageResponse.data)
     return `/images/stories/${fileName}`
-  } catch (error: any) {
-    const errorMessage = error.response?.data?.error?.message || error.message
+  } catch (error: unknown) {
+    const err = error as { response?: { data?: { error?: { message?: string } } }; message?: string }
+    const errorMessage = err.response?.data?.error?.message ?? err.message ?? 'Unknown error'
     console.error(`  ✗ OpenAI error:`, errorMessage)
     return null
   }
@@ -226,7 +227,7 @@ async function main() {
         
         if (imagePath) {
           // Update database
-          const db = require('../lib/db').default
+          const { default: db } = await import('../lib/db')
           db.prepare('UPDATE stories SET imageUrl = ? WHERE id = ?').run(imagePath, story.id)
           console.log(`  ✓ Generated and saved: ${imagePath}`)
           successCount++

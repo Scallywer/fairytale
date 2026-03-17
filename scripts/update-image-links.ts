@@ -1,8 +1,9 @@
 import 'dotenv/config'
 import { storiesService } from '../lib/storiesService'
+import db from '../lib/db'
 import fs from 'fs'
 import path from 'path'
-import { normalizedBaseName, normalizeTitle, normalizeStoryTitle } from '../lib/image-mapping'
+import { normalizedBaseName, normalizeStoryTitle } from '../lib/image-mapping'
 
 // Story order based on story-prompts-list.txt (used only when no name-based match exists)
 const storyOrder = [
@@ -104,7 +105,6 @@ async function main() {
   let updated = 0
   let byName = 0
   let byOrder = 0
-  const db = require('../lib/db').default
   // Start empty so name-based phase can overwrite wrong assignments; only stories we assign get added
   const storiesAlreadyAssigned = new Set<string>()
   const usedImageFiles = new Set<string>()

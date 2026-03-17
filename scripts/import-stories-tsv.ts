@@ -145,8 +145,8 @@ function parseTSV(filePath: string): StoryImport[] {
 }
 
 function findStoryByTitle(title: string): { id: string; title: string; author: string } | null {
-  const story = db.prepare('SELECT id, title, author FROM stories WHERE title = ?').get(title) as any
-  return story || null
+  const story = db.prepare('SELECT id, title, author FROM stories WHERE title = ?').get(title) as { id: string; title: string; author: string } | undefined
+  return story ?? null
 }
 
 function updateStoryBody(id: string, body: string) {

@@ -36,7 +36,7 @@ export default function SubmitPage() {
         const error = await response.json()
         setMessage({ type: 'error', text: error.error || 'Greška pri slanju priče.' })
       }
-    } catch (error) {
+    } catch {
       setMessage({ type: 'error', text: 'Greška pri slanju priče.' })
     } finally {
       setIsSubmitting(false)

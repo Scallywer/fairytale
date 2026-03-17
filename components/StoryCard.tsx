@@ -20,11 +20,13 @@ export default function StoryCard({ id, title, author, imageUrl, viewMode = 'lis
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
-    setMounted(true)
-    if (typeof window !== 'undefined') {
-      const readStories = JSON.parse(localStorage.getItem('readStories') || '[]')
-      setIsRead(readStories.includes(id))
-    }
+    queueMicrotask(() => {
+      setMounted(true)
+      if (typeof window !== 'undefined') {
+        const readStories = JSON.parse(localStorage.getItem('readStories') || '[]')
+        setIsRead(readStories.includes(id))
+      }
+    })
   }, [id])
 
   // Generate thumbnail color based on title

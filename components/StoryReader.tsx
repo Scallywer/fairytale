@@ -36,15 +36,17 @@ export default function StoryReader({ storyId, title, author, body, imageUrl, av
   const router = useRouter()
 
   useEffect(() => {
-    setMounted(true)
-    if (typeof window !== 'undefined') {
-      const readStories = JSON.parse(localStorage.getItem('readStories') || '[]')
-      const storyRatings = JSON.parse(localStorage.getItem('storyRatings') || '{}')
-      setIsRead(readStories.includes(storyId))
-      if (storyRatings[storyId]) {
-        setRating(storyRatings[storyId])
+    queueMicrotask(() => {
+      setMounted(true)
+      if (typeof window !== 'undefined') {
+        const readStories = JSON.parse(localStorage.getItem('readStories') || '[]')
+        const storyRatings = JSON.parse(localStorage.getItem('storyRatings') || '{}')
+        setIsRead(readStories.includes(storyId))
+        if (storyRatings[storyId]) {
+          setRating(storyRatings[storyId])
+        }
       }
-    }
+    })
   }, [storyId])
 
   const markAsRead = () => {

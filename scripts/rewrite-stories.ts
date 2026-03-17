@@ -23,7 +23,7 @@ function applyUpdates(updates: StoryUpdate[]) {
       stmt.run(update.body, now, update.id)
       const readingTime = calculateReadingTime(update.body)
       const wordCount = update.body.trim().split(/\s+/).filter(w => w.length > 0).length
-      const story = db.prepare('SELECT title FROM stories WHERE id = ?').get(update.id) as any
+      const story = db.prepare('SELECT title FROM stories WHERE id = ?').get(update.id) as { title: string } | undefined
       console.log(`✓ "${story?.title}": ${readingTime} min (${wordCount} words)`)
       
       if (readingTime > 10) {

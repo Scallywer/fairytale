@@ -3,7 +3,7 @@ import { storiesService } from '../lib/storiesService'
 import fs from 'fs'
 
 // Helper to get English title where appropriate
-function getEnglishTitle(croatianTitle: string, author: string): string {
+function getEnglishTitle(croatianTitle: string, _author: string): string {
   const disneyTitles: { [key: string]: string } = {
     'Pinokio': 'Pinocchio',
     'Dumbo': 'Dumbo',

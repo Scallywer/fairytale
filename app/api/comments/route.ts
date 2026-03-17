@@ -4,16 +4,6 @@ import { getClientIp, checkCommentRateLimit } from '@/lib/rateLimit'
 import { createCommentSchema } from '@/lib/schemas'
 import { logger } from '@/lib/logger'
 
-// Generate a simple math question
-function generateMathQuestion(): { question: string; answer: number } {
-  const num1 = Math.floor(Math.random() * 10) + 1
-  const num2 = Math.floor(Math.random() * 10) + 1
-  return {
-    question: `Koliko je ${num1} + ${num2}?`,
-    answer: num1 + num2
-  }
-}
-
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams

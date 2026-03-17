@@ -78,67 +78,71 @@ export default async function StoryPage({
 }) {
   const { id } = await params;
 
+  let story: Awaited<ReturnType<typeof storiesService.getById>> = null;
+  let related: { id: string; title: string; author: string; readingTime?: number }[] = [];
   try {
-    const story = storiesService.getById(id);
-
+    story = storiesService.getById(id);
     if (!story || !story.isApproved) {
       notFound();
     }
-
     const allApproved = storiesService.getApprovedStories();
-    const related = allApproved
-      .filter((s) => s.id !== story.id)
+    related = allApproved
+      .filter((s) => s.id !== story!.id)
       .sort((a, b) => {
-        const aSame = a.author === story.author ? 1 : 0;
-        const bSame = b.author === story.author ? 1 : 0;
+        const aSame = a.author === story!.author ? 1 : 0;
+        const bSame = b.author === story!.author ? 1 : 0;
         if (aSame !== bSame) return bSame - aSame;
-        return Math.random() - 0.5;
+        return a.id.localeCompare(b.id);
       })
       .slice(0, 3)
       .map((s) => ({ id: s.id, title: s.title, author: s.author, readingTime: s.readingTime }));
-
-    const jsonLd = {
-      "@context": "https://schema.org",
-      "@type": "CreativeWork",
-      name: story.title,
-      author: {
-        "@type": "Person",
-        name: story.author,
-      },
-      image: story.imageUrl || undefined,
-      datePublished: story.createdAt,
-      dateModified: story.updatedAt,
-      aggregateRating:
-        story.averageRating && story.ratingCount
-          ? {
-              "@type": "AggregateRating",
-              ratingValue: story.averageRating,
-              ratingCount: story.ratingCount,
-            }
-          : undefined,
-    };
-
-    return (
-      <>
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-        />
-        <StoryReader
-          storyId={story.id}
-          title={story.title}
-          author={story.author}
-          body={story.body}
-          imageUrl={story.imageUrl}
-          averageRating={story.averageRating}
-          ratingCount={story.ratingCount}
-          readingTime={story.readingTime}
-          relatedStories={related}
-        />
-      </>
-    );
   } catch (error) {
     logger.error("Error loading story:", error);
     notFound();
   }
+
+  if (!story || !story.isApproved) {
+    notFound();
+  }
+
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "CreativeWork",
+    name: story.title,
+    author: {
+      "@type": "Person",
+      name: story.author,
+    },
+    image: story.imageUrl || undefined,
+    datePublished: story.createdAt,
+    dateModified: story.updatedAt,
+    aggregateRating:
+      story.averageRating && story.ratingCount
+        ? {
+            "@type": "AggregateRating",
+            ratingValue: story.averageRating,
+            ratingCount: story.ratingCount,
+          }
+        : undefined,
+  };
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <StoryReader
+        storyId={story.id}
+        title={story.title}
+        author={story.author}
+        body={story.body}
+        imageUrl={story.imageUrl}
+        averageRating={story.averageRating}
+        ratingCount={story.ratingCount}
+        readingTime={story.readingTime}
+        relatedStories={related}
+      />
+    </>
+  );
 }

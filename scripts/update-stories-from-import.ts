@@ -25,7 +25,7 @@ function parsePriceZaLakuNocFile(filePath: string): ImportedStory[] {
   for (const section of sections) {
     const lines = section.split('\n')
     let title = ''
-    let bodyLines: string[] = []
+    const bodyLines: string[] = []
     let inBody = false
 
     for (const rawLine of lines) {

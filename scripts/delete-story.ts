@@ -52,7 +52,7 @@ try {
   // Manually delete related records first
   const ratingsDeleted = db.prepare('DELETE FROM ratings WHERE storyId = ?').run(story.id).changes
   const commentsDeleted = db.prepare('DELETE FROM comments WHERE storyId = ?').run(story.id).changes
-  const storyDeleted = db.prepare('DELETE FROM stories WHERE id = ?').run(story.id).changes
+  db.prepare('DELETE FROM stories WHERE id = ?').run(story.id)
   
   console.log(`\n✅ Story deleted successfully!`)
   console.log(`   - Story record deleted`)

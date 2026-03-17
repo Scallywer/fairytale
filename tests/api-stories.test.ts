@@ -1,4 +1,3 @@
-import { NextRequest } from 'next/server'
 import { describe, it, expect } from 'vitest'
 import { GET as getStories } from '@/app/api/stories/route'
 

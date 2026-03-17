@@ -21,13 +21,16 @@ export default function RecommendedTonight({ stories }: RecommendedTonightProps)
 
   useEffect(() => {
     if (typeof window === 'undefined') return
-    try {
-      const raw = localStorage.getItem('readStories')
-      const list = raw ? (JSON.parse(raw) as string[]) : []
-      setReadIds(new Set(list))
-    } catch {
-      setReadIds(new Set())
+    const next = () => {
+      try {
+        const raw = localStorage.getItem('readStories')
+        const list = raw ? (JSON.parse(raw) as string[]) : []
+        setReadIds(new Set(list))
+      } catch {
+        setReadIds(new Set())
+      }
     }
+    queueMicrotask(next)
   }, [])
 
   const recommended = useMemo(() => {

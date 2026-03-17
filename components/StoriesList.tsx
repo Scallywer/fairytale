@@ -1,6 +1,5 @@
 'use client'
 
-import Link from 'next/link'
 import { useState, useEffect, useMemo } from 'react'
 import StoryCard from './StoryCard'
 
@@ -132,7 +131,7 @@ export default function StoriesList({ stories }: StoriesListProps) {
 
   // Reset visible count when filters change so "Load more" state is consistent
   useEffect(() => {
-    setVisibleCount(20)
+    queueMicrotask(() => setVisibleCount(20))
   }, [searchQuery, selectedAuthor, minRating, maxReadingTime, readStatus, sortBy])
 
   // Clear all filters

@@ -1,5 +1,7 @@
 'use client'
 
+import Link from 'next/link'
+
 export default function StoryError() {
   return (
     <div className="max-w-4xl mx-auto px-4 py-16 text-center">
@@ -10,12 +12,12 @@ export default function StoryError() {
         Trenutno ne možemo učitati ovu priču. Pokušaj ponovno za nekoliko
         trenutaka.
       </p>
-      <a
+      <Link
         href="/"
         className="inline-flex items-center gap-2 px-6 py-3 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-medium transition-colors"
       >
         Vrati se na početnu
-      </a>
+      </Link>
     </div>
   )
 }

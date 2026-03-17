@@ -46,7 +46,7 @@ async function generateColoredImage(title: string, index: number): Promise<strin
 }
 
 // Helper to get English title where appropriate
-function getEnglishTitle(croatianTitle: string, author: string): string {
+function getEnglishTitle(croatianTitle: string, _author: string): string {
   const disneyTitles: { [key: string]: string } = {
     'Pinokio': 'Pinocchio',
     'Dumbo': 'Dumbo',
@@ -74,20 +74,12 @@ function getEnglishTitle(croatianTitle: string, author: string): string {
   return croatianTitle
 }
 
-// Simple helper to create English summary (placeholder - would need proper translation API)
-function createEnglishSummary(croatianText: string): string {
-  // For now, return placeholder that indicates it needs English summary
-  // User can manually edit or we can integrate translation API
-  return `[English summary needed for Croatian story] ${croatianText.substring(0, 150)}...`
-}
-
 // Generate a story-specific prompt based on story content
 function createStoryPrompt(title: string, body: string, author?: string): string {
   // Extract first few paragraphs for context
   const paragraphs = body.split(/\n\n+/).filter(p => p.trim().length > 0)
   const firstParagraph = paragraphs[0] || body.substring(0, 300)
-  const secondParagraph = paragraphs[1] || ''
-  
+
   // Extract main character names from Croatian text patterns
   const mainCharacters: string[] = []
   const namePatterns = [
@@ -190,8 +182,9 @@ async function generateImageWithOpenAI(title: string, index: number, storyBody?:
     
     fs.writeFileSync(imagePath, imageResponse.data)
     return `/images/stories/${path.basename(imagePath)}`
-  } catch (error: any) {
-    const errorMessage = error.response?.data?.error?.message || error.message
+  } catch (error: unknown) {
+    const err = error as { response?: { data?: { error?: { message?: string } } }; message?: string }
+    const errorMessage = err.response?.data?.error?.message ?? err.message ?? 'Unknown error'
     console.error(`  ✗ OpenAI error:`, errorMessage)
     
     // If rate limited, suggest waiting
@@ -285,7 +278,7 @@ async function main() {
 
       if (imagePath) {
         // Update database with new image path
-        const db = require('../lib/db').default
+        const { default: db } = await import('../lib/db')
         db.prepare('UPDATE stories SET imageUrl = ? WHERE id = ?').run(imagePath, story.id)
         console.log(`  ✓ Generated and saved: ${imagePath}`)
         successCount++

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { logger } from '@/lib/logger'
 
 interface Comment {
@@ -30,12 +30,6 @@ export default function Comments({ storyId }: CommentsProps) {
   
   const [mathQuestion, setMathQuestion] = useState<{ question: string; answer: number } | null>(null)
 
-  // Generate math question on mount
-  useEffect(() => {
-    generateMathQuestion()
-    fetchComments()
-  }, [storyId])
-
   const generateMathQuestion = () => {
     const num1 = Math.floor(Math.random() * 10) + 1
     const num2 = Math.floor(Math.random() * 10) + 1
@@ -45,7 +39,7 @@ export default function Comments({ storyId }: CommentsProps) {
     })
   }
 
-  const fetchComments = async () => {
+  const fetchComments = useCallback(async () => {
     try {
       setLoading(true)
       const response = await fetch(`/api/comments?storyId=${storyId}`)
@@ -53,12 +47,17 @@ export default function Comments({ storyId }: CommentsProps) {
         const data = await response.json()
         setComments(data)
       }
-    } catch (error) {
-      logger.error('Error fetching comments:', error)
+    } catch (err) {
+      logger.error('Error fetching comments:', err)
     } finally {
       setLoading(false)
     }
-  }
+  }, [storyId])
+
+  useEffect(() => {
+    generateMathQuestion()
+    fetchComments()
+  }, [storyId, fetchComments])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -98,7 +97,7 @@ export default function Comments({ storyId }: CommentsProps) {
         setMessage({ type: 'error', text: error.error || 'Greška pri slanju komentara' })
         generateMathQuestion() // Generate new question
       }
-    } catch (error) {
+    } catch {
       setMessage({ type: 'error', text: 'Greška pri slanju komentara' })
       generateMathQuestion() // Generate new question
     } finally {

@@ -1,5 +1,5 @@
 // Helper function to translate title to English where appropriate
-function getEnglishTitle(croatianTitle: string, author: string): string {
+function getEnglishTitle(croatianTitle: string, _author: string): string {
   // Disney stories should be in English
   const disneyTitles: { [key: string]: string } = {
     'Pinokio': 'Pinocchio',
@@ -36,8 +36,8 @@ function getEnglishTitle(croatianTitle: string, author: string): string {
   return croatianTitle
 }
 
-// Helper function to translate story summary to English
-function translateSummaryToEnglish(summary: string): string {
+// Helper function to translate story summary to English (reserved for future use)
+function _translateSummaryToEnglish(summary: string): string {
   // This is a placeholder - in a real scenario, you'd use a translation API
   // For now, we'll keep it simple and just return a note that this needs translation
   // The user can manually update or we can improve this later
@@ -47,14 +47,14 @@ function translateSummaryToEnglish(summary: string): string {
   return summary + ' [NEEDS TRANSLATION TO ENGLISH]'
 }
 
-// Helper to create a simple English summary from Croatian story
-function createEnglishSummaryFromStory(body: string): string {
+// Helper to create a simple English summary from Croatian story (reserved for future use)
+function _createEnglishSummaryFromStory(body: string): string {
   // Extract first paragraph
   const paragraphs = body.split(/\n\n+/).filter(p => p.trim().length > 0)
   const firstParagraph = paragraphs[0] || body.substring(0, 300)
   
   // Simple translations for common phrases (this is basic - would need proper translation)
-  let summary = firstParagraph
+  const summary = firstParagraph
     .replace(/\s+/g, ' ')
     .substring(0, 300)
     .trim()

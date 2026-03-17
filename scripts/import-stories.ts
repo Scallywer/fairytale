@@ -31,17 +31,15 @@ function parseImportFile(filePath: string): StoryImport[] {
     }
     
     const lines = section.split('\n')
-    let currentStory: Partial<StoryImport> = {
+    const currentStory: Partial<StoryImport> = {
       isApproved: false // default
     }
     let bodyStartIndex = -1
-    let inBody = false
     
     // Find where body starts
     for (let i = 0; i < lines.length; i++) {
       if (lines[i].trim().toLowerCase().startsWith('body:')) {
         bodyStartIndex = i + 1
-        inBody = true
         break
       }
     }
