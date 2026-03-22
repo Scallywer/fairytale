@@ -1,10 +1,12 @@
 #!/bin/sh
 set -e
 
-# Fix permissions if we're running as root (will handle volume mount ownership issues)
+# Fix permissions if we're running as root (volume mounts often leave root-owned trees).
 if [ "$(id -u)" = "0" ]; then
   chown -R nextjs:nodejs /app/data 2>/dev/null || true
   chmod 755 /app/data 2>/dev/null || true
+  mkdir -p /app/.next/cache 2>/dev/null || true
+  chown -R nextjs:nodejs /app/.next /app/public 2>/dev/null || true
 fi
 
 # If database doesn't exist in mounted volume, copy from image default

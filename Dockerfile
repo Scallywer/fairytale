@@ -45,12 +45,9 @@ COPY --chown=nextjs:nodejs data/stories.db /app/.default-stories.db
 COPY docker-entrypoint.sh ./
 RUN chmod +x docker-entrypoint.sh
 
-# Create data directory for SQLite database and set permissions
-RUN mkdir -p /app/data && chown -R nextjs:nodejs /app/data
-
-# Process runs as nextjs (su-exec in entrypoint). COPY leaves root-owned files;
-# ISR/revalidate must write under .next/server (fixes EACCES on *.html / *.rsc).
-RUN chown -R nextjs:nodejs /app
+# SQLite + Next writable dirs (.next/cache for image optimizer, .next/server for ISR).
+# COPY is root-owned; process runs as nextjs via entrypoint.
+RUN mkdir -p /app/data /app/.next/cache && chown -R nextjs:nodejs /app
 
 # Don't switch to nextjs user here - let entrypoint handle it
 # This allows entrypoint to fix volume permissions as root
