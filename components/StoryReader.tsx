@@ -245,6 +245,7 @@ export default function StoryReader({ storyId, title, author, body, imageUrl, av
                           sizes="(min-width: 768px) 28rem, 100vw"
                           className="object-cover"
                           priority={false}
+                          unoptimized
                         />
                       </div>
                     </div>

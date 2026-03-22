@@ -119,6 +119,7 @@ export default function StoryCard({
                   sizes="(min-width: 1024px) 25rem, (min-width: 640px) 50vw, 100vw"
                   className="object-cover"
                   priority={false}
+                  unoptimized
                 />
               </div>
             ) : (
@@ -236,6 +237,7 @@ export default function StoryCard({
                   sizes="18rem"
                   className="object-cover"
                   priority={false}
+                  unoptimized
                 />
               </div>
             ) : (
