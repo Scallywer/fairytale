@@ -75,6 +75,8 @@ export interface Story {
   ratingCount?: number
   readingTime?: number
   readCount?: number
+  /** Approved comments only; set when loaded from list/detail helpers */
+  commentCount?: number
   createdAt: string
   updatedAt: string
 }
@@ -160,7 +162,20 @@ export const dbHelpers = {
   },
 
   getApprovedStoriesPage(limit?: number, offset?: number): Story[] {
-    const sql = 'SELECT * FROM stories WHERE isApproved = 1 ORDER BY createdAt DESC'
+    const sql = `
+      SELECT
+        stories.*,
+        COALESCE(comment_stats.cnt, 0) AS commentCount
+      FROM stories
+      LEFT JOIN (
+        SELECT storyId, COUNT(*) AS cnt
+        FROM comments
+        WHERE isApproved = 1
+        GROUP BY storyId
+      ) AS comment_stats ON comment_stats.storyId = stories.id
+      WHERE stories.isApproved = 1
+      ORDER BY stories.createdAt DESC
+    `
     const stmt =
       limit != null && offset != null
         ? db.prepare(`${sql} LIMIT ? OFFSET ?`)
@@ -169,12 +184,14 @@ export const dbHelpers = {
       limit != null && offset != null
         ? stmt.all(limit, offset)
         : stmt.all()
-    ) as StoryRow[]
+    ) as (StoryRow & { commentCount: number })[]
     return stories.map((story) => {
       const ratingInfo = this.getAverageRating(story.id)
+      const { commentCount: approvedCommentCount, ...rest } = story
       return {
-        ...story,
+        ...rest,
         isApproved: Boolean(story.isApproved),
+        commentCount: Number(approvedCommentCount) || 0,
         averageRating: ratingInfo?.averageRating,
         ratingCount: ratingInfo?.ratingCount || 0,
         readingTime: calculateReadingTime(story.body),
@@ -199,12 +216,18 @@ export const dbHelpers = {
     }
     
     const ratingInfo = this.getAverageRating(id)
+    const cc = db
+      .prepare(
+        `SELECT COUNT(*) AS c FROM comments WHERE storyId = ? AND isApproved = 1`
+      )
+      .get(id) as { c: number }
     return {
       ...story,
       isApproved: Boolean(story.isApproved),
       averageRating: ratingInfo?.averageRating,
       ratingCount: ratingInfo?.ratingCount || 0,
-      readingTime: calculateReadingTime(story.body)
+      readingTime: calculateReadingTime(story.body),
+      commentCount: Number(cc?.c) || 0,
     }
   },
 

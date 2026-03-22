@@ -1,11 +1,12 @@
 import Database from 'better-sqlite3'
 import path from 'path'
 import fs from 'fs'
+import { canonicalImageFileName } from '../lib/image-mapping'
 
 const dbPath = path.join(process.cwd(), 'data', 'stories.db')
 const db = new Database(dbPath)
 
-// Map image filenames to story titles
+/** Import filename (in import/) → story title. Copied to public/images/{canonical slug}. */
 const imageMappings: Record<string, string> = {
   'Lutonjica_Toporko.png': 'Lutonjica Toporko i devet župančića',
   'Bijeli_jelen.png': 'Bijeli jelen',
@@ -19,7 +20,7 @@ const imageMappings: Record<string, string> = {
   'Princ_od_ceznje.png': 'Princ od čežnje',
   'Plesna_haljina_zutog_maslacka.png': 'Plesna haljina žutog maslačka',
   'Kako_je_tisina_prosetala_gradom.png': 'Kako je tišina prošetala gradom',
-  'Martin_Krpan.png': 'Martin Krpan'
+  'Martin_Krpan.png': 'Martin Krpan',
 }
 
 function assignImages() {
@@ -42,8 +43,10 @@ function assignImages() {
   
   for (const [imageFile, storyTitle] of Object.entries(imageMappings)) {
     const sourcePath = path.join(importDir, imageFile)
-    const destPath = path.join(imagesDir, imageFile)
-    const imageUrl = `/images/${imageFile}`
+    const ext = path.extname(imageFile).toLowerCase() || '.png'
+    const destFile = canonicalImageFileName(storyTitle, ext)
+    const destPath = path.join(imagesDir, destFile)
+    const imageUrl = `/images/${destFile}`
     
     try {
       // Check if source file exists

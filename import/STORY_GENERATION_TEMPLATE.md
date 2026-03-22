@@ -19,8 +19,8 @@ You will receive either:
 ### Content Guidelines
 
 1. **Length**: 
-   - Stories should be 700-1000 words
-   - Reading time should be approximately 3-5 minutes
+   - For **Priče za laku noć** imports, match on-disk examples (e.g. *Ogledalce*): about **450–550 words** including `Pouka:`, roughly **3–4 minutes** read aloud.
+   - Longer originals may go up to ~1000 words if explicitly requested.
    - Use multiple paragraphs with natural breaks
 
 2. **Style**:
@@ -59,17 +59,22 @@ You will receive either:
 
 ### Format Requirements
 
-When generating a story, output it in this exact format:
+When generating a story for `import/Price_za_laku_noc.txt`, use this layout (easy for the importer: **body runs until the next `Title:`**):
 
 ```
 Title: [Story Title]
 Author: [Author Name]
-Body: [Full story text with paragraphs separated by blank lines]
+Body:
+[First paragraph...]
 
-[Story content here...]
+[More paragraphs...]
 
 Pouka: [Moral lesson]
+
+Title: [Next story if any]
 ```
+
+Put `Body:` on its own line, then the full text **without** wrapping the whole body in outer `"..."` (legacy quoted bodies still parse). Separate paragraphs with a blank line. The next story starts at the next `Title:` line.
 
 ### Example Structure
 
@@ -123,22 +128,25 @@ Pouka: Najmanji prijatelji mogu imati najveće darove. I ponekad je dovoljno bit
 
 ## Output Format
 
-Always output the story in the exact TSV-compatible format:
+For `Price_za_laku_noc`-style imports, use:
 
 ```
 Title: [Title]
 Author: [Author]
-Body: "[Story text with proper paragraph breaks]"
+Body:
+[Story text with blank lines between paragraphs]
+
+Pouka: ...
 ```
 
-Note: The body should be in quotes and can span multiple lines. Use actual newlines for paragraph breaks.
+Legacy files may still use `Body: "..."`; prefer the unquoted form for new stories.
 
 ## Quality Checklist
 
 Before finalizing, ensure:
 - [ ] Story is in Croatian
-- [ ] Length is 500-1000 words
-- [ ] Reading time is approximately 3-5 minutes
+- [ ] Length is about **450–550 words** for bedtime imports (unless a longer piece was requested)
+- [ ] Reading time is approximately **3–4 minutes**
 - [ ] Story has a clear beginning, middle, and end
 - [ ] Includes dialogue
 - [ ] Includes a "Pouka:" moral lesson

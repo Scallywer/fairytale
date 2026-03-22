@@ -12,6 +12,7 @@ interface Story {
   ratingCount?: number
   readingTime?: number
   readCount?: number
+  commentCount?: number
   createdAt?: string
 }
 
@@ -353,6 +354,7 @@ export default function StoriesList({ stories }: StoriesListProps) {
                 ratingCount={story.ratingCount}
                 readingTime={story.readingTime}
                 readCount={story.readCount}
+                commentCount={story.commentCount}
               />
             ))}
           </div>

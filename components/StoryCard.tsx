@@ -14,9 +14,66 @@ interface StoryCardProps {
   ratingCount?: number
   readingTime?: number
   readCount?: number
+  commentCount?: number
 }
 
-export default function StoryCard({ id, title, author, imageUrl, viewMode = 'list', averageRating, ratingCount, readingTime, readCount }: StoryCardProps) {
+function StoryCardMetaRow({
+  readingTime,
+  commentCount = 0,
+  readCount = 0,
+  size,
+}: {
+  readingTime?: number
+  commentCount?: number
+  readCount?: number
+  size: 'sm' | 'md'
+}) {
+  const text = size === 'sm' ? 'text-xs text-amber-400/70' : 'text-sm text-amber-400/70'
+  const icon = size === 'sm' ? 'h-3.5 w-3.5' : 'h-4 w-4'
+  return (
+    <div className={`flex flex-wrap items-center gap-x-3 gap-y-1 ${text}`}>
+      {readingTime != null && readingTime > 0 && (
+        <span className="inline-flex items-center gap-1 shrink-0">
+          <svg className={icon} fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden>
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <span>{readingTime} min čitanja</span>
+        </span>
+      )}
+      <span className="inline-flex items-center gap-1 shrink-0" aria-label={`${commentCount} odobrenih komentara`}>
+        <svg className={icon} fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden>
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20v-4a7 7 0 014-6.305V7a7 7 0 1114 0v.695A7 7 0 0121 12z"
+          />
+        </svg>
+        <span>{commentCount}</span>
+      </span>
+      <span className="inline-flex items-center gap-1 shrink-0" aria-label={`${readCount} čitanja`}>
+        <svg className={icon} fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden>
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+        </svg>
+        <span>{readCount}</span>
+      </span>
+    </div>
+  )
+}
+
+export default function StoryCard({
+  id,
+  title,
+  author,
+  imageUrl,
+  viewMode = 'list',
+  averageRating,
+  ratingCount,
+  readingTime,
+  readCount,
+  commentCount,
+}: StoryCardProps) {
   const [isRead, setIsRead] = useState(false)
   const [mounted, setMounted] = useState(false)
 
@@ -97,17 +154,14 @@ export default function StoryCard({ id, title, author, imageUrl, viewMode = 'lis
             <p className="text-sm text-amber-300/70 mb-2">
               {author}
             </p>
-            {readingTime != null && readingTime > 0 && (
-              <div className="flex items-center gap-1 text-xs text-amber-400/70 mb-2">
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <span>{readingTime} min čitanja</span>
-              </div>
-            )}
-            {readCount != null && readCount > 0 && (
-              <p className="text-xs text-amber-400/70 mb-2">{readCount} puta pročitano</p>
-            )}
+            <div className="mb-2">
+              <StoryCardMetaRow
+                readingTime={readingTime}
+                commentCount={commentCount}
+                readCount={readCount ?? 0}
+                size="sm"
+              />
+            </div>
             {averageRating && averageRating > 0 && (
               <div className="flex items-center gap-2">
                 <div
@@ -196,17 +250,14 @@ export default function StoryCard({ id, title, author, imageUrl, viewMode = 'lis
             <p className="text-sm text-amber-300/70">
               {author}
             </p>
-            {readingTime != null && readingTime > 0 && (
-              <div className="flex items-center gap-1 text-sm text-amber-400/70 mt-1">
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <span>{readingTime} min čitanja</span>
-              </div>
-            )}
-            {readCount != null && readCount > 0 && (
-              <p className="text-sm text-amber-400/70 mt-1">{readCount} puta pročitano</p>
-            )}
+            <div className="mt-1">
+              <StoryCardMetaRow
+                readingTime={readingTime}
+                commentCount={commentCount}
+                readCount={readCount ?? 0}
+                size="md"
+              />
+            </div>
             {averageRating && averageRating > 0 && (
               <div className="flex items-center gap-2 mt-2">
                 <div

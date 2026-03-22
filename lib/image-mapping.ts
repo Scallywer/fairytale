@@ -36,8 +36,33 @@ export function normalizeStoryTitle(title: string): string {
   return normalizeTitle(withoutSuffix)
 }
 
+/**
+ * Canonical on-disk filename for a story image: `{slug}{ext}` where slug = normalizeStoryTitle(title).
+ * Use lowercase slug + underscores, no diacritics (matches normalizeTitle).
+ * @param ext — include dot, e.g. `.png` (default). Preserved from an existing file when renames.
+ */
+export function canonicalImageFileName(storyTitle: string, ext: string = '.png'): string {
+  const e = ext.startsWith('.') ? ext.toLowerCase() : `.${ext.toLowerCase()}`
+  return `${normalizeStoryTitle(storyTitle)}${e}`
+}
+
+/**
+ * Rare cases where the on-disk slug typo still maps to a story (e.g. generator typo).
+ * Key = normalizedBaseName of file, value = normalizeStoryTitle for that story.
+ */
+export const IMAGE_SLUG_TYPOS: Record<string, string> = {
+  o_zecu_koji_se_volio_smijati: 'o_zecu_koji_je_volio_smijati',
+}
+
+export function fileSlugMatchesStory(imageFile: string, storyTitle: string): boolean {
+  const titleNorm = normalizeStoryTitle(storyTitle)
+  const fileNorm = normalizedBaseName(imageFile)
+  if (fileNorm === titleNorm) return true
+  return IMAGE_SLUG_TYPOS[fileNorm] === titleNorm
+}
+
 export function exactMatch(storyTitle: string, imageFile: string): boolean {
-  return normalizeStoryTitle(storyTitle) === normalizedBaseName(imageFile)
+  return fileSlugMatchesStory(imageFile, storyTitle)
 }
 
 /** Which story title (if any) does this image file belong to? */
@@ -52,10 +77,24 @@ export function getStoryTitleForImage(
   return null
 }
 
+function findFileCaseInsensitive(files: string[], wanted: string): string | null {
+  const w = wanted.toLowerCase()
+  for (const f of files) {
+    if (f.toLowerCase() === w) return f
+  }
+  return null
+}
+
 export function getExpectedImage(
   storyTitle: string,
   imageFiles: string[]
 ): string | null {
+  const slug = normalizeStoryTitle(storyTitle)
+  for (const ext of ['.png', '.jpg', '.jpeg']) {
+    const candidate = `${slug}${ext}`
+    const hit = findFileCaseInsensitive(imageFiles, candidate)
+    if (hit) return hit
+  }
   for (const file of imageFiles) {
     if (exactMatch(storyTitle, file)) return file
   }

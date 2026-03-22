@@ -57,6 +57,13 @@ function parsePriceZaLakuNocFile(filePath: string): ImportedStory[] {
       continue
     }
 
+    // While inside a body, every line (until the next Title) is story text — do not treat
+    // Author:/Body: at line start as metadata (dialogue or wraps could otherwise break the parse).
+    if (inBody) {
+      bodyLines.push(rawLine)
+      continue
+    }
+
     if (lower.startsWith('author:')) {
       currentAuthor = line.substring('author:'.length).trim()
       continue
@@ -68,10 +75,6 @@ function parsePriceZaLakuNocFile(filePath: string): ImportedStory[] {
       const afterBody = rawLine.substring(idx + 'body:'.length)
       bodyLines.push(afterBody.trimStart())
       continue
-    }
-
-    if (inBody) {
-      bodyLines.push(rawLine)
     }
   }
 

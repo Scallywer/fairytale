@@ -15,9 +15,16 @@ You will receive:
 - **Format**: PNG or JPG
 - **Size**: 1024x1024 pixels (square format)
 - **Aspect Ratio**: 1:1
-- **File Naming**: Use the story title, replacing spaces and special characters with underscores
-  - Example: "Bijeli jelen" → `Bijeli_jelen.png`
-  - Example: "Kako je tišina prošetala gradom" → `Kako_je_tisina_prosetala_gradom.png`
+- **File naming (canonical)**: **`{slug}.{ext}`** where `slug` is the story title normalized the same way as code in `lib/image-mapping.ts`:
+  - Strip trailing ` (ažurirano)` from the title (if present).
+  - Unicode NFD, remove diacritics (č→c, ž→z, š→s, …).
+  - Lowercase, spaces → underscores, remove punctuation (keep letters, digits, underscores).
+  - **Examples:**
+    - `Bijeli jelen` → `bijeli_jelen.png`
+    - `Kako je tišina prošetala gradom` → `kako_je_tisina_prosetala_gradom.png`
+    - `Razbojnik sa žutom pjegom` → `razbojnik_sa_zutom_pjegom.png`
+  - Helper in code: `canonicalImageFileName(storyTitle)` (default extension `.png`).
+  - After adding files to `public/images/`, run `npx tsx scripts/canonicalize-story-images.ts` to rename any legacy names and sync `imageUrl` in the database (use `--dry-run` to preview).
 
 ### Style Guidelines
 
@@ -133,23 +140,27 @@ Before finalizing an image, ensure:
 - [ ] Peaceful, bedtime-appropriate mood
 - [ ] Main character(s) are visible
 - [ ] Style matches children's book illustration
-- [ ] File name matches story title format
+- [ ] File name matches **canonical slug** (see Technical Specifications)
 - [ ] Image is suitable for ages 5-10
 - [ ] No scary or violent content
 
 ### File Organization
 
 Save images to:
-- **Location**: `import/` folder (for new imports)
-- **Final Location**: `public/images/` (after import)
-- **Naming**: Use underscore format matching story title
+- **Location**: `import/` or directly `public/images/`
+- **Final location**: `public/images/` (web path `/images/{slug}.png`)
+- **Naming**: **Canonical slug** = `canonicalImageFileName(title)` (lowercase, underscores, no diacritics)
 
 ### Integration with Story Import
 
 After generating an image:
-1. Save it in the `import/` folder with the correct name
-2. When importing the story via TSV, reference it as: `/images/[filename].png`
-3. Run the `assign-import-images.ts` script to move images and update the database
+1. Save it as `{slug}.png` (see naming rules above) under `public/images/` (or `import/` then move).
+2. Point the story’s `imageUrl` at `/images/{slug}.png`, or run `npx tsx scripts/assign-images-from-public.ts` for stories that have no image yet (matches slug + known typos in `IMAGE_SLUG_TYPOS`).
+3. If the file used a legacy name (mixed case, extra prefixes), run `npx tsx scripts/canonicalize-story-images.ts` to rename on disk and fix `imageUrl` in `data/stories.db`.
+
+4. For assets whose filename **never matched** the title slug (e.g. `22_HanselAndGretel.png` for “Ivica i Marica”), run **`npx tsx scripts/migrate-legacy-story-images.ts`** (add `--dry-run` first). That script trusts the DB: it renames whatever file the story points at to **`canonicalImageFileName(title)`** and updates `imageUrl`. It moves blocking orphan files to `._orphan_*` if needed.
+
+**Note:** Prefer **canonicalize** when slug already matches; use **migrate-legacy** when it does not. Both are safe to re-run: they no-op when already canonical.
 
 ## Special Cases
 
