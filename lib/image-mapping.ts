@@ -130,17 +130,24 @@ export function validateImageMapping(
 
   for (const row of stories) {
     const currentPath = row.imageUrl ? row.imageUrl.replace(/^\//, '') : null
-    const currentFile = currentPath ? path.basename(currentPath) : null
-    const fullPath = currentPath
-      ? path.join(publicDir, currentPath)
+    const requestedBasename = currentPath ? path.basename(currentPath) : null
+    /** Actual filename on disk (Linux is case-sensitive; DB URLs are lowercase canonical). */
+    const resolvedBasename = requestedBasename
+      ? findFileCaseInsensitive(imageFiles, requestedBasename)
       : null
+    const fullPath =
+      currentPath && resolvedBasename
+        ? path.join(publicDir, path.dirname(currentPath), resolvedBasename)
+        : currentPath
+          ? path.join(publicDir, currentPath)
+          : null
     const fileExists = fullPath ? fs.existsSync(fullPath) : false
     const expectedFile = getExpectedImage(row.title, imageFiles)
-    const currentImageBelongsTo = currentFile
-      ? getStoryTitleForImage(currentFile, stories)
+    const currentImageBelongsTo = resolvedBasename
+      ? getStoryTitleForImage(resolvedBasename, stories)
       : null
 
-    if (!currentFile || !row.imageUrl) {
+    if (!requestedBasename || !row.imageUrl) {
       result.missing.push(row)
       continue
     }
@@ -148,7 +155,10 @@ export function validateImageMapping(
       result.broken.push({ story: row, current: row.imageUrl })
       continue
     }
-    if (expectedFile && currentFile !== expectedFile) {
+    if (
+      expectedFile &&
+      requestedBasename.toLowerCase() !== expectedFile.toLowerCase()
+    ) {
       result.mismatched.push({
         story: row,
         current: row.imageUrl,
@@ -164,7 +174,7 @@ export function validateImageMapping(
       })
       continue
     }
-    result.ok.push({ story: row, image: currentFile })
+    result.ok.push({ story: row, image: resolvedBasename ?? requestedBasename })
   }
 
   return result
