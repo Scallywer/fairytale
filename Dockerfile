@@ -31,10 +31,11 @@ RUN apk add --no-cache sqlite libc6-compat su-exec
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-# Copy necessary files
-COPY --from=builder /app/public ./public
+# Standalone first, then static + public on top (Next recommendation; avoids any
+# traced folder shadowing a full public/ tree).
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
+COPY --from=builder /app/public ./public
 
 # Copy pre-populated database file directly from build context
 # Place it outside /app/data so it survives volume mounts
