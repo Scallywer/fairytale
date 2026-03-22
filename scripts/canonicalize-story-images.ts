@@ -13,8 +13,6 @@ import fs from 'fs'
 import {
   canonicalImageFileName,
   fileSlugMatchesStory,
-  normalizeStoryTitle,
-  normalizedBaseName,
 } from '../lib/image-mapping'
 
 const dbPath = path.join(process.cwd(), 'data', 'stories.db')
@@ -87,7 +85,6 @@ function main() {
     const allowed = ['.png', '.jpg', '.jpeg']
     const useExt = allowed.includes(ext) ? ext : '.png'
 
-    const titleNorm = normalizeStoryTitle(story.title)
     if (!fileSlugMatchesStory(currentFile, story.title)) {
       console.log(
         `⊘ Skip (basename does not match title slug): "${story.title}" → ${currentFile}`

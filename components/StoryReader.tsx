@@ -67,8 +67,6 @@ export default function StoryReader({ storyId, title, author, body, imageUrl, av
   }, [storyId])
 
   useEffect(() => {
-    setOptimisticReadDelta(0)
-    readCountSentRef.current = false
     const timerId = setTimeout(() => {
       readDelayTimerRef.current = null
       recordStoryRead()

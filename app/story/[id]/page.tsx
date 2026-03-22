@@ -133,6 +133,7 @@ export default async function StoryPage({
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
         <StoryReader
+          key={story.id}
           storyId={story.id}
           title={story.title}
           author={story.author}
