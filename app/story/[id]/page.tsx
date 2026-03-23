@@ -104,23 +104,37 @@ export default async function StoryPage({
 
   const jsonLd = {
     "@context": "https://schema.org",
-    "@type": "CreativeWork",
+    "@type": "Article",
+    headline: story.title,
     name: story.title,
+    description: story.body.slice(0, 160).replace(/\s+\S*$/, "") + "…",
+    url: storyUrl,
+    mainEntityOfPage: storyUrl,
     author: {
       "@type": "Person",
       name: story.author,
     },
-    image: story.imageUrl || undefined,
+    publisher: {
+      "@type": "Organization",
+      name: "Priče za laku noć",
+      url: baseUrl,
+    },
+    image: story.imageUrl ? `${baseUrl}${story.imageUrl}` : undefined,
     datePublished: story.createdAt,
     dateModified: story.updatedAt,
+    inLanguage: "hr",
+    genre: "Children's Literature",
     aggregateRating:
       story.averageRating && story.ratingCount
         ? {
             "@type": "AggregateRating",
             ratingValue: story.averageRating,
             ratingCount: story.ratingCount,
+            bestRating: 5,
+            worstRating: 1,
           }
         : undefined,
+    wordCount: story.body.split(/\s+/).length,
   };
 
   const breadcrumbLd = {
