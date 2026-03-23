@@ -35,22 +35,10 @@ export default function BackToTop() {
   return (
     <button
       onClick={scrollToTop}
-      className="fixed bottom-8 right-8 z-50 p-3 bg-amber-600 hover:bg-amber-700 text-white rounded-full shadow-lg transition-all duration-300 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:ring-offset-slate-900"
+      className="fixed bottom-8 right-8 z-50 p-3 bg-primary-container text-on-primary-container rounded-full shadow-[0_10px_20px_rgba(252,211,77,0.2)] transition-all duration-[400ms] hover:scale-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-container"
       aria-label="Povratak na vrh"
     >
-      <svg
-        className="w-6 h-6"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M5 10l7-7m0 0l7 7m-7-7v18"
-        />
-      </svg>
+      <span className="material-symbols-outlined">arrow_upward</span>
     </button>
   )
 }

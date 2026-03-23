@@ -21,9 +21,9 @@ interface StoriesListProps {
 }
 
 export default function StoriesList({ stories }: StoriesListProps) {
-  const [viewMode, setViewMode] = useState<'list' | 'gallery'>('list')
+  const [viewMode, setViewMode] = useState<'list' | 'gallery'>('gallery')
   const [visibleCount, setVisibleCount] = useState(20)
-  
+
   // Filter state
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedAuthor, setSelectedAuthor] = useState<string | null>(null)
@@ -31,6 +31,11 @@ export default function StoriesList({ stories }: StoriesListProps) {
   const [maxReadingTime, setMaxReadingTime] = useState<number | null>(null)
   const [readStatus, setReadStatus] = useState<'all' | 'read' | 'unread'>('all')
   const [sortBy, setSortBy] = useState<'title' | 'author' | 'rating' | 'newest' | 'oldest' | 'default'>('default')
+
+  // Dropdown states
+  const [showAuthorDropdown, setShowAuthorDropdown] = useState(false)
+  const [showTimeDropdown, setShowTimeDropdown] = useState(false)
+  const [showStatusDropdown, setShowStatusDropdown] = useState(false)
 
   // Get unique authors for filter dropdown
   const uniqueAuthors = useMemo(() => {
@@ -46,32 +51,28 @@ export default function StoriesList({ stories }: StoriesListProps) {
   // Filtered and sorted stories
   const filteredStories = useMemo(() => {
     if (typeof window === 'undefined') return stories
-    
+
     const readStories = JSON.parse(localStorage.getItem('readStories') || '[]')
     let filtered = [...stories]
 
-    // Apply search query (title and author)
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase().trim()
-      filtered = filtered.filter(story => 
-        story.title.toLowerCase().includes(query) || 
+      filtered = filtered.filter(story =>
+        story.title.toLowerCase().includes(query) ||
         story.author.toLowerCase().includes(query)
       )
     }
 
-    // Apply author filter
     if (selectedAuthor) {
       filtered = filtered.filter(story => story.author === selectedAuthor)
     }
 
-    // Apply rating filter
     if (minRating !== null) {
-      filtered = filtered.filter(story => 
+      filtered = filtered.filter(story =>
         story.averageRating !== undefined && story.averageRating >= minRating
       )
     }
 
-    // Apply reading time filter
     if (maxReadingTime !== null) {
       filtered = filtered.filter(story => {
         if (!story.readingTime) return false
@@ -83,14 +84,12 @@ export default function StoriesList({ stories }: StoriesListProps) {
       })
     }
 
-    // Apply read status filter
     if (readStatus === 'read') {
       filtered = filtered.filter(story => readStories.includes(story.id))
     } else if (readStatus === 'unread') {
       filtered = filtered.filter(story => !readStories.includes(story.id))
     }
 
-    // Apply sorting
     if (sortBy !== 'default') {
       filtered.sort((a, b) => {
         switch (sortBy) {
@@ -99,23 +98,16 @@ export default function StoriesList({ stories }: StoriesListProps) {
           case 'author':
             return a.author.localeCompare(b.author, 'hr')
           case 'rating':
-            const ratingA = a.averageRating || 0
-            const ratingB = b.averageRating || 0
-            return ratingB - ratingA
+            return (b.averageRating || 0) - (a.averageRating || 0)
           case 'newest':
-            const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0
-            const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0
-            return dateB - dateA
+            return (b.createdAt ? new Date(b.createdAt).getTime() : 0) - (a.createdAt ? new Date(a.createdAt).getTime() : 0)
           case 'oldest':
-            const dateAOld = a.createdAt ? new Date(a.createdAt).getTime() : 0
-            const dateBOld = b.createdAt ? new Date(b.createdAt).getTime() : 0
-            return dateAOld - dateBOld
+            return (a.createdAt ? new Date(a.createdAt).getTime() : 0) - (b.createdAt ? new Date(b.createdAt).getTime() : 0)
           default:
             return 0
         }
       })
     } else {
-      // Default: maintain original read/unread sorting
       const unreadStories = filtered.filter(story => !readStories.includes(story.id))
       const readStoriesList = filtered.filter(story => readStories.includes(story.id))
       return [...unreadStories, ...readStoriesList]
@@ -131,12 +123,10 @@ export default function StoriesList({ stories }: StoriesListProps) {
   const hasMore = filteredStories.length > visibleCount
   const loadMore = () => setVisibleCount((c) => c + 20)
 
-  // Reset visible count when filters change so "Load more" state is consistent
   useEffect(() => {
     queueMicrotask(() => setVisibleCount(20))
   }, [searchQuery, selectedAuthor, minRating, maxReadingTime, readStatus, sortBy])
 
-  // Clear all filters
   const clearFilters = () => {
     setSearchQuery('')
     setSelectedAuthor(null)
@@ -147,12 +137,10 @@ export default function StoriesList({ stories }: StoriesListProps) {
   }
 
   useEffect(() => {
-    // Restore scroll position when component mounts
     if (typeof window !== 'undefined') {
       const savedScrollPosition = sessionStorage.getItem('scrollPosition')
       if (savedScrollPosition) {
         const scrollY = parseInt(savedScrollPosition, 10)
-        // Use requestAnimationFrame to ensure DOM is ready
         requestAnimationFrame(() => {
           window.scrollTo(0, scrollY)
           sessionStorage.removeItem('scrollPosition')
@@ -161,216 +149,195 @@ export default function StoriesList({ stories }: StoriesListProps) {
     }
   }, [])
 
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    const handleClick = () => {
+      setShowAuthorDropdown(false)
+      setShowTimeDropdown(false)
+      setShowStatusDropdown(false)
+    }
+    document.addEventListener('click', handleClick)
+    return () => document.removeEventListener('click', handleClick)
+  }, [])
+
   return (
-    <>
-      {/* Search Bar */}
-      <div className="mb-6">
-        <div className="relative">
+    <section className="space-y-8">
+      {/* Toolbar */}
+      <div className="bg-surface-container-low rounded-xl p-6 flex flex-col lg:flex-row gap-6 items-center justify-between">
+        <div className="w-full lg:w-1/3 relative">
+          <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Pretraži priče..."
-            className="w-full px-4 py-3 pl-12 bg-slate-800 border border-slate-700 rounded-lg text-amber-100 placeholder-amber-300/50 focus:outline-none focus:border-amber-500 transition-colors"
+            placeholder="Traži priču..."
+            className="w-full bg-surface-container-lowest border-none rounded-full py-3 pl-12 pr-6 text-on-surface placeholder:text-on-surface-variant/50 focus:ring-2 focus:ring-primary-container/20 focus:outline-none font-label transition-all"
           />
-          <svg
-            className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-amber-300/70"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
+        </div>
+        <div className="flex flex-wrap items-center gap-4 w-full lg:w-auto">
+          {/* Author Filter */}
+          <div className="relative" onClick={(e) => e.stopPropagation()}>
+            <button
+              onClick={() => { setShowAuthorDropdown(!showAuthorDropdown); setShowTimeDropdown(false); setShowStatusDropdown(false) }}
+              className={`flex items-center gap-2 px-4 py-2 rounded-full cursor-pointer hover:bg-surface-bright transition-colors ${selectedAuthor ? 'bg-primary-container text-on-primary-container' : 'bg-surface-container-highest text-on-surface-variant'}`}
+            >
+              <span className="font-label text-xs font-bold uppercase tracking-wider">{selectedAuthor || 'Autor'}</span>
+              <span className="material-symbols-outlined text-sm">expand_more</span>
+            </button>
+            {showAuthorDropdown && (
+              <div className="absolute top-full mt-2 left-0 bg-surface-container-high rounded-xl shadow-[0_20px_40px_rgba(0,0,0,0.4)] z-20 min-w-[200px] py-2 max-h-64 overflow-y-auto">
+                <button onClick={() => { setSelectedAuthor(null); setShowAuthorDropdown(false) }} className="w-full text-left px-4 py-2 text-on-surface font-label text-sm hover:bg-surface-bright transition-colors">
+                  Svi autori
+                </button>
+                {uniqueAuthors.map(a => (
+                  <button key={a} onClick={() => { setSelectedAuthor(a); setShowAuthorDropdown(false) }} className="w-full text-left px-4 py-2 text-on-surface font-label text-sm hover:bg-surface-bright transition-colors">
+                    {a}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Time Filter */}
+          <div className="relative" onClick={(e) => e.stopPropagation()}>
+            <button
+              onClick={() => { setShowTimeDropdown(!showTimeDropdown); setShowAuthorDropdown(false); setShowStatusDropdown(false) }}
+              className={`flex items-center gap-2 px-4 py-2 rounded-full cursor-pointer hover:bg-surface-bright transition-colors ${maxReadingTime !== null ? 'bg-primary-container text-on-primary-container' : 'bg-surface-container-highest text-on-surface-variant'}`}
+            >
+              <span className="font-label text-xs font-bold uppercase tracking-wider">Vrijeme</span>
+              <span className="material-symbols-outlined text-sm">expand_more</span>
+            </button>
+            {showTimeDropdown && (
+              <div className="absolute top-full mt-2 left-0 bg-surface-container-high rounded-xl shadow-[0_20px_40px_rgba(0,0,0,0.4)] z-20 min-w-[160px] py-2">
+                <button onClick={() => { setMaxReadingTime(null); setShowTimeDropdown(false) }} className="w-full text-left px-4 py-2 text-on-surface font-label text-sm hover:bg-surface-bright transition-colors">Sve duljine</button>
+                <button onClick={() => { setMaxReadingTime(5); setShowTimeDropdown(false) }} className="w-full text-left px-4 py-2 text-on-surface font-label text-sm hover:bg-surface-bright transition-colors">Do 5 min</button>
+                <button onClick={() => { setMaxReadingTime(10); setShowTimeDropdown(false) }} className="w-full text-left px-4 py-2 text-on-surface font-label text-sm hover:bg-surface-bright transition-colors">5-10 min</button>
+                <button onClick={() => { setMaxReadingTime(15); setShowTimeDropdown(false) }} className="w-full text-left px-4 py-2 text-on-surface font-label text-sm hover:bg-surface-bright transition-colors">10-15 min</button>
+                <button onClick={() => { setMaxReadingTime(999); setShowTimeDropdown(false) }} className="w-full text-left px-4 py-2 text-on-surface font-label text-sm hover:bg-surface-bright transition-colors">Preko 15 min</button>
+              </div>
+            )}
+          </div>
+
+          {/* Status Filter */}
+          <div className="relative" onClick={(e) => e.stopPropagation()}>
+            <button
+              onClick={() => { setShowStatusDropdown(!showStatusDropdown); setShowAuthorDropdown(false); setShowTimeDropdown(false) }}
+              className={`flex items-center gap-2 px-4 py-2 rounded-full cursor-pointer hover:bg-surface-bright transition-colors ${readStatus !== 'all' ? 'bg-primary-container text-on-primary-container' : 'bg-surface-container-highest text-on-surface-variant'}`}
+            >
+              <span className="font-label text-xs font-bold uppercase tracking-wider">Status</span>
+              <span className="material-symbols-outlined text-sm">expand_more</span>
+            </button>
+            {showStatusDropdown && (
+              <div className="absolute top-full mt-2 left-0 bg-surface-container-high rounded-xl shadow-[0_20px_40px_rgba(0,0,0,0.4)] z-20 min-w-[160px] py-2">
+                <button onClick={() => { setReadStatus('all'); setShowStatusDropdown(false) }} className="w-full text-left px-4 py-2 text-on-surface font-label text-sm hover:bg-surface-bright transition-colors">Sve priče</button>
+                <button onClick={() => { setReadStatus('unread'); setShowStatusDropdown(false) }} className="w-full text-left px-4 py-2 text-on-surface font-label text-sm hover:bg-surface-bright transition-colors">Nepročitano</button>
+                <button onClick={() => { setReadStatus('read'); setShowStatusDropdown(false) }} className="w-full text-left px-4 py-2 text-on-surface font-label text-sm hover:bg-surface-bright transition-colors">Pročitano</button>
+              </div>
+            )}
+          </div>
+
+          {hasActiveFilters && (
+            <>
+              <div className="h-8 w-[1px] bg-outline-variant/30 mx-2" />
+              <button
+                onClick={clearFilters}
+                className="flex items-center gap-2 px-4 py-2 rounded-full bg-surface-container-highest text-on-surface-variant hover:bg-surface-bright transition-colors font-label text-xs font-bold"
+              >
+                <span className="material-symbols-outlined text-sm">close</span>
+                Očisti
+              </button>
+            </>
+          )}
+
+          <div className="h-8 w-[1px] bg-outline-variant/30 mx-2 hidden lg:block" />
+
+          {/* View Toggle */}
+          <div className="flex bg-surface-container-lowest p-1 rounded-full">
+            <button
+              onClick={() => setViewMode('gallery')}
+              className={`p-2 rounded-full transition-colors ${viewMode === 'gallery' ? 'bg-primary-container text-on-primary-container' : 'text-on-surface-variant hover:text-on-surface'}`}
+              aria-label="Prikaz galerije"
+            >
+              <span className="material-symbols-outlined">grid_view</span>
+            </button>
+            <button
+              onClick={() => setViewMode('list')}
+              className={`p-2 rounded-full transition-colors ${viewMode === 'list' ? 'bg-primary-container text-on-primary-container' : 'text-on-surface-variant hover:text-on-surface'}`}
+              aria-label="Prikaz popisa"
+            >
+              <span className="material-symbols-outlined">format_list_bulleted</span>
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Filters and Controls */}
-      <div className="mb-6 space-y-4">
-        <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
-          {/* Filter Controls */}
-          <div className="flex flex-wrap gap-3 items-center flex-1">
-            {/* Author Filter */}
-            <div className="flex-shrink-0">
-              <select
-                value={selectedAuthor || ''}
-                onChange={(e) => setSelectedAuthor(e.target.value || null)}
-                className="px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-amber-100 text-sm focus:outline-none focus:border-amber-500 transition-colors"
-              >
-                <option value="">Svi autori</option>
-                {uniqueAuthors.map(author => (
-                  <option key={author} value={author}>{author}</option>
-                ))}
-              </select>
-            </div>
+      {/* Story Grid */}
+      <div>
+        <div className="flex items-center justify-between mb-8">
+          <h2 className="text-3xl font-headline font-bold">Sve priče</h2>
+          <span className="font-label text-on-surface-variant text-sm">
+            Prikazano {filteredStories.length} priča
+          </span>
+        </div>
 
-            {/* Rating Filter */}
-            <div className="flex-shrink-0">
-              <select
-                value={minRating !== null ? minRating.toString() : ''}
-                onChange={(e) => setMinRating(e.target.value ? Number(e.target.value) : null)}
-                className="px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-amber-100 text-sm focus:outline-none focus:border-amber-500 transition-colors"
-              >
-                <option value="">Minimalna ocjena</option>
-                <option value="1">1+ zvijezda</option>
-                <option value="2">2+ zvijezde</option>
-                <option value="3">3+ zvijezde</option>
-                <option value="4">4+ zvijezde</option>
-                <option value="5">5 zvijezda</option>
-              </select>
-            </div>
-
-            {/* Reading Time Filter */}
-            <div className="flex-shrink-0">
-              <select
-                value={maxReadingTime !== null ? maxReadingTime.toString() : ''}
-                onChange={(e) => setMaxReadingTime(e.target.value ? Number(e.target.value) : null)}
-                className="px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-amber-100 text-sm focus:outline-none focus:border-amber-500 transition-colors"
-              >
-                <option value="">Sve duljine</option>
-                <option value="5">Do 5 min</option>
-                <option value="10">5-10 min</option>
-                <option value="15">10-15 min</option>
-                <option value="999">Preko 15 min</option>
-              </select>
-            </div>
-
-            {/* Read Status Filter */}
-            <div className="flex-shrink-0">
-              <select
-                value={readStatus}
-                onChange={(e) => setReadStatus(e.target.value as 'all' | 'read' | 'unread')}
-                className="px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-amber-100 text-sm focus:outline-none focus:border-amber-500 transition-colors"
-              >
-                <option value="all">Sve priče</option>
-                <option value="unread">Nepročitano</option>
-                <option value="read">Pročitano</option>
-              </select>
-            </div>
-
-            {/* Sort Filter */}
-            <div className="flex-shrink-0">
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
-                className="px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-amber-100 text-sm focus:outline-none focus:border-amber-500 transition-colors"
-              >
-                <option value="default">Zadano (nepročitano prvo)</option>
-                <option value="title">Sortiraj po naslovu</option>
-                <option value="author">Sortiraj po autoru</option>
-                <option value="rating">Sortiraj po ocjeni</option>
-                <option value="newest">Najnovije prvo</option>
-                <option value="oldest">Najstarije prvo</option>
-              </select>
-            </div>
-
-            {/* Clear Filters Button */}
+        {stories.length === 0 ? (
+          <div className="text-center py-16">
+            <p className="text-on-surface-variant text-lg">
+              Još nema odobrenih priča. Provjeri admin stranicu!
+            </p>
+          </div>
+        ) : filteredStories.length === 0 ? (
+          <div className="text-center py-16">
+            <p className="text-on-surface-variant text-lg mb-4">
+              Nema rezultata za odabrane filtere.
+            </p>
             {hasActiveFilters && (
               <button
                 onClick={clearFilters}
-                className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-amber-300 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+                className="bg-surface-container-high text-primary px-8 py-3 rounded-full font-label font-bold hover:bg-surface-bright transition-all"
               >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
                 Očisti filtere
               </button>
             )}
           </div>
-
-          {/* View Toggle */}
-          <div className="flex-shrink-0">
-            <div className="flex gap-1 bg-slate-700 rounded-lg p-1 border border-slate-600">
-              <button
-                onClick={() => setViewMode('list')}
-                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                  viewMode === 'list'
-                    ? 'bg-amber-600 text-white'
-                    : 'text-amber-300/90 hover:text-amber-300'
-                }`}
-                aria-label="Prikaz popisa"
-              >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-              </button>
-              <button
-                onClick={() => setViewMode('gallery')}
-                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                  viewMode === 'gallery'
-                    ? 'bg-amber-600 text-white'
-                    : 'text-amber-300/90 hover:text-amber-300'
-                }`}
-                aria-label="Prikaz galerije"
-              >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-                </svg>
-              </button>
+        ) : (
+          <>
+            <div className={
+              viewMode === 'list'
+                ? 'space-y-6'
+                : 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8'
+            }>
+              {visibleStories.map((story) => (
+                <StoryCard
+                  key={story.id}
+                  id={story.id}
+                  title={story.title}
+                  author={story.author}
+                  imageUrl={story.imageUrl}
+                  viewMode={viewMode}
+                  averageRating={story.averageRating}
+                  ratingCount={story.ratingCount}
+                  readingTime={story.readingTime}
+                  readCount={story.readCount}
+                  commentCount={story.commentCount}
+                />
+              ))}
             </div>
-          </div>
-        </div>
-
-        {/* Result Count */}
-        {hasActiveFilters && (
-          <div className="text-sm text-amber-300/90">
-            Prikazano {filteredStories.length} od {stories.length} priča
-          </div>
+            {hasMore && (
+              <div className="mt-16 flex justify-center">
+                <button
+                  type="button"
+                  onClick={loadMore}
+                  className="bg-surface-container-high text-primary px-10 py-4 rounded-full font-label font-bold hover:bg-surface-bright transition-all flex items-center gap-3"
+                >
+                  Prikaži više priča
+                  <span className="material-symbols-outlined">expand_more</span>
+                </button>
+              </div>
+            )}
+          </>
         )}
       </div>
-
-      {/* Stories */}
-      {stories.length === 0 ? (
-        <div className="text-center py-16">
-          <p className="text-amber-300/90 text-lg">
-            Još nema odobrenih priča. Provjeri admin stranicu!
-          </p>
-        </div>
-      ) : filteredStories.length === 0 ? (
-        <div className="text-center py-16">
-          <p className="text-amber-300/90 text-lg mb-4">
-            Nema rezultata za odabrane filtere.
-          </p>
-          {hasActiveFilters && (
-            <button
-              onClick={clearFilters}
-              className="px-6 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-sm font-medium transition-colors"
-            >
-              Očisti filtere
-            </button>
-          )}
-        </div>
-      ) : (
-        <>
-          <div className={viewMode === 'list' ? 'flex flex-col gap-6' : 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'}>
-            {visibleStories.map((story) => (
-              <StoryCard
-                key={story.id}
-                id={story.id}
-                title={story.title}
-                author={story.author}
-                imageUrl={story.imageUrl}
-                viewMode={viewMode}
-                averageRating={story.averageRating}
-                ratingCount={story.ratingCount}
-                readingTime={story.readingTime}
-                readCount={story.readCount}
-                commentCount={story.commentCount}
-              />
-            ))}
-          </div>
-          {hasMore && (
-            <div className="mt-8 flex justify-center">
-              <button
-                type="button"
-                onClick={loadMore}
-                className="px-6 py-3 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-medium transition-colors"
-              >
-                Prikaži još
-              </button>
-            </div>
-          )}
-        </>
-      )}
-    </>
+    </section>
   )
 }

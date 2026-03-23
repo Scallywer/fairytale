@@ -44,28 +44,29 @@ export default function SubmitPage() {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-surface">
       {/* Header */}
-      <header className="border-b border-slate-700 bg-slate-800/50 backdrop-blur-sm">
-        <div className="max-w-4xl mx-auto px-4 py-6">
+      <header className="sticky top-0 z-50 bg-surface/60 backdrop-blur-xl shadow-[0_20px_40px_rgba(0,0,0,0.4)]">
+        <div className="max-w-4xl mx-auto px-8 py-4 flex items-center gap-6">
           <Link
             href="/"
-            className="text-amber-300 hover:text-amber-200 mb-4 text-sm flex items-center gap-1 inline-block"
+            className="group flex items-center gap-2 text-on-surface hover:text-primary-container transition-colors duration-[400ms]"
           >
-            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-            Povratak na početnu
+            <span className="material-symbols-outlined">arrow_back</span>
+            <span className="font-label font-medium">Natrag</span>
           </Link>
-          <h1 className="text-3xl font-bold text-amber-200">Pošalji priču</h1>
+          <div className="h-8 w-px bg-surface-container-highest" />
+          <h1 className="font-headline text-xl md:text-2xl font-bold text-primary-container tracking-tight">
+            Predloži priču
+          </h1>
         </div>
       </header>
 
       {/* Form */}
-      <main className="max-w-4xl mx-auto px-4 py-8">
-        <form onSubmit={handleSubmit} className="space-y-6">
+      <main className="max-w-4xl mx-auto px-8 py-12 md:py-20">
+        <form onSubmit={handleSubmit} className="space-y-8">
           <div>
-            <label htmlFor="title" className="block text-sm font-medium text-amber-200 mb-2">
+            <label htmlFor="title" className="block font-label text-sm font-bold text-on-surface mb-3 uppercase tracking-wider">
               Naslov *
             </label>
             <input
@@ -74,12 +75,13 @@ export default function SubmitPage() {
               required
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-amber-100 focus:outline-none focus:border-amber-500"
+              className="w-full bg-surface-container-lowest border-none rounded-full py-4 px-8 text-on-surface placeholder:text-on-surface-variant/50 focus:ring-2 focus:ring-primary-container/20 focus:outline-none font-label text-lg"
+              placeholder="Naslov vaše priče"
             />
           </div>
 
           <div>
-            <label htmlFor="author" className="block text-sm font-medium text-amber-200 mb-2">
+            <label htmlFor="author" className="block font-label text-sm font-bold text-on-surface mb-3 uppercase tracking-wider">
               Autor *
             </label>
             <input
@@ -88,12 +90,13 @@ export default function SubmitPage() {
               required
               value={formData.author}
               onChange={(e) => setFormData({ ...formData, author: e.target.value })}
-              className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-amber-100 focus:outline-none focus:border-amber-500"
+              className="w-full bg-surface-container-lowest border-none rounded-full py-4 px-8 text-on-surface placeholder:text-on-surface-variant/50 focus:ring-2 focus:ring-primary-container/20 focus:outline-none font-label text-lg"
+              placeholder="Vaše ime"
             />
           </div>
 
           <div>
-            <label htmlFor="body" className="block text-sm font-medium text-amber-200 mb-2">
+            <label htmlFor="body" className="block font-label text-sm font-bold text-on-surface mb-3 uppercase tracking-wider">
               Priča *
             </label>
             <textarea
@@ -102,29 +105,32 @@ export default function SubmitPage() {
               rows={15}
               value={formData.body}
               onChange={(e) => setFormData({ ...formData, body: e.target.value })}
-              className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-amber-100 focus:outline-none focus:border-amber-500 font-serif text-lg leading-relaxed"
+              className="w-full bg-surface-container-lowest border-none rounded-xl py-4 px-8 text-on-surface placeholder:text-on-surface-variant/50 focus:ring-0 focus:outline-none font-body text-xl leading-relaxed resize-none"
+              placeholder="Jednom davno, u dalekom kraljevstvu..."
             />
           </div>
 
           {message && (
             <div
-              className={`p-4 rounded-lg ${
+              className={`p-4 rounded-xl font-label ${
                 message.type === 'success'
-                  ? 'bg-green-900/30 text-green-300 border border-green-700'
-                  : 'bg-red-900/30 text-red-300 border border-red-700'
+                  ? 'bg-tertiary-container/20 text-tertiary border border-tertiary-container/30'
+                  : 'bg-error-container/20 text-error border border-error/30'
               }`}
             >
               {message.text}
             </div>
           )}
 
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full sm:w-auto px-8 py-3 bg-amber-600 hover:bg-amber-700 disabled:bg-amber-800 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors"
-          >
-            {isSubmitting ? 'Šalje se...' : 'Pošalji priču'}
-          </button>
+          <div className="flex justify-center pt-4">
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="bg-primary-container text-on-primary-container px-10 py-4 rounded-full font-label font-bold text-lg hover:scale-[1.02] active:scale-95 transition-all duration-[400ms] shadow-[0_0_20px_rgba(252,211,77,0.2)] disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              {isSubmitting ? 'Šalje se...' : 'Pošalji priču'}
+            </button>
+          </div>
         </form>
       </main>
     </div>

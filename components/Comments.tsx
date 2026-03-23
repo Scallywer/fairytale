@@ -20,14 +20,14 @@ export default function Comments({ storyId }: CommentsProps) {
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
-  
+
   const [formData, setFormData] = useState({
     authorName: '',
     content: '',
     mathAnswer: '',
     honeypot: ''
   })
-  
+
   const [mathQuestion, setMathQuestion] = useState<{ question: string; answer: number } | null>(null)
 
   const generateMathQuestion = () => {
@@ -64,11 +64,10 @@ export default function Comments({ storyId }: CommentsProps) {
     setSubmitting(true)
     setMessage(null)
 
-    // Validate math answer
     if (!mathQuestion || Number(formData.mathAnswer) !== mathQuestion.answer) {
       setMessage({ type: 'error', text: 'Netočan odgovor na matematičko pitanje' })
       setSubmitting(false)
-      generateMathQuestion() // Generate new question
+      generateMathQuestion()
       return
     }
 
@@ -88,16 +87,16 @@ export default function Comments({ storyId }: CommentsProps) {
       if (response.ok) {
         setFormData({ authorName: '', content: '', mathAnswer: '', honeypot: '' })
         setMessage({ type: 'success', text: 'Komentar je poslan i čeka odobrenje moderatora.' })
-        generateMathQuestion() // Generate new question for next comment
+        generateMathQuestion()
         setTimeout(() => setMessage(null), 5000)
       } else {
         const error = await response.json()
         setMessage({ type: 'error', text: error.error || 'Greška pri slanju komentara' })
-        generateMathQuestion() // Generate new question
+        generateMathQuestion()
       }
     } catch {
       setMessage({ type: 'error', text: 'Greška pri slanju komentara' })
-      generateMathQuestion() // Generate new question
+      generateMathQuestion()
     } finally {
       setSubmitting(false)
     }
@@ -115,136 +114,137 @@ export default function Comments({ storyId }: CommentsProps) {
   }
 
   return (
-    <div className="mt-12 pt-8 border-t border-slate-700">
-      <h2 id="comments-heading" className="text-2xl font-bold text-amber-200 mb-6">Komentari</h2>
+    <div className="mt-24 mb-32">
+      <h2 id="comments-heading" className="font-headline text-3xl text-primary mb-10">
+        Komentari ({comments.length})
+      </h2>
 
       {/* Comments List */}
       {loading ? (
-        <div className="text-center py-8 text-amber-300/70">Učitavanje komentara...</div>
+        <div className="text-center py-8 text-on-surface-variant font-label">Učitavanje komentara...</div>
       ) : comments.length === 0 ? (
-        <div className="text-center py-8 text-amber-300/70">
+        <div className="text-center py-8 text-on-surface-variant font-label">
           Još nema komentara. Budite prvi koji će komentirati!
         </div>
       ) : (
-        <div className="space-y-6 mb-8">
+        <div className="space-y-8 mb-8">
           {comments.map((comment) => (
-            <div
-              key={comment.id}
-              className="bg-slate-800 border border-slate-700 rounded-lg p-4"
-            >
-              <div className="flex items-start justify-between mb-2">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-amber-600 flex items-center justify-center text-white font-semibold text-sm">
-                    {comment.authorName.charAt(0).toUpperCase()}
-                  </div>
-                  <div>
-                    <p className="font-semibold text-amber-200">{comment.authorName}</p>
-                    <p className="text-xs text-amber-300/70">{formatDate(comment.createdAt)}</p>
-                  </div>
-                </div>
+            <div key={comment.id} className="flex gap-6">
+              <div className="w-12 h-12 rounded-full bg-surface-container-highest flex-shrink-0 flex items-center justify-center border border-outline-variant/20">
+                <span className="material-symbols-outlined text-primary-container">person</span>
               </div>
-              <p className="text-amber-100 whitespace-pre-line ml-10">{comment.content}</p>
+              <div className="flex-1 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="font-label font-bold text-on-surface">{comment.authorName}</span>
+                  <span className="font-label text-xs text-on-surface-variant">{formatDate(comment.createdAt)}</span>
+                </div>
+                <p className="font-body text-on-surface-variant leading-relaxed whitespace-pre-line">
+                  {comment.content}
+                </p>
+              </div>
             </div>
           ))}
         </div>
       )}
 
       {/* Comment Form */}
-      <div className="bg-slate-800 border border-slate-700 rounded-lg p-6">
-        <h3 className="text-xl font-semibold text-amber-200 mb-4">Ostavite komentar</h3>
-        
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label htmlFor="authorName" className="block text-sm font-medium text-amber-200 mb-2">
-              Vaše ime (opcionalno)
-            </label>
-            <input
-              type="text"
-              id="authorName"
-              value={formData.authorName}
-              onChange={(e) => setFormData({ ...formData, authorName: e.target.value })}
-              className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-amber-100 focus:outline-none focus:border-amber-500 focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
-              placeholder="Ako ostavite prazno, bit ćete prikazani kao 'Anonimno'"
-              maxLength={50}
-            />
-          </div>
-
-          <div>
-            <label htmlFor="content" className="block text-sm font-medium text-amber-200 mb-2">
-              Vaš komentar *
-            </label>
-            <textarea
-              id="content"
-              required
-              rows={4}
-              value={formData.content}
-              onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-              className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-amber-100 focus:outline-none focus:border-amber-500 focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
-              placeholder="Podijelite svoje misli o ovoj priči..."
-              maxLength={1000}
-            />
-            <p className="text-xs text-amber-300/70 mt-1">
-              {formData.content.length}/1000 znakova
-            </p>
-          </div>
-
-          {mathQuestion && (
+      <div className="pt-8">
+        <div className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/10">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label htmlFor="mathAnswer" className="block text-sm font-medium text-amber-200 mb-2">
-                {mathQuestion.question} *
+              <label htmlFor="authorName" className="block font-label text-sm font-medium text-on-surface mb-2">
+                Vaše ime (opcionalno)
               </label>
-              <p id="math-caption" className="text-xs text-amber-300/60 mb-1">
-                Jednostavno pitanje za zaštitu od robota. Unesite broj (0–20).
-              </p>
               <input
-                type="number"
-                id="mathAnswer"
-                required
-                value={formData.mathAnswer}
-                onChange={(e) => setFormData({ ...formData, mathAnswer: e.target.value })}
-                className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-amber-100 focus:outline-none focus:border-amber-500 focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
-                placeholder="Unesite odgovor"
-                aria-describedby="math-caption"
-                min={0}
-                max={20}
+                type="text"
+                id="authorName"
+                value={formData.authorName}
+                onChange={(e) => setFormData({ ...formData, authorName: e.target.value })}
+                className="w-full bg-surface-container-low border-none rounded-full py-3 px-6 text-on-surface placeholder:text-on-surface-variant/50 focus:ring-2 focus:ring-primary-container/20 focus:outline-none font-label"
+                placeholder="Ako ostavite prazno, bit ćete prikazani kao 'Anonimno'"
+                maxLength={50}
               />
             </div>
-          )}
 
-          {/* Honeypot field - hidden from users */}
-          <input
-            type="text"
-            name="website"
-            value={formData.honeypot}
-            onChange={(e) => setFormData({ ...formData, honeypot: e.target.value })}
-            className="hidden"
-            tabIndex={-1}
-            autoComplete="off"
-            aria-hidden="true"
-          />
+            <div>
+              <label htmlFor="content" className="block font-label text-sm font-medium text-on-surface mb-2">
+                Vaš komentar *
+              </label>
+              <textarea
+                id="content"
+                required
+                rows={3}
+                value={formData.content}
+                onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+                className="w-full bg-surface-container-low border-none rounded-xl py-3 px-6 text-on-surface placeholder:text-on-surface-variant/50 focus:ring-0 focus:outline-none resize-none font-body"
+                placeholder="Napišite svoj komentar..."
+                maxLength={1000}
+              />
+              <p className="text-xs text-on-surface-variant/50 mt-1 font-label">
+                {formData.content.length}/1000 znakova
+              </p>
+            </div>
 
-          <div aria-live="polite" role="status">
-            {message && (
-              <div
-                className={`p-4 rounded-lg ${
-                  message.type === 'success'
-                    ? 'bg-green-900/30 text-green-300 border border-green-700'
-                    : 'bg-red-900/30 text-red-300 border border-red-700'
-                }`}
-              >
-                {message.text}
+            {mathQuestion && (
+              <div>
+                <label htmlFor="mathAnswer" className="block font-label text-sm font-medium text-on-surface mb-2">
+                  {mathQuestion.question} *
+                </label>
+                <p id="math-caption" className="text-xs text-on-surface-variant/60 mb-1 font-label">
+                  Jednostavno pitanje za zaštitu od robota. Unesite broj (0-20).
+                </p>
+                <input
+                  type="number"
+                  id="mathAnswer"
+                  required
+                  value={formData.mathAnswer}
+                  onChange={(e) => setFormData({ ...formData, mathAnswer: e.target.value })}
+                  className="w-full bg-surface-container-low border-none rounded-full py-3 px-6 text-on-surface placeholder:text-on-surface-variant/50 focus:ring-2 focus:ring-primary-container/20 focus:outline-none font-label"
+                  placeholder="Unesite odgovor"
+                  aria-describedby="math-caption"
+                  min={0}
+                  max={20}
+                />
               </div>
             )}
-          </div>
 
-          <button
-            type="submit"
-            disabled={submitting}
-            className="w-full sm:w-auto px-6 py-3 bg-amber-600 hover:bg-amber-700 disabled:bg-amber-800 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 rounded"
-          >
-            {submitting ? 'Šalje se...' : 'Pošalji komentar'}
-          </button>
-        </form>
+            {/* Honeypot field */}
+            <input
+              type="text"
+              name="website"
+              value={formData.honeypot}
+              onChange={(e) => setFormData({ ...formData, honeypot: e.target.value })}
+              className="hidden"
+              tabIndex={-1}
+              autoComplete="off"
+              aria-hidden="true"
+            />
+
+            <div aria-live="polite" role="status">
+              {message && (
+                <div
+                  className={`p-4 rounded-xl font-label ${
+                    message.type === 'success'
+                      ? 'bg-tertiary-container/20 text-tertiary border border-tertiary-container/30'
+                      : 'bg-error-container/20 text-error border border-error/30'
+                  }`}
+                >
+                  {message.text}
+                </div>
+              )}
+            </div>
+
+            <div className="flex justify-end">
+              <button
+                type="submit"
+                disabled={submitting}
+                className="bg-surface-container-high text-on-surface px-6 py-2.5 rounded-full font-label text-sm font-bold hover:bg-surface-bright disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+              >
+                {submitting ? 'Šalje se...' : 'Pošalji komentar'}
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   )

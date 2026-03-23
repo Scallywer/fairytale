@@ -70,36 +70,65 @@ export default function Home() {
       dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationLd) }}
     />
     <div className="min-h-screen">
-      {/* Header */}
-      <header className="border-b border-slate-700 bg-slate-800/50 backdrop-blur-sm">
-        <div className="max-w-7xl mx-auto px-4 py-6">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <div>
-              <h1 className="text-3xl md:text-4xl font-bold text-amber-200 mb-2">
-                Priče za laku noć
-              </h1>
-              <p className="text-amber-300/90 text-sm md:text-base">
-                Lijepe priče za djecu prije spavanja
-              </p>
+      {/* Top App Bar */}
+      <header className="bg-surface/60 backdrop-blur-xl sticky top-0 z-50 shadow-[0_20px_40px_rgba(0,0,0,0.4)]">
+        <nav className="flex justify-between items-center w-full px-8 py-4 max-w-7xl mx-auto">
+          <div className="flex items-center gap-8">
+            <Link href="/" className="text-2xl font-headline text-primary-container italic tracking-wide">
+              Priče za laku noć
+            </Link>
+            <div className="hidden md:flex gap-6 items-center">
+              <Link href="/" className="text-primary-container font-bold border-b-2 border-primary-container pb-1 font-label text-sm tracking-wide">
+                Početna
+              </Link>
             </div>
+          </div>
+          <div className="flex items-center gap-4">
             <Link
               href="/submit"
-              className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-sm font-medium transition-colors"
+              className="bg-primary-container text-on-primary-container px-6 py-2.5 rounded-full font-label font-bold text-sm hover:scale-[1.02] active:scale-95 transition-all duration-[400ms] shadow-[0_0_20px_rgba(252,211,77,0.2)]"
             >
-              Pošalji priču
+              Predloži priču
             </Link>
           </div>
-        </div>
+        </nav>
       </header>
 
-      {/* Stories */}
-      <main id="main-content" className="max-w-7xl mx-auto px-4 py-8">
+      {/* Main Content */}
+      <main id="main-content" className="max-w-7xl mx-auto px-8 py-12 space-y-20">
         <RecommendedTonight stories={stories} />
         <StoriesList stories={stories} />
       </main>
 
       {/* Back to Top Button */}
       <BackToTop />
+
+      {/* Footer */}
+      <footer className="bg-surface w-full pt-20 pb-10">
+        <div className="flex flex-col items-center gap-8 w-full max-w-7xl mx-auto px-8">
+          <div className="w-full flex flex-col md:flex-row justify-between items-center gap-8 border-b border-outline-variant/10 pb-12">
+            <div className="text-center md:text-left">
+              <h3 className="text-lg font-headline text-primary-container mb-2">
+                Priče za laku noć
+              </h3>
+              <p className="text-on-surface/70 text-sm max-w-xs font-body">
+                Najljepše priče za miran san i čarobna jutra, kreirane s ljubavlju za vašu djecu.
+              </p>
+            </div>
+            <div className="flex flex-wrap justify-center gap-6">
+              <Link href="/" className="text-on-surface/70 hover:text-primary-container transition-colors duration-[400ms] font-label text-sm uppercase tracking-widest">
+                Početna
+              </Link>
+              <Link href="/submit" className="text-on-surface/70 hover:text-primary-container transition-colors duration-[400ms] font-label text-sm uppercase tracking-widest">
+                Predloži priču
+              </Link>
+            </div>
+          </div>
+          <div className="text-on-surface/50 text-xs font-label uppercase tracking-[0.2em]">
+            &copy; {new Date().getFullYear()} Priče za laku noć. Sva prava pridržana.
+          </div>
+        </div>
+      </footer>
     </div>
     </>
   )
