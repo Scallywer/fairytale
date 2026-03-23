@@ -26,3 +26,51 @@ body {
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
   min-height: 100vh;
 }
+
+/* Print-friendly styles */
+@media print {
+  :root {
+    --background: #fff;
+    --foreground: #000;
+  }
+
+  body {
+    background: #fff;
+    color: #000;
+  }
+
+  /* Hide non-essential UI */
+  .print\:hidden,
+  nav,
+  footer,
+  button,
+  [role="group"],
+  #comments,
+  [aria-label="Komentari"],
+  [aria-label="Ostale priče"] {
+    display: none !important;
+  }
+
+  /* Clean up story content */
+  .print\:static {
+    position: static !important;
+  }
+
+  .print\:bg-transparent {
+    background: transparent !important;
+  }
+
+  .print\:border-none {
+    border: none !important;
+  }
+
+  /* Make text dark for print */
+  h1, h2, h3, p, span, div {
+    color: #000 !important;
+  }
+
+  img {
+    max-width: 100% !important;
+    page-break-inside: avoid;
+  }
+}

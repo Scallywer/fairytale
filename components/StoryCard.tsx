@@ -152,7 +152,7 @@ export default function StoryCard({
             <h3 className="text-lg font-semibold text-amber-200 group-hover:text-amber-100 mb-1 line-clamp-2">
               {title}
             </h3>
-            <p className="text-sm text-amber-300/70 mb-2">
+            <p className="text-sm text-amber-300/90 mb-2">
               {author}
             </p>
             <div className="mb-2">
@@ -249,7 +249,7 @@ export default function StoryCard({
           
           {/* Content */}
           <div className="flex flex-col gap-1">
-            <p className="text-sm text-amber-300/70">
+            <p className="text-sm text-amber-300/90">
               {author}
             </p>
             <div className="mt-1">

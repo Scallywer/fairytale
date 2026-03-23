@@ -36,12 +36,57 @@ export default function StoryReader({ storyId, title, author, body, imageUrl, av
   const [showRating, setShowRating] = useState(false)
   const [rating, setRating] = useState(0)
   const [hoverRating, setHoverRating] = useState(0)
+  const [readProgress, setReadProgress] = useState(0)
+  const [fontSize, setFontSize] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('storyFontSize')
+      if (saved) return parseFloat(saved)
+    }
+    return 1.125 // rem, matches text-lg
+  })
+  const [showCopied, setShowCopied] = useState(false)
   const router = useRouter()
   const readCountSentRef = useRef(false)
   const readDelayTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   /** +1 after this visit successfully POSTed /read (SSR readCount is stale until refresh/revalidate). */
   const [optimisticReadDelta, setOptimisticReadDelta] = useState(0)
   const displayedReadCount = (readCount ?? 0) + optimisticReadDelta
+
+  // Reading progress bar
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollTop = window.scrollY
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight
+      if (docHeight > 0) {
+        setReadProgress(Math.min(scrollTop / docHeight, 1))
+      }
+    }
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
+  const adjustFontSize = (delta: number) => {
+    setFontSize(prev => {
+      const next = Math.max(0.875, Math.min(2, prev + delta))
+      localStorage.setItem('storyFontSize', String(next))
+      return next
+    })
+  }
+
+  const handleShare = async () => {
+    const url = window.location.href
+    if (navigator.share) {
+      try {
+        await navigator.share({ title, url })
+      } catch {
+        // User cancelled or error
+      }
+    } else {
+      await navigator.clipboard.writeText(url)
+      setShowCopied(true)
+      setTimeout(() => setShowCopied(false), 2000)
+    }
+  }
 
   const recordStoryRead = useCallback(() => {
     if (readCountSentRef.current) return
@@ -178,8 +223,16 @@ export default function StoryReader({ storyId, title, author, body, imageUrl, av
 
   return (
     <div className="min-h-screen">
+      {/* Reading Progress Bar */}
+      <div className="fixed top-0 left-0 right-0 z-50 h-1 bg-slate-800/50 print:hidden">
+        <div
+          className="h-full bg-amber-500 transition-[width] duration-150"
+          style={{ width: `${readProgress * 100}%` }}
+        />
+      </div>
+
       {/* Header */}
-      <div className="border-b border-slate-700 bg-slate-800/50 backdrop-blur-sm md:sticky top-0 z-10">
+      <div className="border-b border-slate-700 bg-slate-800/50 backdrop-blur-sm md:sticky top-0 z-10 print:static print:bg-transparent print:border-none">
         <div className="max-w-4xl mx-auto px-4 py-4">
           <button
             type="button"
@@ -193,7 +246,7 @@ export default function StoryReader({ storyId, title, author, body, imageUrl, av
           </button>
           <h1 className="text-2xl md:text-3xl font-bold text-amber-200 mb-1">{title}</h1>
           <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-            <p className="text-amber-300/70 text-sm">
+            <p className="text-amber-300/90 text-sm">
               {author}
             </p>
             {readingTime != null && readingTime > 0 && (
@@ -211,6 +264,41 @@ export default function StoryReader({ storyId, title, author, body, imageUrl, av
               </svg>
               <span>{displayedReadCount} čitanja</span>
             </div>
+
+            {/* Font size & share controls */}
+            <div className="flex items-center gap-2 print:hidden">
+              <button
+                type="button"
+                onClick={() => adjustFontSize(-0.125)}
+                className="px-2 py-1 text-xs border border-slate-600 hover:border-slate-500 text-amber-300 rounded transition-colors"
+                aria-label="Smanji veličinu teksta"
+              >
+                A-
+              </button>
+              <button
+                type="button"
+                onClick={() => adjustFontSize(0.125)}
+                className="px-2 py-1 text-sm border border-slate-600 hover:border-slate-500 text-amber-300 rounded transition-colors"
+                aria-label="Povećaj veličinu teksta"
+              >
+                A+
+              </button>
+              <button
+                type="button"
+                onClick={handleShare}
+                className="px-2 py-1 border border-slate-600 hover:border-slate-500 text-amber-300 rounded transition-colors relative"
+                aria-label="Podijeli priču"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                </svg>
+                {showCopied && (
+                  <span className="absolute -bottom-8 left-1/2 -translate-x-1/2 text-xs bg-slate-700 text-amber-200 px-2 py-1 rounded whitespace-nowrap">
+                    Kopirano!
+                  </span>
+                )}
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -218,7 +306,7 @@ export default function StoryReader({ storyId, title, author, body, imageUrl, av
       {/* Story Content */}
       <div className="max-w-4xl mx-auto px-4 py-8">
         <div className="prose prose-invert prose-lg max-w-none">
-          <div className="text-amber-100 leading-relaxed text-lg md:text-xl font-serif">
+          <div className="text-amber-100 leading-relaxed font-serif" style={{ fontSize: `${fontSize}rem` }}>
             {(() => {
               const paragraphs = splitIntoParagraphs(body)
 
@@ -329,7 +417,7 @@ export default function StoryReader({ storyId, title, author, body, imageUrl, av
               <h2 className="text-2xl font-bold text-amber-200 mb-4">
                 Ocijeni priču
               </h2>
-              <p className="text-amber-300/70 mb-6">
+              <p className="text-amber-300/90 mb-6">
                 Koliko bi ocijenio/ocijenila ovu priču?
               </p>
               

@@ -17,6 +17,16 @@ export const adminDeleteStorySchema = z.object({
   storyId: nonEmptyString,
 })
 
+export const adminApproveCommentSchema = z.object({
+  action: z.literal('approveComment'),
+  commentId: nonEmptyString,
+})
+
+export const adminDeleteCommentSchema = z.object({
+  action: z.literal('deleteComment'),
+  commentId: nonEmptyString,
+})
+
 export const createStorySchema = z.object({
   title: nonEmptyString.max(200),
   author: nonEmptyString.max(100),

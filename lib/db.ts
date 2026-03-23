@@ -18,6 +18,12 @@ const db = new Database(dbPath)
 // Enable foreign keys (required for CASCADE deletes)
 db.pragma('foreign_keys = ON')
 
+// Enable WAL mode for better concurrent read performance
+db.pragma('journal_mode = WAL')
+
+// Set busy timeout to handle concurrent access during build (multiple workers)
+db.pragma('busy_timeout = 5000')
+
 // Initialize database schema
 db.exec(`
   CREATE TABLE IF NOT EXISTS stories (
@@ -45,8 +51,7 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_ratings_storyId ON ratings(storyId);
   CREATE INDEX IF NOT EXISTS idx_ratings_userId ON ratings(userId);
 
-  DROP TABLE IF EXISTS comments;
-  CREATE TABLE comments (
+  CREATE TABLE IF NOT EXISTS comments (
     id TEXT PRIMARY KEY,
     storyId TEXT NOT NULL,
     authorName TEXT NOT NULL,
@@ -56,6 +61,9 @@ db.exec(`
   );
   CREATE INDEX IF NOT EXISTS idx_comments_storyId ON comments(storyId);
   CREATE INDEX IF NOT EXISTS idx_comments_createdAt ON comments(createdAt);
+
+  CREATE INDEX IF NOT EXISTS idx_stories_approved_created ON stories(isApproved, createdAt DESC);
+  CREATE INDEX IF NOT EXISTS idx_comments_story_approved ON comments(storyId, isApproved);
 `)
 
 try {
@@ -165,7 +173,9 @@ export const dbHelpers = {
     const sql = `
       SELECT
         stories.*,
-        COALESCE(comment_stats.cnt, 0) AS commentCount
+        COALESCE(comment_stats.cnt, 0) AS commentCount,
+        COALESCE(rating_stats.avg_rating, 0) AS avgRating,
+        COALESCE(rating_stats.rating_count, 0) AS ratingCount
       FROM stories
       LEFT JOIN (
         SELECT storyId, COUNT(*) AS cnt
@@ -173,6 +183,11 @@ export const dbHelpers = {
         WHERE isApproved = 1
         GROUP BY storyId
       ) AS comment_stats ON comment_stats.storyId = stories.id
+      LEFT JOIN (
+        SELECT storyId, AVG(rating) AS avg_rating, COUNT(*) AS rating_count
+        FROM ratings
+        GROUP BY storyId
+      ) AS rating_stats ON rating_stats.storyId = stories.id
       WHERE stories.isApproved = 1
       ORDER BY stories.createdAt DESC
     `
@@ -184,16 +199,15 @@ export const dbHelpers = {
       limit != null && offset != null
         ? stmt.all(limit, offset)
         : stmt.all()
-    ) as (StoryRow & { commentCount: number })[]
+    ) as (StoryRow & { commentCount: number; avgRating: number; ratingCount: number })[]
     return stories.map((story) => {
-      const ratingInfo = this.getAverageRating(story.id)
-      const { commentCount: approvedCommentCount, ...rest } = story
+      const { commentCount: approvedCommentCount, avgRating, ratingCount, ...rest } = story
       return {
         ...rest,
         isApproved: Boolean(story.isApproved),
         commentCount: Number(approvedCommentCount) || 0,
-        averageRating: ratingInfo?.averageRating,
-        ratingCount: ratingInfo?.ratingCount || 0,
+        averageRating: avgRating ? Math.round(avgRating * 10) / 10 : undefined,
+        ratingCount: Number(ratingCount) || 0,
         readingTime: calculateReadingTime(story.body),
       }
     })
@@ -208,26 +222,37 @@ export const dbHelpers = {
     }))
   },
 
-  // Get story by ID with average rating
+  // Get story by ID with average rating, comment count in a single query
   getStoryById(id: string): Story | null {
-    const story = db.prepare('SELECT * FROM stories WHERE id = ?').get(id) as StoryRow | undefined
-    if (!story) {
+    const row = db.prepare(`
+      SELECT
+        stories.*,
+        COALESCE(rs.avg_rating, 0) AS avgRating,
+        COALESCE(rs.rating_count, 0) AS ratingCount,
+        COALESCE(cs.cnt, 0) AS commentCount
+      FROM stories
+      LEFT JOIN (
+        SELECT storyId, AVG(rating) AS avg_rating, COUNT(*) AS rating_count
+        FROM ratings WHERE storyId = ?
+      ) AS rs ON rs.storyId = stories.id
+      LEFT JOIN (
+        SELECT storyId, COUNT(*) AS cnt
+        FROM comments WHERE storyId = ? AND isApproved = 1
+      ) AS cs ON cs.storyId = stories.id
+      WHERE stories.id = ?
+    `).get(id, id, id) as (StoryRow & { avgRating: number; ratingCount: number; commentCount: number }) | undefined
+    if (!row) {
       return null
     }
-    
-    const ratingInfo = this.getAverageRating(id)
-    const cc = db
-      .prepare(
-        `SELECT COUNT(*) AS c FROM comments WHERE storyId = ? AND isApproved = 1`
-      )
-      .get(id) as { c: number }
+
+    const { avgRating, ratingCount, commentCount, ...rest } = row
     return {
-      ...story,
-      isApproved: Boolean(story.isApproved),
-      averageRating: ratingInfo?.averageRating,
-      ratingCount: ratingInfo?.ratingCount || 0,
-      readingTime: calculateReadingTime(story.body),
-      commentCount: Number(cc?.c) || 0,
+      ...rest,
+      isApproved: Boolean(row.isApproved),
+      averageRating: avgRating ? Math.round(avgRating * 10) / 10 : undefined,
+      ratingCount: Number(ratingCount) || 0,
+      readingTime: calculateReadingTime(row.body),
+      commentCount: Number(commentCount) || 0,
     }
   },
 
@@ -308,7 +333,7 @@ export const dbHelpers = {
     
     db.prepare(`
       INSERT INTO comments (id, storyId, authorName, content, isApproved, createdAt)
-      VALUES (?, ?, ?, ?, 1, ?)
+      VALUES (?, ?, ?, ?, 0, ?)
     `).run(
       id,
       data.storyId,
@@ -339,7 +364,71 @@ export const dbHelpers = {
 
   incrementReadCount(storyId: string): void {
     db.prepare('UPDATE stories SET readCount = readCount + 1 WHERE id = ?').run(storyId)
-  }
+  },
+
+  // Get all pending (unapproved) comments for admin moderation
+  getPendingComments(): Comment[] {
+    const comments = db.prepare(`
+      SELECT comments.*, stories.title AS storyTitle
+      FROM comments
+      LEFT JOIN stories ON stories.id = comments.storyId
+      WHERE comments.isApproved = 0
+      ORDER BY comments.createdAt DESC
+    `).all() as (CommentRow & { storyTitle?: string })[]
+    return comments.map(c => ({
+      ...c,
+      isApproved: Boolean(c.isApproved),
+    }))
+  },
+
+  // Approve a comment
+  approveComment(id: string): void {
+    const result = db.prepare('UPDATE comments SET isApproved = 1 WHERE id = ?').run(id)
+    if (result.changes === 0) throw new Error('Comment not found')
+  },
+
+  // Delete a comment
+  deleteComment(id: string): void {
+    const result = db.prepare('DELETE FROM comments WHERE id = ?').run(id)
+    if (result.changes === 0) throw new Error('Comment not found')
+  },
+
+  // Get related stories efficiently (avoids loading all stories)
+  getRelatedStories(storyId: string, author: string, limit: number = 3): { id: string; title: string; author: string; readingTime: number }[] {
+    const rows = db.prepare(`
+      SELECT id, title, author, body FROM stories
+      WHERE isApproved = 1 AND id != ?
+      ORDER BY CASE WHEN author = ? THEN 0 ELSE 1 END, RANDOM()
+      LIMIT ?
+    `).all(storyId, author, limit) as { id: string; title: string; author: string; body: string }[]
+    return rows.map(r => ({
+      id: r.id,
+      title: r.title,
+      author: r.author,
+      readingTime: calculateReadingTime(r.body),
+    }))
+  },
+
+  // Get the most recent updatedAt timestamp across all approved stories
+  getLatestUpdatedAt(): string | null {
+    const row = db.prepare('SELECT MAX(updatedAt) AS latest FROM stories WHERE isApproved = 1').get() as { latest: string | null } | undefined
+    return row?.latest ?? null
+  },
 }
+
+// Graceful shutdown: close the database connection
+export function closeDb(): void {
+  db.close()
+}
+
+process.on('SIGTERM', () => {
+  closeDb()
+  process.exit(0)
+})
+
+process.on('SIGINT', () => {
+  closeDb()
+  process.exit(0)
+})
 
 export default db

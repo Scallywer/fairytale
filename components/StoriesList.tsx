@@ -174,7 +174,7 @@ export default function StoriesList({ stories }: StoriesListProps) {
             className="w-full px-4 py-3 pl-12 bg-slate-800 border border-slate-700 rounded-lg text-amber-100 placeholder-amber-300/50 focus:outline-none focus:border-amber-500 transition-colors"
           />
           <svg
-            className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-amber-300/50"
+            className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-amber-300/70"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -285,7 +285,7 @@ export default function StoriesList({ stories }: StoriesListProps) {
                 className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                   viewMode === 'list'
                     ? 'bg-amber-600 text-white'
-                    : 'text-amber-300/70 hover:text-amber-300'
+                    : 'text-amber-300/90 hover:text-amber-300'
                 }`}
                 aria-label="Prikaz popisa"
               >
@@ -298,7 +298,7 @@ export default function StoriesList({ stories }: StoriesListProps) {
                 className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                   viewMode === 'gallery'
                     ? 'bg-amber-600 text-white'
-                    : 'text-amber-300/70 hover:text-amber-300'
+                    : 'text-amber-300/90 hover:text-amber-300'
                 }`}
                 aria-label="Prikaz galerije"
               >
@@ -312,7 +312,7 @@ export default function StoriesList({ stories }: StoriesListProps) {
 
         {/* Result Count */}
         {hasActiveFilters && (
-          <div className="text-sm text-amber-300/70">
+          <div className="text-sm text-amber-300/90">
             Prikazano {filteredStories.length} od {stories.length} priča
           </div>
         )}
@@ -321,13 +321,13 @@ export default function StoriesList({ stories }: StoriesListProps) {
       {/* Stories */}
       {stories.length === 0 ? (
         <div className="text-center py-16">
-          <p className="text-amber-300/70 text-lg">
+          <p className="text-amber-300/90 text-lg">
             Još nema odobrenih priča. Provjeri admin stranicu!
           </p>
         </div>
       ) : filteredStories.length === 0 ? (
         <div className="text-center py-16">
-          <p className="text-amber-300/70 text-lg mb-4">
+          <p className="text-amber-300/90 text-lg mb-4">
             Nema rezultata za odabrane filtere.
           </p>
           {hasActiveFilters && (

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { storiesService } from "@/lib/storiesService";
+import { dbHelpers } from "@/lib/db";
 import StoryReader from "@/components/StoryReader";
 import { logger } from "@/lib/logger";
 
@@ -53,6 +54,8 @@ export async function generateMetadata({
       title,
       description,
       url,
+      publishedTime: story.createdAt,
+      modifiedTime: story.updatedAt,
       images: imageUrl
         ? [
             {
@@ -85,17 +88,7 @@ export default async function StoryPage({
     if (!story || !story.isApproved) {
       notFound();
     }
-    const allApproved = storiesService.getApprovedStories();
-    related = allApproved
-      .filter((s) => s.id !== story!.id)
-      .sort((a, b) => {
-        const aSame = a.author === story!.author ? 1 : 0;
-        const bSame = b.author === story!.author ? 1 : 0;
-        if (aSame !== bSame) return bSame - aSame;
-        return a.id.localeCompare(b.id);
-      })
-      .slice(0, 3)
-      .map((s) => ({ id: s.id, title: s.title, author: s.author, readingTime: s.readingTime }));
+    related = dbHelpers.getRelatedStories(story!.id, story!.author, 3);
   } catch (error) {
     logger.error("Error loading story:", error);
     notFound();
@@ -104,6 +97,10 @@ export default async function StoryPage({
   if (!story || !story.isApproved) {
     notFound();
   }
+
+  const baseUrl =
+    process.env.NEXT_PUBLIC_SITE_URL || "https://pricezalakunoc.hr";
+  const storyUrl = `${baseUrl}/story/${story.id}`;
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -126,11 +123,34 @@ export default async function StoryPage({
         : undefined,
   };
 
+  const breadcrumbLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Početna",
+        item: baseUrl,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: story.title,
+        item: storyUrl,
+      },
+    ],
+  };
+
   return (
     <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
       />
         <StoryReader
           key={story.id}

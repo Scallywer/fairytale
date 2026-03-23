@@ -86,12 +86,10 @@ export default function Comments({ storyId }: CommentsProps) {
       })
 
       if (response.ok) {
-        const newComment = await response.json()
-        setComments([newComment, ...comments])
         setFormData({ authorName: '', content: '', mathAnswer: '', honeypot: '' })
-        setMessage({ type: 'success', text: 'Komentar je uspješno poslan!' })
+        setMessage({ type: 'success', text: 'Komentar je poslan i čeka odobrenje moderatora.' })
         generateMathQuestion() // Generate new question for next comment
-        setTimeout(() => setMessage(null), 3000)
+        setTimeout(() => setMessage(null), 5000)
       } else {
         const error = await response.json()
         setMessage({ type: 'error', text: error.error || 'Greška pri slanju komentara' })
@@ -141,7 +139,7 @@ export default function Comments({ storyId }: CommentsProps) {
                   </div>
                   <div>
                     <p className="font-semibold text-amber-200">{comment.authorName}</p>
-                    <p className="text-xs text-amber-300/50">{formatDate(comment.createdAt)}</p>
+                    <p className="text-xs text-amber-300/70">{formatDate(comment.createdAt)}</p>
                   </div>
                 </div>
               </div>
@@ -185,7 +183,7 @@ export default function Comments({ storyId }: CommentsProps) {
               placeholder="Podijelite svoje misli o ovoj priči..."
               maxLength={1000}
             />
-            <p className="text-xs text-amber-300/50 mt-1">
+            <p className="text-xs text-amber-300/70 mt-1">
               {formData.content.length}/1000 znakova
             </p>
           </div>
@@ -225,17 +223,19 @@ export default function Comments({ storyId }: CommentsProps) {
             aria-hidden="true"
           />
 
-          {message && (
-            <div
-              className={`p-4 rounded-lg ${
-                message.type === 'success'
-                  ? 'bg-green-900/30 text-green-300 border border-green-700'
-                  : 'bg-red-900/30 text-red-300 border border-red-700'
-              }`}
-            >
-              {message.text}
-            </div>
-          )}
+          <div aria-live="polite" role="status">
+            {message && (
+              <div
+                className={`p-4 rounded-lg ${
+                  message.type === 'success'
+                    ? 'bg-green-900/30 text-green-300 border border-green-700'
+                    : 'bg-red-900/30 text-red-300 border border-red-700'
+                }`}
+              >
+                {message.text}
+              </div>
+            )}
+          </div>
 
           <button
             type="submit"

@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { storiesService } from '@/lib/storiesService'
+import { dbHelpers } from '@/lib/db'
 import { verifyAdminPassword, verifyAdminCookie, createAdminSessionCookie } from '@/lib/auth'
 import { getClientIp, checkAdminLoginRateLimit } from '@/lib/rateLimit'
 import {
   adminLoginSchema,
   adminToggleApprovalSchema,
   adminDeleteStorySchema,
+  adminApproveCommentSchema,
+  adminDeleteCommentSchema,
 } from '@/lib/schemas'
 import { logger } from '@/lib/logger'
 
@@ -27,6 +30,13 @@ export async function GET(request: NextRequest) {
       if (err) return err
       const stories = storiesService.getAllStories()
       return NextResponse.json(stories)
+    }
+
+    if (action === 'getPendingComments') {
+      const err = requireAdmin(request)
+      if (err) return err
+      const comments = dbHelpers.getPendingComments()
+      return NextResponse.json(comments)
     }
 
     return NextResponse.json({ error: 'Nevažeća akcija' }, { status: 400 })
@@ -81,6 +91,28 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Potreban ID priče' }, { status: 400 })
       }
       storiesService.delete(parsed.data.storyId)
+      return NextResponse.json({ success: true })
+    }
+
+    if (action === 'approveComment') {
+      const err = requireAdmin(request)
+      if (err) return err
+      const parsed = adminApproveCommentSchema.safeParse(body)
+      if (!parsed.success) {
+        return NextResponse.json({ error: 'Potreban ID komentara' }, { status: 400 })
+      }
+      dbHelpers.approveComment(parsed.data.commentId)
+      return NextResponse.json({ success: true })
+    }
+
+    if (action === 'deleteComment') {
+      const err = requireAdmin(request)
+      if (err) return err
+      const parsed = adminDeleteCommentSchema.safeParse(body)
+      if (!parsed.success) {
+        return NextResponse.json({ error: 'Potreban ID komentara' }, { status: 400 })
+      }
+      dbHelpers.deleteComment(parsed.data.commentId)
       return NextResponse.json({ success: true })
     }
 

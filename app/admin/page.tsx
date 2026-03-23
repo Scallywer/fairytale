@@ -13,22 +13,39 @@ interface Story {
   createdAt: string
 }
 
+interface PendingComment {
+  id: string
+  storyId: string
+  authorName: string
+  content: string
+  createdAt: string
+  storyTitle?: string
+}
+
 export default function AdminPage() {
   const [password, setPassword] = useState('')
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [stories, setStories] = useState<Story[]>([])
+  const [pendingComments, setPendingComments] = useState<PendingComment[]>([])
   const [loading, setLoading] = useState(true)
 
   const fetchStories = async () => {
     setLoading(true)
     try {
-      const response = await fetch('/api/admin?action=getStories', { credentials: 'include' })
-      if (response.ok) {
-        const data = await response.json()
+      const [storiesRes, commentsRes] = await Promise.all([
+        fetch('/api/admin?action=getStories', { credentials: 'include' }),
+        fetch('/api/admin?action=getPendingComments', { credentials: 'include' }),
+      ])
+      if (storiesRes.ok) {
+        const data = await storiesRes.json()
         setStories(data)
         setIsAuthenticated(true)
       } else {
         setIsAuthenticated(false)
+      }
+      if (commentsRes.ok) {
+        const data = await commentsRes.json()
+        setPendingComments(data)
       }
     } catch (error) {
       logger.error('Error fetching stories:', error)
@@ -89,6 +106,29 @@ export default function AdminPage() {
     else alert('Greška pri brisanju')
   }
 
+  const approveComment = async (commentId: string) => {
+    const response = await fetch('/api/admin', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ commentId, action: 'approveComment' }),
+    })
+    if (response.ok) fetchStories()
+    else alert('Greška pri odobravanju komentara')
+  }
+
+  const deleteComment = async (commentId: string) => {
+    if (!confirm('Jeste li sigurni da želite obrisati ovaj komentar?')) return
+    const response = await fetch('/api/admin', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ commentId, action: 'deleteComment' }),
+    })
+    if (response.ok) fetchStories()
+    else alert('Greška pri brisanju komentara')
+  }
+
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center px-4">
@@ -141,7 +181,7 @@ export default function AdminPage() {
           <div className="flex justify-between items-center">
             <div>
               <h1 className="text-3xl font-bold text-amber-200 mb-2">Admin panel</h1>
-              <p className="text-amber-300/70 text-sm">Upravljanje pričama</p>
+              <p className="text-amber-300/90 text-sm">Upravljanje pričama</p>
             </div>
             <Link
               href="/"
@@ -158,7 +198,7 @@ export default function AdminPage() {
 
       <main className="max-w-7xl mx-auto px-4 py-8">
         {loading ? (
-          <div className="text-center py-8 text-amber-300/70">Učitavanje...</div>
+          <div className="text-center py-8 text-amber-300/90">Učitavanje...</div>
         ) : (
           <>
             {/* Unapproved Stories */}
@@ -167,7 +207,7 @@ export default function AdminPage() {
                 Priče koje čekaju odobrenje ({unapprovedStories.length})
               </h2>
               {unapprovedStories.length === 0 ? (
-                <p className="text-amber-300/70">Nema priča koje čekaju odobrenje.</p>
+                <p className="text-amber-300/90">Nema priča koje čekaju odobrenje.</p>
               ) : (
                 <div className="space-y-4">
                   {unapprovedStories.map((story) => (
@@ -178,10 +218,10 @@ export default function AdminPage() {
                       <div className="flex justify-between items-start mb-4">
                         <div className="flex-1">
                           <h3 className="text-xl font-semibold text-amber-200 mb-2">{story.title}</h3>
-                          <p className="text-amber-300/70 text-sm mb-1">
+                          <p className="text-amber-300/90 text-sm mb-1">
                             Autor: {story.author}
                           </p>
-                          <p className="text-amber-300/50 text-xs">
+                          <p className="text-amber-300/70 text-xs">
                             {new Date(story.createdAt).toLocaleDateString('hr-HR')}
                           </p>
                         </div>
@@ -211,13 +251,57 @@ export default function AdminPage() {
               )}
             </section>
 
+            {/* Pending Comments */}
+            <section className="mb-12">
+              <h2 className="text-2xl font-bold text-amber-200 mb-4">
+                Komentari koji čekaju odobrenje ({pendingComments.length})
+              </h2>
+              {pendingComments.length === 0 ? (
+                <p className="text-amber-300/90">Nema komentara koji čekaju odobrenje.</p>
+              ) : (
+                <div className="space-y-4">
+                  {pendingComments.map((comment) => (
+                    <div
+                      key={comment.id}
+                      className="bg-slate-800 border border-slate-700 rounded-lg p-4"
+                    >
+                      <div className="flex justify-between items-start mb-2">
+                        <div className="flex-1">
+                          <p className="text-amber-200 font-semibold">{comment.authorName}</p>
+                          <p className="text-amber-300/70 text-xs">
+                            Na priči: {comment.storyTitle || comment.storyId} &middot;{' '}
+                            {new Date(comment.createdAt).toLocaleDateString('hr-HR')}
+                          </p>
+                        </div>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => approveComment(comment.id)}
+                            className="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium transition-colors"
+                          >
+                            Odobri
+                          </button>
+                          <button
+                            onClick={() => deleteComment(comment.id)}
+                            className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors"
+                          >
+                            Obriši
+                          </button>
+                        </div>
+                      </div>
+                      <p className="text-amber-100 text-sm whitespace-pre-line">{comment.content}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </section>
+
             {/* Approved Stories */}
             <section>
               <h2 className="text-2xl font-bold text-amber-200 mb-4">
                 Odobrene priče ({approvedStories.length})
               </h2>
               {approvedStories.length === 0 ? (
-                <p className="text-amber-300/70">Nema odobrenih priča.</p>
+                <p className="text-amber-300/90">Nema odobrenih priča.</p>
               ) : (
                 <div className="space-y-4">
                   {approvedStories.map((story) => (
@@ -228,7 +312,7 @@ export default function AdminPage() {
                       <div className="flex justify-between items-start">
                         <div className="flex-1">
                           <h3 className="text-xl font-semibold text-amber-200 mb-2">{story.title}</h3>
-                          <p className="text-amber-300/70 text-sm">
+                          <p className="text-amber-300/90 text-sm">
                             Autor: {story.author}
                           </p>
                         </div>

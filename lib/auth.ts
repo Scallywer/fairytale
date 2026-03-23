@@ -10,7 +10,10 @@ function getSecret(): string {
 }
 
 export function verifyAdminPassword(password: string): boolean {
-  return password === getSecret()
+  const secret = getSecret()
+  const passwordHash = crypto.createHash('sha256').update(password).digest()
+  const secretHash = crypto.createHash('sha256').update(secret).digest()
+  return crypto.timingSafeEqual(passwordHash, secretHash)
 }
 
 function sign(value: string): string {

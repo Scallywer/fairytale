@@ -4,6 +4,7 @@
  */
 import type { Story } from './db'
 import { dbHelpers } from './db'
+import { sanitizeStrings } from './sanitize'
 
 export type { Story }
 
@@ -39,7 +40,7 @@ export const storiesService = {
   },
 
   create(data: Omit<Story, 'id' | 'createdAt' | 'updatedAt'>): Story {
-    return dbHelpers.createStory(data)
+    return dbHelpers.createStory(sanitizeStrings(data))
   },
 
   toggleApproval(id: string): Story {

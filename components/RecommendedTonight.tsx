@@ -45,7 +45,7 @@ export default function RecommendedTonight({ stories }: RecommendedTonightProps)
   return (
     <section aria-label="Preporučeno za večeras" className="mb-10">
       <h2 className="text-xl font-bold text-amber-200 mb-4">Preporučeno za večeras</h2>
-      <p className="text-amber-300/70 text-sm mb-4">
+      <p className="text-amber-300/90 text-sm mb-4">
         Još niste pročitali ove priče. Odaberite neku za laku noć.
       </p>
       <ul className="space-y-2">

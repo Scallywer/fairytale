@@ -19,7 +19,7 @@ export default function Home() {
               <h1 className="text-3xl md:text-4xl font-bold text-amber-200 mb-2">
                 Priče za laku noć
               </h1>
-              <p className="text-amber-300/70 text-sm md:text-base">
+              <p className="text-amber-300/90 text-sm md:text-base">
                 Lijepe priče za djecu prije spavanja
               </p>
             </div>
@@ -42,7 +42,7 @@ export default function Home() {
       </header>
 
       {/* Stories */}
-      <main className="max-w-7xl mx-auto px-4 py-8">
+      <main id="main-content" className="max-w-7xl mx-auto px-4 py-8">
         <RecommendedTonight stories={stories} />
         <StoriesList stories={stories} />
       </main>

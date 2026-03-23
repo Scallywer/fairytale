@@ -3,6 +3,7 @@
  */
 import type { Comment } from './db'
 import { dbHelpers } from './db'
+import { sanitizeStrings } from './sanitize'
 
 const MAX_COMMENTS_PER_HOUR = 5
 
@@ -20,7 +21,7 @@ export const commentsService = {
     if (recentCount >= MAX_COMMENTS_PER_HOUR) {
       throw new Error('RATE_LIMIT')
     }
-    return dbHelpers.createComment(data)
+    return dbHelpers.createComment(sanitizeStrings(data))
   },
 
   getRecentCommentCount(storyId: string, timeWindowMinutes: number = 60): number {
