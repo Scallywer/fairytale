@@ -15,14 +15,18 @@ if (!fs.existsSync(dataDir)) {
 // Create database connection
 const db = new Database(dbPath)
 
+// Set busy timeout first to handle concurrent access during build/test (multiple workers)
+db.pragma('busy_timeout = 5000')
+
 // Enable foreign keys (required for CASCADE deletes)
 db.pragma('foreign_keys = ON')
 
 // Enable WAL mode for better concurrent read performance
-db.pragma('journal_mode = WAL')
-
-// Set busy timeout to handle concurrent access during build (multiple workers)
-db.pragma('busy_timeout = 5000')
+try {
+  db.pragma('journal_mode = WAL')
+} catch {
+  // WAL may fail if another process holds a lock; fall back to default journal mode
+}
 
 // Initialize database schema
 db.exec(`
