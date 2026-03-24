@@ -23,6 +23,8 @@ interface StoriesListProps {
 export default function StoriesList({ stories }: StoriesListProps) {
   const [viewMode, setViewMode] = useState<'list' | 'gallery'>('gallery')
   const [visibleCount, setVisibleCount] = useState(20)
+  /** Empty until mount so SSR/first paint match; then filled from localStorage (avoids hydration mismatch). */
+  const [readIds, setReadIds] = useState<string[]>([])
 
   // Filter state
   const [searchQuery, setSearchQuery] = useState('')
@@ -48,11 +50,9 @@ export default function StoriesList({ stories }: StoriesListProps) {
     return searchQuery.trim() !== '' || selectedAuthor !== null || minRating !== null || maxReadingTime !== null || readStatus !== 'all' || sortBy !== 'default'
   }, [searchQuery, selectedAuthor, minRating, maxReadingTime, readStatus, sortBy])
 
-  // Filtered and sorted stories
+  // Filtered and sorted stories (readIds from state only — never read localStorage during render)
   const filteredStories = useMemo(() => {
-    if (typeof window === 'undefined') return stories
-
-    const readStories = JSON.parse(localStorage.getItem('readStories') || '[]')
+    const readStories = readIds
     let filtered = [...stories]
 
     if (searchQuery.trim()) {
@@ -114,7 +114,7 @@ export default function StoriesList({ stories }: StoriesListProps) {
     }
 
     return filtered
-  }, [stories, searchQuery, selectedAuthor, minRating, maxReadingTime, readStatus, sortBy])
+  }, [stories, readIds, searchQuery, selectedAuthor, minRating, maxReadingTime, readStatus, sortBy])
 
   const visibleStories = useMemo(
     () => filteredStories.slice(0, visibleCount),
@@ -122,6 +122,15 @@ export default function StoriesList({ stories }: StoriesListProps) {
   )
   const hasMore = filteredStories.length > visibleCount
   const loadMore = () => setVisibleCount((c) => c + 20)
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('readStories')
+      setReadIds(raw ? (JSON.parse(raw) as string[]) : [])
+    } catch {
+      setReadIds([])
+    }
+  }, [])
 
   useEffect(() => {
     queueMicrotask(() => setVisibleCount(20))
