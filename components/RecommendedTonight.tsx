@@ -78,6 +78,7 @@ export default function RecommendedTonight({ stories }: RecommendedTonightProps)
               src={featured.imageUrl}
               alt={featured.title}
               fill
+              priority
               sizes="(min-width: 768px) 66vw, 100vw"
               className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 opacity-60"
               unoptimized
