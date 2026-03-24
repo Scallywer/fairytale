@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import StoryCard from './StoryCard'
 
 interface Story {
@@ -38,6 +38,7 @@ export default function StoriesList({ stories }: StoriesListProps) {
   const [showAuthorDropdown, setShowAuthorDropdown] = useState(false)
   const [showTimeDropdown, setShowTimeDropdown] = useState(false)
   const [showStatusDropdown, setShowStatusDropdown] = useState(false)
+  const filterDropdownsRef = useRef<HTMLDivElement>(null)
 
   // Get unique authors for filter dropdown
   const uniqueAuthors = useMemo(() => {
@@ -158,15 +159,17 @@ export default function StoriesList({ stories }: StoriesListProps) {
     }
   }, [])
 
-  // Close dropdowns when clicking outside
+  // Close when pointer goes down outside the filter controls (avoids racing document click vs toggle)
   useEffect(() => {
-    const handleClick = () => {
+    const close = (e: MouseEvent) => {
+      const el = filterDropdownsRef.current
+      if (!el || el.contains(e.target as Node)) return
       setShowAuthorDropdown(false)
       setShowTimeDropdown(false)
       setShowStatusDropdown(false)
     }
-    document.addEventListener('click', handleClick)
-    return () => document.removeEventListener('click', handleClick)
+    document.addEventListener('mousedown', close)
+    return () => document.removeEventListener('mousedown', close)
   }, [])
 
   return (
@@ -184,9 +187,11 @@ export default function StoriesList({ stories }: StoriesListProps) {
           />
         </div>
         <div className="flex flex-wrap items-center gap-4 w-full lg:w-auto">
+          <div ref={filterDropdownsRef} className="flex flex-wrap items-center gap-4">
           {/* Author Filter */}
-          <div className="relative" onClick={(e) => e.stopPropagation()}>
+          <div className="relative">
             <button
+              type="button"
               onClick={() => { setShowAuthorDropdown(!showAuthorDropdown); setShowTimeDropdown(false); setShowStatusDropdown(false) }}
               className={`flex items-center gap-2 px-4 py-2 rounded-full cursor-pointer hover:bg-surface-bright transition-colors ${selectedAuthor ? 'bg-primary-container text-on-primary-container' : 'bg-surface-container-highest text-on-surface-variant'}`}
             >
@@ -194,12 +199,12 @@ export default function StoriesList({ stories }: StoriesListProps) {
               <span className="material-symbols-outlined text-sm">expand_more</span>
             </button>
             {showAuthorDropdown && (
-              <div className="absolute top-full mt-2 left-0 bg-surface-container-high rounded-xl shadow-[0_20px_40px_rgba(0,0,0,0.4)] z-20 min-w-[200px] py-2 max-h-64 overflow-y-auto">
-                <button onClick={() => { setSelectedAuthor(null); setShowAuthorDropdown(false) }} className="w-full text-left px-4 py-2 text-on-surface font-label text-sm hover:bg-surface-bright transition-colors">
+              <div className="absolute top-full mt-2 left-0 bg-surface-container-high rounded-xl shadow-[0_20px_40px_rgba(0,0,0,0.4)] z-[100] min-w-[200px] py-2 max-h-64 overflow-y-auto">
+                <button type="button" onClick={() => { setSelectedAuthor(null); setShowAuthorDropdown(false) }} className="w-full text-left px-4 py-2 text-on-surface font-label text-sm hover:bg-surface-bright transition-colors">
                   Svi autori
                 </button>
                 {uniqueAuthors.map(a => (
-                  <button key={a} onClick={() => { setSelectedAuthor(a); setShowAuthorDropdown(false) }} className="w-full text-left px-4 py-2 text-on-surface font-label text-sm hover:bg-surface-bright transition-colors">
+                  <button type="button" key={a} onClick={() => { setSelectedAuthor(a); setShowAuthorDropdown(false) }} className="w-full text-left px-4 py-2 text-on-surface font-label text-sm hover:bg-surface-bright transition-colors">
                     {a}
                   </button>
                 ))}
@@ -208,8 +213,9 @@ export default function StoriesList({ stories }: StoriesListProps) {
           </div>
 
           {/* Time Filter */}
-          <div className="relative" onClick={(e) => e.stopPropagation()}>
+          <div className="relative">
             <button
+              type="button"
               onClick={() => { setShowTimeDropdown(!showTimeDropdown); setShowAuthorDropdown(false); setShowStatusDropdown(false) }}
               className={`flex items-center gap-2 px-4 py-2 rounded-full cursor-pointer hover:bg-surface-bright transition-colors ${maxReadingTime !== null ? 'bg-primary-container text-on-primary-container' : 'bg-surface-container-highest text-on-surface-variant'}`}
             >
@@ -217,19 +223,20 @@ export default function StoriesList({ stories }: StoriesListProps) {
               <span className="material-symbols-outlined text-sm">expand_more</span>
             </button>
             {showTimeDropdown && (
-              <div className="absolute top-full mt-2 left-0 bg-surface-container-high rounded-xl shadow-[0_20px_40px_rgba(0,0,0,0.4)] z-20 min-w-[160px] py-2">
-                <button onClick={() => { setMaxReadingTime(null); setShowTimeDropdown(false) }} className="w-full text-left px-4 py-2 text-on-surface font-label text-sm hover:bg-surface-bright transition-colors">Sve duljine</button>
-                <button onClick={() => { setMaxReadingTime(5); setShowTimeDropdown(false) }} className="w-full text-left px-4 py-2 text-on-surface font-label text-sm hover:bg-surface-bright transition-colors">Do 5 min</button>
-                <button onClick={() => { setMaxReadingTime(10); setShowTimeDropdown(false) }} className="w-full text-left px-4 py-2 text-on-surface font-label text-sm hover:bg-surface-bright transition-colors">5-10 min</button>
-                <button onClick={() => { setMaxReadingTime(15); setShowTimeDropdown(false) }} className="w-full text-left px-4 py-2 text-on-surface font-label text-sm hover:bg-surface-bright transition-colors">10-15 min</button>
-                <button onClick={() => { setMaxReadingTime(999); setShowTimeDropdown(false) }} className="w-full text-left px-4 py-2 text-on-surface font-label text-sm hover:bg-surface-bright transition-colors">Preko 15 min</button>
+              <div className="absolute top-full mt-2 left-0 bg-surface-container-high rounded-xl shadow-[0_20px_40px_rgba(0,0,0,0.4)] z-[100] min-w-[160px] py-2">
+                <button type="button" onClick={() => { setMaxReadingTime(null); setShowTimeDropdown(false) }} className="w-full text-left px-4 py-2 text-on-surface font-label text-sm hover:bg-surface-bright transition-colors">Sve duljine</button>
+                <button type="button" onClick={() => { setMaxReadingTime(5); setShowTimeDropdown(false) }} className="w-full text-left px-4 py-2 text-on-surface font-label text-sm hover:bg-surface-bright transition-colors">Do 5 min</button>
+                <button type="button" onClick={() => { setMaxReadingTime(10); setShowTimeDropdown(false) }} className="w-full text-left px-4 py-2 text-on-surface font-label text-sm hover:bg-surface-bright transition-colors">5-10 min</button>
+                <button type="button" onClick={() => { setMaxReadingTime(15); setShowTimeDropdown(false) }} className="w-full text-left px-4 py-2 text-on-surface font-label text-sm hover:bg-surface-bright transition-colors">10-15 min</button>
+                <button type="button" onClick={() => { setMaxReadingTime(999); setShowTimeDropdown(false) }} className="w-full text-left px-4 py-2 text-on-surface font-label text-sm hover:bg-surface-bright transition-colors">Preko 15 min</button>
               </div>
             )}
           </div>
 
           {/* Status Filter */}
-          <div className="relative" onClick={(e) => e.stopPropagation()}>
+          <div className="relative">
             <button
+              type="button"
               onClick={() => { setShowStatusDropdown(!showStatusDropdown); setShowAuthorDropdown(false); setShowTimeDropdown(false) }}
               className={`flex items-center gap-2 px-4 py-2 rounded-full cursor-pointer hover:bg-surface-bright transition-colors ${readStatus !== 'all' ? 'bg-primary-container text-on-primary-container' : 'bg-surface-container-highest text-on-surface-variant'}`}
             >
@@ -237,12 +244,13 @@ export default function StoriesList({ stories }: StoriesListProps) {
               <span className="material-symbols-outlined text-sm">expand_more</span>
             </button>
             {showStatusDropdown && (
-              <div className="absolute top-full mt-2 left-0 bg-surface-container-high rounded-xl shadow-[0_20px_40px_rgba(0,0,0,0.4)] z-20 min-w-[160px] py-2">
-                <button onClick={() => { setReadStatus('all'); setShowStatusDropdown(false) }} className="w-full text-left px-4 py-2 text-on-surface font-label text-sm hover:bg-surface-bright transition-colors">Sve priče</button>
-                <button onClick={() => { setReadStatus('unread'); setShowStatusDropdown(false) }} className="w-full text-left px-4 py-2 text-on-surface font-label text-sm hover:bg-surface-bright transition-colors">Nepročitano</button>
-                <button onClick={() => { setReadStatus('read'); setShowStatusDropdown(false) }} className="w-full text-left px-4 py-2 text-on-surface font-label text-sm hover:bg-surface-bright transition-colors">Pročitano</button>
+              <div className="absolute top-full mt-2 left-0 bg-surface-container-high rounded-xl shadow-[0_20px_40px_rgba(0,0,0,0.4)] z-[100] min-w-[160px] py-2">
+                <button type="button" onClick={() => { setReadStatus('all'); setShowStatusDropdown(false) }} className="w-full text-left px-4 py-2 text-on-surface font-label text-sm hover:bg-surface-bright transition-colors">Sve priče</button>
+                <button type="button" onClick={() => { setReadStatus('unread'); setShowStatusDropdown(false) }} className="w-full text-left px-4 py-2 text-on-surface font-label text-sm hover:bg-surface-bright transition-colors">Nepročitano</button>
+                <button type="button" onClick={() => { setReadStatus('read'); setShowStatusDropdown(false) }} className="w-full text-left px-4 py-2 text-on-surface font-label text-sm hover:bg-surface-bright transition-colors">Pročitano</button>
               </div>
             )}
+          </div>
           </div>
 
           {hasActiveFilters && (
