@@ -1,7 +1,49 @@
 'use client'
 
-import { useState, useEffect, useMemo, useRef } from 'react'
+import { useState, useEffect, useMemo, useRef, useSyncExternalStore } from 'react'
 import StoryCard from './StoryCard'
+
+const EMPTY_READ_IDS: readonly string[] = []
+
+let readIdsCacheKey: string | null = null
+let readIdsCached: readonly string[] = EMPTY_READ_IDS
+
+function readReadIdsSnapshot(): readonly string[] {
+  if (typeof window === 'undefined') return EMPTY_READ_IDS
+  try {
+    const raw = localStorage.getItem('readStories')
+    const key = raw === null || raw === '' ? '[]' : raw
+    if (key === readIdsCacheKey) return readIdsCached
+    readIdsCacheKey = key
+    const parsed = JSON.parse(key) as unknown
+    if (!Array.isArray(parsed) || parsed.length === 0) {
+      readIdsCached = EMPTY_READ_IDS
+    } else {
+      readIdsCached = parsed as string[]
+    }
+    return readIdsCached
+  } catch {
+    readIdsCacheKey = null
+    readIdsCached = EMPTY_READ_IDS
+    return EMPTY_READ_IDS
+  }
+}
+
+function subscribeReadIds(onChange: () => void) {
+  if (typeof window === 'undefined') return () => {}
+  const onStorage = (e: StorageEvent) => {
+    if (e.key === 'readStories' || e.key === null) {
+      readIdsCacheKey = null
+      onChange()
+    }
+  }
+  window.addEventListener('storage', onStorage)
+  return () => window.removeEventListener('storage', onStorage)
+}
+
+function useReadStoryIds() {
+  return useSyncExternalStore(subscribeReadIds, readReadIdsSnapshot, () => EMPTY_READ_IDS)
+}
 
 interface Story {
   id: string
@@ -23,8 +65,7 @@ interface StoriesListProps {
 export default function StoriesList({ stories }: StoriesListProps) {
   const [viewMode, setViewMode] = useState<'list' | 'gallery'>('gallery')
   const [visibleCount, setVisibleCount] = useState(20)
-  /** Empty until mount so SSR/first paint match; then filled from localStorage (avoids hydration mismatch). */
-  const [readIds, setReadIds] = useState<string[]>([])
+  const readIds = useReadStoryIds()
 
   // Filter state
   const [searchQuery, setSearchQuery] = useState('')
@@ -51,7 +92,7 @@ export default function StoriesList({ stories }: StoriesListProps) {
     return searchQuery.trim() !== '' || selectedAuthor !== null || minRating !== null || maxReadingTime !== null || readStatus !== 'all' || sortBy !== 'default'
   }, [searchQuery, selectedAuthor, minRating, maxReadingTime, readStatus, sortBy])
 
-  // Filtered and sorted stories (readIds from state only — never read localStorage during render)
+  // Filtered and sorted stories (readIds via useSyncExternalStore: SSR [], then client localStorage)
   const filteredStories = useMemo(() => {
     const readStories = readIds
     let filtered = [...stories]
@@ -123,15 +164,6 @@ export default function StoriesList({ stories }: StoriesListProps) {
   )
   const hasMore = filteredStories.length > visibleCount
   const loadMore = () => setVisibleCount((c) => c + 20)
-
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem('readStories')
-      setReadIds(raw ? (JSON.parse(raw) as string[]) : [])
-    } catch {
-      setReadIds([])
-    }
-  }, [])
 
   useEffect(() => {
     queueMicrotask(() => setVisibleCount(20))
