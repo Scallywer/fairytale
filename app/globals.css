@@ -1,5 +1,14 @@
 @import "tailwindcss";
 
+/* Self-hosted Material Symbols Outlined (variable woff2) — avoids CSP style-src to fonts.googleapis.com */
+@font-face {
+  font-family: 'Material Symbols Outlined';
+  font-style: normal;
+  font-weight: 100 700;
+  font-display: swap;
+  src: url('/fonts/material-symbols-outlined.woff2') format('woff2');
+}
+
 :root {
   /* Stitch "Magical Night Editorial" Design System */
   --surface: #0b1326;

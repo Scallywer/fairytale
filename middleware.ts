@@ -14,10 +14,9 @@ export function middleware(request: NextRequest) {
     [
       "default-src 'self'",
       "script-src 'self' 'unsafe-inline'",
-      // Material Symbols stylesheet is served from googleapis; font files load from gstatic (font-src)
-      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+      "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data:",
-      "font-src 'self' https://fonts.gstatic.com",
+      "font-src 'self'",
       "connect-src 'self'",
       "frame-ancestors 'none'",
     ].join('; ')
@@ -43,6 +42,6 @@ export function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     // Match all paths except static files and Next.js internals
-    '/((?!_next/static|_next/image|favicon.ico|images/).*)',
+    '/((?!_next/static|_next/image|favicon.ico|images/|fonts/).*)',
   ],
 }
