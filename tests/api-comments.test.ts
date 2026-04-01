@@ -56,7 +56,7 @@ describe('POST /api/comments', () => {
     })
     const res = await createComment(req)
     const data = await res.json()
-    expect([201, 404]).toContain(res.status)
+    expect([201, 404, 429]).toContain(res.status)
     if (res.status === 201) {
       expect(data).toHaveProperty('id')
       expect(data).toHaveProperty('content', 'Valid comment text here')

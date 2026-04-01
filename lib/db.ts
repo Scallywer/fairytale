@@ -28,6 +28,16 @@ try {
   // WAL may fail if another process holds a lock; fall back to default journal mode
 }
 
+// Migration: drop analytics table if it was previously created with a FK constraint
+try {
+  const analyticsRow = db.prepare("SELECT sql FROM sqlite_master WHERE type='table' AND name='analytics'").get() as { sql: string } | undefined
+  if (analyticsRow?.sql?.toUpperCase().includes('FOREIGN KEY')) {
+    db.exec('DROP TABLE analytics')
+  }
+} catch {
+  // Table doesn't exist yet — no action needed
+}
+
 // Initialize database schema
 db.exec(`
   CREATE TABLE IF NOT EXISTS stories (
@@ -68,12 +78,62 @@ db.exec(`
 
   CREATE INDEX IF NOT EXISTS idx_stories_approved_created ON stories(isApproved, createdAt DESC);
   CREATE INDEX IF NOT EXISTS idx_comments_story_approved ON comments(storyId, isApproved);
+
+  CREATE TABLE IF NOT EXISTS analytics (
+    id TEXT PRIMARY KEY,
+    event TEXT NOT NULL,
+    storyId TEXT,
+    path TEXT,
+    createdAt TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+  CREATE INDEX IF NOT EXISTS idx_analytics_event ON analytics(event);
+  CREATE INDEX IF NOT EXISTS idx_analytics_storyId ON analytics(storyId);
+  CREATE INDEX IF NOT EXISTS idx_analytics_createdAt ON analytics(createdAt);
 `)
 
 try {
   db.exec('ALTER TABLE stories ADD COLUMN readCount INTEGER NOT NULL DEFAULT 0')
 } catch {
   // Column already exists
+}
+
+// FTS5 full-text search — standalone table (stores its own data, no content-table dependency)
+try {
+  // Migrate old content=stories FTS table to the new standalone schema
+  const ftsRow = db.prepare("SELECT sql FROM sqlite_master WHERE type='table' AND name='stories_fts'").get() as { sql: string } | undefined
+  if (ftsRow?.sql?.includes('content=stories')) {
+    db.exec(`
+      DROP TABLE stories_fts;
+      DROP TRIGGER IF EXISTS stories_fts_insert;
+      DROP TRIGGER IF EXISTS stories_fts_delete;
+      DROP TRIGGER IF EXISTS stories_fts_update;
+    `)
+  }
+  const ftsExists = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='stories_fts'").get()
+  db.exec(`
+    CREATE VIRTUAL TABLE IF NOT EXISTS stories_fts USING fts5(story_id UNINDEXED, title, author, body);
+
+    CREATE TRIGGER IF NOT EXISTS stories_fts_insert AFTER INSERT ON stories BEGIN
+      INSERT INTO stories_fts(story_id, title, author, body) VALUES (new.id, new.title, new.author, new.body);
+    END;
+
+    CREATE TRIGGER IF NOT EXISTS stories_fts_delete AFTER DELETE ON stories BEGIN
+      DELETE FROM stories_fts WHERE story_id = old.id;
+    END;
+
+    CREATE TRIGGER IF NOT EXISTS stories_fts_update AFTER UPDATE ON stories BEGIN
+      DELETE FROM stories_fts WHERE story_id = old.id;
+      INSERT INTO stories_fts(story_id, title, author, body) VALUES (new.id, new.title, new.author, new.body);
+    END;
+  `)
+  // Populate index from existing rows on first creation
+  if (!ftsExists) {
+    db.prepare(
+      'INSERT INTO stories_fts(story_id, title, author, body) SELECT id, title, author, body FROM stories'
+    ).run()
+  }
+} catch {
+  // FTS5 unavailable — searchStories will return empty results
 }
 
 export interface Story {
@@ -417,6 +477,32 @@ export const dbHelpers = {
   getLatestUpdatedAt(): string | null {
     const row = db.prepare('SELECT MAX(updatedAt) AS latest FROM stories WHERE isApproved = 1').get() as { latest: string | null } | undefined
     return row?.latest ?? null
+  },
+
+  // Persist an analytics event
+  recordAnalytics(event: string, storyId: string | undefined, path: string | undefined): void {
+    const id = randomUUID()
+    const now = new Date().toISOString()
+    db.prepare(
+      'INSERT INTO analytics (id, event, storyId, path, createdAt) VALUES (?, ?, ?, ?, ?)'
+    ).run(id, event, storyId ?? null, path ?? null, now)
+  },
+
+  // Full-text search across title, author, and body using FTS5
+  searchStories(query: string): string[] {
+    const escaped = query.replace(/['"*^]/g, ' ').trim()
+    if (!escaped) return []
+    const ftsQuery = escaped.split(/\s+/).filter(Boolean).map(t => `${t}*`).join(' ')
+    try {
+      const rows = db.prepare(`
+        SELECT s.id FROM stories s
+        WHERE s.id IN (SELECT story_id FROM stories_fts WHERE stories_fts MATCH ?)
+        AND s.isApproved = 1
+      `).all(ftsQuery) as { id: string }[]
+      return rows.map(r => r.id)
+    } catch {
+      return []
+    }
   },
 }
 

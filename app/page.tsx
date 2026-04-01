@@ -36,7 +36,12 @@ export const metadata: Metadata = {
 }
 
 export default function Home() {
-  const stories = storiesService.getApprovedStories()
+  let stories: Awaited<ReturnType<typeof storiesService.getApprovedStories>> = []
+  try {
+    stories = storiesService.getApprovedStories()
+  } catch (err) {
+    console.error('Failed to load stories', err)
+  }
 
   const websiteLd = {
     '@context': 'https://schema.org',

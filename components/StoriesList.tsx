@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo, useRef, useSyncExternalStore } from 'react'
+import { useState, useEffect, useMemo, useRef, useSyncExternalStore, useCallback } from 'react'
 import StoryCard from './StoryCard'
 
 const EMPTY_READ_IDS: readonly string[] = []
@@ -62,9 +62,37 @@ interface StoriesListProps {
   stories: Story[]
 }
 
+const PAGE_SIZE = 20
+
+function StoryCardSkeleton({ viewMode }: { viewMode: 'gallery' | 'list' }) {
+  if (viewMode === 'list') {
+    return (
+      <div className="animate-pulse flex gap-4 bg-surface-container-low rounded-2xl p-4">
+        <div className="w-28 h-20 bg-surface-container-highest rounded-xl shrink-0" />
+        <div className="flex-1 space-y-2 py-1">
+          <div className="h-4 bg-surface-container-highest rounded w-3/4" />
+          <div className="h-3 bg-surface-container-highest rounded w-1/3" />
+          <div className="h-3 bg-surface-container-highest rounded w-1/4" />
+        </div>
+      </div>
+    )
+  }
+  return (
+    <div className="animate-pulse bg-surface-container-low rounded-2xl overflow-hidden">
+      <div className="aspect-video bg-surface-container-highest" />
+      <div className="p-4 space-y-2">
+        <div className="h-4 bg-surface-container-highest rounded w-3/4" />
+        <div className="h-3 bg-surface-container-highest rounded w-1/2" />
+        <div className="h-3 bg-surface-container-highest rounded w-1/3" />
+      </div>
+    </div>
+  )
+}
+
 export default function StoriesList({ stories }: StoriesListProps) {
   const [viewMode, setViewMode] = useState<'list' | 'gallery'>('gallery')
-  const [visibleCount, setVisibleCount] = useState(20)
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
+  const sentinelRef = useRef<HTMLDivElement>(null)
   const readIds = useReadStoryIds()
 
   // Filter state
@@ -75,11 +103,58 @@ export default function StoriesList({ stories }: StoriesListProps) {
   const [readStatus, setReadStatus] = useState<'all' | 'read' | 'unread'>('all')
   const [sortBy, setSortBy] = useState<'title' | 'author' | 'rating' | 'newest' | 'oldest' | 'default'>('default')
 
+  // FTS5 search state
+  const [ftsIds, setFtsIds] = useState<string[] | null>(null)
+  const [isSearching, setIsSearching] = useState(false)
+  const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
   // Dropdown states
   const [showAuthorDropdown, setShowAuthorDropdown] = useState(false)
   const [showTimeDropdown, setShowTimeDropdown] = useState(false)
   const [showStatusDropdown, setShowStatusDropdown] = useState(false)
   const filterDropdownsRef = useRef<HTMLDivElement>(null)
+
+  // Debounced FTS5 server-side search
+  useEffect(() => {
+    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current)
+    if (!searchQuery.trim()) {
+      setFtsIds(null)
+      setIsSearching(false)
+      return
+    }
+    setIsSearching(true)
+    searchDebounceRef.current = setTimeout(() => {
+      fetch(`/api/search?q=${encodeURIComponent(searchQuery.trim())}`)
+        .then(r => r.json())
+        .then((data: { ids: string[] }) => {
+          setFtsIds(data.ids)
+          setIsSearching(false)
+        })
+        .catch(() => {
+          setFtsIds(null)
+          setIsSearching(false)
+        })
+    }, 300)
+    return () => {
+      if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current)
+    }
+  }, [searchQuery])
+
+  // Infinite scroll via IntersectionObserver
+  const loadMore = useCallback(() => setVisibleCount((c) => c + PAGE_SIZE), [])
+
+  useEffect(() => {
+    const sentinel = sentinelRef.current
+    if (!sentinel) return
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) loadMore()
+      },
+      { rootMargin: '200px' }
+    )
+    observer.observe(sentinel)
+    return () => observer.disconnect()
+  }, [loadMore])
 
   // Get unique authors for filter dropdown
   const uniqueAuthors = useMemo(() => {
@@ -98,11 +173,17 @@ export default function StoriesList({ stories }: StoriesListProps) {
     let filtered = [...stories]
 
     if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase().trim()
-      filtered = filtered.filter(story =>
-        story.title.toLowerCase().includes(query) ||
-        story.author.toLowerCase().includes(query)
-      )
+      if (ftsIds !== null) {
+        const idSet = new Set(ftsIds)
+        filtered = filtered.filter(story => idSet.has(story.id))
+      } else {
+        // Fallback: client-side match while FTS result is loading
+        const query = searchQuery.toLowerCase().trim()
+        filtered = filtered.filter(story =>
+          story.title.toLowerCase().includes(query) ||
+          story.author.toLowerCase().includes(query)
+        )
+      }
     }
 
     if (selectedAuthor) {
@@ -156,17 +237,16 @@ export default function StoriesList({ stories }: StoriesListProps) {
     }
 
     return filtered
-  }, [stories, readIds, searchQuery, selectedAuthor, minRating, maxReadingTime, readStatus, sortBy])
+  }, [stories, readIds, searchQuery, ftsIds, selectedAuthor, minRating, maxReadingTime, readStatus, sortBy])
 
   const visibleStories = useMemo(
     () => filteredStories.slice(0, visibleCount),
     [filteredStories, visibleCount]
   )
   const hasMore = filteredStories.length > visibleCount
-  const loadMore = () => setVisibleCount((c) => c + 20)
 
   useEffect(() => {
-    queueMicrotask(() => setVisibleCount(20))
+    queueMicrotask(() => setVisibleCount(PAGE_SIZE))
   }, [searchQuery, selectedAuthor, minRating, maxReadingTime, readStatus, sortBy])
 
   const clearFilters = () => {
@@ -356,32 +436,30 @@ export default function StoriesList({ stories }: StoriesListProps) {
                 ? 'space-y-6'
                 : 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8'
             }>
-              {visibleStories.map((story) => (
-                <StoryCard
-                  key={story.id}
-                  id={story.id}
-                  title={story.title}
-                  author={story.author}
-                  imageUrl={story.imageUrl}
-                  viewMode={viewMode}
-                  averageRating={story.averageRating}
-                  ratingCount={story.ratingCount}
-                  readingTime={story.readingTime}
-                  readCount={story.readCount}
-                  commentCount={story.commentCount}
-                />
-              ))}
+              {isSearching
+                ? Array.from({ length: Math.min(PAGE_SIZE, stories.length) }).map((_, i) => (
+                    <StoryCardSkeleton key={i} viewMode={viewMode} />
+                  ))
+                : visibleStories.map((story) => (
+                    <StoryCard
+                      key={story.id}
+                      id={story.id}
+                      title={story.title}
+                      author={story.author}
+                      imageUrl={story.imageUrl}
+                      viewMode={viewMode}
+                      averageRating={story.averageRating}
+                      ratingCount={story.ratingCount}
+                      readingTime={story.readingTime}
+                      readCount={story.readCount}
+                      commentCount={story.commentCount}
+                    />
+                  ))
+              }
             </div>
-            {hasMore && (
-              <div className="mt-16 flex justify-center">
-                <button
-                  type="button"
-                  onClick={loadMore}
-                  className="bg-surface-container-high text-primary px-10 py-4 rounded-full font-label font-bold hover:bg-surface-bright transition-all flex items-center gap-3"
-                >
-                  Prikaži više priča
-                  <span className="material-symbols-outlined">expand_more</span>
-                </button>
+            {hasMore && !isSearching && (
+              <div ref={sentinelRef} className="mt-16 flex justify-center">
+                <span className="material-symbols-outlined animate-spin text-on-surface-variant">progress_activity</span>
               </div>
             )}
           </>
