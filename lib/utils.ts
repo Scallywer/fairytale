@@ -1,10 +1,10 @@
 /**
  * Calculate reading time in minutes based on word count
  * @param body - The story text content
- * @param wordsPerMinute - Reading speed (default: 200 words/min for adults)
+ * @param wordsPerMinute - Reading speed (default: 120 words/min for adult read-aloud)
  * @returns Reading time in minutes (minimum 1 minute)
  */
-export function calculateReadingTime(body: string, wordsPerMinute: number = 200): number {
+export function calculateReadingTime(body: string, wordsPerMinute: number = 120): number {
   if (!body || body.trim().length === 0) {
     return 1
   }
