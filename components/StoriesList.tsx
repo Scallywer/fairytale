@@ -118,11 +118,13 @@ export default function StoriesList({ stories }: StoriesListProps) {
   useEffect(() => {
     if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current)
     if (!searchQuery.trim()) {
-      setFtsIds(null)
-      setIsSearching(false)
+      queueMicrotask(() => {
+        setFtsIds(null)
+        setIsSearching(false)
+      })
       return
     }
-    setIsSearching(true)
+    queueMicrotask(() => setIsSearching(true))
     searchDebounceRef.current = setTimeout(() => {
       fetch(`/api/search?q=${encodeURIComponent(searchQuery.trim())}`)
         .then(r => r.json())
