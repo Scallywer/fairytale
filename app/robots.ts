@@ -1,7 +1,8 @@
 import type { MetadataRoute } from 'next'
+import { getBaseUrl } from '@/lib/constants'
 
 export default function robots(): MetadataRoute.Robots {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://pricezalakunoc.hr'
+  const baseUrl = getBaseUrl()
 
   return {
     rules: {

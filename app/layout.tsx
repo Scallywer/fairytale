@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Noto_Serif, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
+import { getBaseUrl, SITE_NAME } from "@/lib/constants";
 
 const notoSerif = Noto_Serif({
   variable: "--font-noto-serif",
@@ -15,10 +16,9 @@ const plusJakartaSans = Plus_Jakarta_Sans({
   weight: ["400", "500", "600", "700"],
 });
 
-const siteName = "Priče za laku noć";
+const siteName = SITE_NAME;
 const siteDescription = "Lijepe priče za djecu prije spavanja";
-const baseUrl =
-  process.env.NEXT_PUBLIC_SITE_URL || "https://pricezalakunoc.hr";
+const baseUrl = getBaseUrl();
 
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),

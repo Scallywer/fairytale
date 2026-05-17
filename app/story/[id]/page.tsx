@@ -5,6 +5,7 @@ import { dbHelpers } from "@/lib/db";
 import StoryReader from "@/components/StoryReader";
 import { logger } from "@/lib/logger";
 import { safeJsonLd } from "@/lib/utils";
+import { getBaseUrl } from "@/lib/constants";
 
 export const revalidate = 60;
 export const dynamicParams = true;
@@ -37,8 +38,7 @@ export async function generateMetadata({
     };
   }
 
-  const baseUrl =
-    process.env.NEXT_PUBLIC_SITE_URL || "https://pricezalakunoc.hr";
+  const baseUrl = getBaseUrl();
   const url = `${baseUrl}/story/${story.id}`;
   const title = `${story.title} – Priče za laku noć`;
   const description = story.body.slice(0, 160).replace(/\s+\S*$/, "") + "…";
@@ -99,8 +99,7 @@ export default async function StoryPage({
     notFound();
   }
 
-  const baseUrl =
-    process.env.NEXT_PUBLIC_SITE_URL || "https://pricezalakunoc.hr";
+  const baseUrl = getBaseUrl();
   const storyUrl = `${baseUrl}/story/${story.id}`;
 
   const jsonLd = {

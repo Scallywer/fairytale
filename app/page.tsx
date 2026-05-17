@@ -6,8 +6,9 @@ import RecommendedTonight from '@/components/RecommendedTonight'
 import BackToTop from '@/components/BackToTop'
 import { logger } from '@/lib/logger'
 import { safeJsonLd } from '@/lib/utils'
+import { getBaseUrl } from '@/lib/constants'
 
-const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://pricezalakunoc.hr'
+const baseUrl = getBaseUrl()
 
 export const revalidate = 60
 

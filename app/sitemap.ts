@@ -1,9 +1,12 @@
 import type { MetadataRoute } from 'next'
 import { storiesService } from '@/lib/storiesService'
 import { dbHelpers } from '@/lib/db'
+import { getBaseUrl } from '@/lib/constants'
+
+export const revalidate = 3600
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://pricezalakunoc.hr'
+  const baseUrl = getBaseUrl()
 
   const stories = storiesService.getApprovedStories()
   const latestUpdatedAt = dbHelpers.getLatestUpdatedAt()

@@ -5,6 +5,7 @@
 import type { Story } from './db'
 import { dbHelpers } from './db'
 import { sanitizeStrings } from './sanitize'
+import { NotFoundError } from './errors'
 
 export type { Story }
 
@@ -51,10 +52,10 @@ export const storiesService = {
     return dbHelpers.deleteStory(id)
   },
 
-  /** Increment read count for an approved story. No-op if story not found or not approved. */
+  /** Increment read count for an approved story. Throws NotFoundError otherwise. */
   recordRead(id: string): void {
     const story = this.getApprovedById(id)
-    if (!story) throw new Error('Story not found or not approved')
+    if (!story) throw new NotFoundError('Story not found or not approved')
     dbHelpers.incrementReadCount(id)
   },
 }

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { storiesService } from '@/lib/storiesService'
+import { NotFoundError } from '@/lib/errors'
 import { logger } from '@/lib/logger'
 
 export const dynamic = 'force-dynamic'
@@ -16,8 +17,7 @@ export async function POST(
     storiesService.recordRead(id)
     return new NextResponse(null, { status: 204 })
   } catch (error) {
-    const msg = error instanceof Error ? error.message : ''
-    if (msg === 'Story not found or not approved') {
+    if (error instanceof NotFoundError) {
       return new NextResponse(null, { status: 404 })
     }
     logger.error('Error recording read:', error)

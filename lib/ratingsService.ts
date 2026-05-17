@@ -2,13 +2,14 @@
  * Domain service for ratings. Ensures ratings are only submitted for approved stories.
  */
 import { dbHelpers } from './db'
+import { NotFoundError, UnapprovedError, ValidationError } from './errors'
 
 export const ratingsService = {
   submitRating(storyId: string, userId: string, rating: number): { averageRating: number; ratingCount: number } {
     const story = dbHelpers.getStoryById(storyId)
-    if (!story) throw new Error('Story not found')
-    if (!story.isApproved) throw new Error('Cannot rate an unapproved story')
-    if (rating < 1 || rating > 5) throw new Error('Rating must be between 1 and 5')
+    if (!story) throw new NotFoundError('Story not found')
+    if (!story.isApproved) throw new UnapprovedError('Cannot rate an unapproved story')
+    if (rating < 1 || rating > 5) throw new ValidationError('Rating must be between 1 and 5')
     dbHelpers.submitRating(storyId, userId, rating)
     const info = dbHelpers.getAverageRating(storyId)
     return {

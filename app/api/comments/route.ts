@@ -3,6 +3,7 @@ import { commentsService } from '@/lib/commentsService'
 import { getClientIp, checkCommentRateLimit } from '@/lib/rateLimit'
 import { createCommentSchema } from '@/lib/schemas'
 import { verifyCaptcha } from '@/lib/captcha'
+import { NotFoundError, RateLimitedError } from '@/lib/errors'
 import { logger } from '@/lib/logger'
 
 export async function GET(request: NextRequest) {
@@ -78,16 +79,16 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(comment, { status: 201 })
   } catch (error) {
-    const msg = error instanceof Error ? error.message : ''
-    const code = (error as { code?: string })?.code
-    if (msg === 'RATE_LIMIT') {
+    if (error instanceof RateLimitedError) {
       return NextResponse.json({
         error: 'Previše komentara u kratkom vremenu. Molimo pokušajte kasnije.'
       }, { status: 429 })
     }
-    if (msg === 'Story not found or not approved') {
+    if (error instanceof NotFoundError) {
       return NextResponse.json({ error: 'Priča nije pronađena' }, { status: 404 })
     }
+    const msg = error instanceof Error ? error.message : ''
+    const code = (error as { code?: string })?.code
     if (code === 'SQLITE_ERROR' && typeof msg === 'string' && msg.includes('foreign key')) {
       return NextResponse.json({ error: 'Priča nije pronađena ili nije odobrena' }, { status: 404 })
     }
