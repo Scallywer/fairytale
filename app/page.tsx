@@ -8,8 +8,11 @@ import { logger } from '@/lib/logger'
 import { safeJsonLd } from '@/lib/utils'
 import { getBaseUrl } from '@/lib/constants'
 
-const linkPrimary =
-  'inline-flex items-center justify-center gap-2 h-11 px-6 rounded-full font-label font-bold text-sm bg-primary-container text-on-primary-container transition-all motion-reduce:transition-none hover:scale-[1.02] active:scale-95 motion-reduce:hover:scale-100 motion-reduce:active:scale-100 shadow-[var(--shadow-glow-primary)] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-container'
+// "Predloži priču" is intentionally a quiet text link — the primary
+// action on the home page is reading, not submitting. See design plan,
+// Phase C "amber discipline + hero CTA inversion".
+const linkGhost =
+  'inline-flex items-center gap-1 h-11 px-3 rounded-full font-label font-bold text-sm text-on-surface hover:text-primary-container hover:underline underline-offset-4 transition-colors motion-reduce:transition-none focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-container/60'
 
 const baseUrl = getBaseUrl()
 
@@ -85,18 +88,26 @@ export default function Home() {
       <header className="bg-surface/60 backdrop-blur-xl sticky top-0 z-50 shadow-[0_20px_40px_rgba(0,0,0,0.4)]">
         <nav className="flex justify-between items-center w-full px-8 py-4 max-w-7xl mx-auto">
           <div className="flex items-center gap-8">
-            <Link href="/" className="text-2xl font-headline text-primary-container italic tracking-wide">
+            <Link
+              href="/"
+              className="text-xl md:text-2xl font-headline text-primary italic tracking-wide"
+            >
               Priče za laku noć
             </Link>
             <div className="hidden md:flex gap-6 items-center">
-              <Link href="/" className="text-primary-container font-bold border-b-2 border-primary-container pb-1 font-label text-sm tracking-wide">
+              <Link
+                href="/"
+                className="text-on-surface font-bold border-b-2 border-primary-container pb-1 font-label text-sm tracking-wide"
+              >
                 Početna
               </Link>
             </div>
           </div>
-          <div className="flex items-center gap-4">
-            <Link href="/submit" className={linkPrimary}>
-              Predloži priču
+          <div className="flex items-center gap-2">
+            <Link href="/submit" className={linkGhost} aria-label="Predloži novu priču">
+              <span aria-hidden="true" className="text-lg leading-none">+</span>
+              <span className="hidden sm:inline">Predloži priču</span>
+              <span className="sm:hidden">Predloži</span>
             </Link>
           </div>
         </nav>
@@ -117,7 +128,7 @@ export default function Home() {
         <div className="flex flex-col items-center gap-8 w-full max-w-7xl mx-auto px-8">
           <div className="w-full flex flex-col md:flex-row justify-between items-center gap-8 border-b border-outline-variant/10 pb-12">
             <div className="text-center md:text-left">
-              <h3 className="text-lg font-headline text-primary-container mb-2">
+              <h3 className="text-lg font-headline italic text-primary mb-2">
                 Priče za laku noć
               </h3>
               <p className="text-on-surface/70 text-sm max-w-xs font-body">

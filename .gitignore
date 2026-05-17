@@ -56,3 +56,4 @@ data/
 
 # generated files
 story-prompts-list.txt
+.playwright-mcp/

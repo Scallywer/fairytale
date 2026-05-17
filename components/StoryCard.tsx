@@ -91,7 +91,7 @@ export default function StoryCard({
             <div className="flex items-center gap-4">
               {averageRating != null && averageRating > 0 && (
                 <div className="flex items-center gap-1">
-                  <span className="material-symbols-outlined text-primary-container text-sm" style={{ fontVariationSettings: "'FILL' 1" }} aria-hidden="true">star</span>
+                  <span className="material-symbols-outlined text-primary-container/70 text-sm" style={{ fontVariationSettings: "'FILL' 1" }} aria-hidden="true">star</span>
                   <span className="font-label text-xs text-on-surface">{averageRating.toFixed(1)}</span>
                 </div>
               )}
@@ -129,7 +129,7 @@ export default function StoryCard({
           )}
           {averageRating != null && averageRating > 0 && (
             <div className="absolute top-4 right-4 bg-surface-container/80 backdrop-blur-md px-3 py-1 rounded-full flex items-center gap-1">
-              <span className="material-symbols-outlined text-primary-container text-sm" style={{ fontVariationSettings: "'FILL' 1" }} aria-hidden="true">star</span>
+              <span className="material-symbols-outlined text-primary-container/70 text-sm" style={{ fontVariationSettings: "'FILL' 1" }} aria-hidden="true">star</span>
               <span className="text-white text-xs font-bold font-label">{averageRating.toFixed(1)}</span>
             </div>
           )}
@@ -141,7 +141,7 @@ export default function StoryCard({
         </div>
         <div className="p-6 flex flex-col flex-grow">
           <div className="flex justify-between items-start mb-3">
-            <span className="font-label text-[10px] font-bold uppercase tracking-[0.1em] text-primary-container">
+            <span className="font-label text-[10px] font-bold uppercase tracking-[0.1em] text-on-surface-variant">
               {author}
             </span>
             {readingTime != null && readingTime > 0 && (

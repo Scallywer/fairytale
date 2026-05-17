@@ -243,7 +243,7 @@ export default function StoryReader({ storyId, title, author, body, imageUrl, av
               </button>
               <div className="h-8 w-px bg-surface-container-highest hidden sm:block" />
               <div className="min-w-0">
-                <h1 className="font-headline text-xl md:text-2xl font-bold text-primary-container tracking-tight truncate">
+                <h1 className="font-headline text-xl md:text-2xl font-bold text-primary tracking-tight truncate">
                   {title}
                 </h1>
                 <p className="font-label text-xs uppercase tracking-widest text-on-surface-variant">
@@ -344,7 +344,7 @@ export default function StoryReader({ storyId, title, author, body, imageUrl, av
 
             return (
               <>
-                <p className="leading-[1.8] text-on-surface/90 first-letter:text-5xl first-letter:font-bold first-letter:mr-3 first-letter:float-left first-letter:text-primary-container">
+                <p className="leading-[1.8] text-on-surface/90 first-letter:text-5xl first-letter:font-bold first-letter:mr-3 first-letter:float-left first-letter:text-primary first-letter:opacity-90">
                   {firstParagraph}
                 </p>
 
@@ -378,7 +378,7 @@ export default function StoryReader({ storyId, title, author, body, imageUrl, av
         {/* End of Story Section */}
         <div className="mt-20 flex flex-col items-center gap-12 py-16 bg-surface-container-low rounded-xl">
           <div className="text-center space-y-4">
-            <h3 className="font-headline text-3xl text-primary-container">Kraj priče</h3>
+            <h3 className="font-headline text-3xl text-primary">Kraj priče</h3>
             <p className="font-label text-on-surface-variant italic">
               Nadamo se da ste uživali u čitanju.
             </p>
@@ -558,7 +558,7 @@ export default function StoryReader({ storyId, title, author, body, imageUrl, av
       {/* Footer */}
       <footer className="bg-surface w-full pt-20 pb-10 print:hidden">
         <div className="flex flex-col items-center gap-8 w-full max-w-7xl mx-auto px-8">
-          <div className="text-lg font-headline text-primary-container">Priče za laku noć</div>
+          <div className="text-lg font-headline text-primary italic">Priče za laku noć</div>
           <nav className="flex flex-wrap justify-center gap-x-8 gap-y-4">
             <Link href="/" className="text-on-surface/70 hover:text-primary-container transition-colors duration-[400ms] font-body">Početna</Link>
             <Link href="/submit" className="text-on-surface/70 hover:text-primary-container transition-colors duration-[400ms] font-body">Predloži priču</Link>

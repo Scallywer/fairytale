@@ -69,7 +69,7 @@ export default function RecommendedTonight({ stories }: RecommendedTonightProps)
     <section aria-label="Preporučeno za večeras">
       <div className="flex items-end justify-between mb-8">
         <div>
-          <span className="font-label text-primary-container text-sm font-bold tracking-[0.2em] uppercase mb-2 block">
+          <span className="font-label text-on-surface-variant text-sm font-bold tracking-[0.2em] uppercase mb-2 block">
             Za večeras
           </span>
           <h2 className="text-4xl md:text-5xl font-headline font-bold text-on-surface">
@@ -169,7 +169,7 @@ export default function RecommendedTonight({ stories }: RecommendedTonightProps)
                   {secondaryExcerpt}
                 </p>
               )}
-              <span className="text-primary-container font-label font-bold flex items-center gap-2 group-hover:gap-4 transition-all">
+              <span className="text-primary font-label font-bold flex items-center gap-2 group-hover:gap-4 transition-all motion-reduce:group-hover:gap-2 motion-reduce:transition-none">
                 Saznaj više
                 <span className="material-symbols-outlined text-sm" aria-hidden="true">arrow_forward</span>
               </span>
