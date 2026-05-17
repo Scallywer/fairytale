@@ -23,21 +23,28 @@
 }
 
 :root {
-  /* Stitch "Magical Night Editorial" Design System */
+  /* "Magical Night" — dark indigo for the default theme.
+     Surface ramp is monotonic: each tier is ~+4 luminance over the previous.
+     `bright` is brightest (used for hover spotlight); `lowest` is page floor. */
   --surface: #0b1326;
-  --surface-dim: #0b1326;
-  --surface-bright: #31394d;
-  --surface-container-lowest: #060e20;
-  --surface-container-low: #131b2e;
-  --surface-container: #171f33;
-  --surface-container-high: #222a3d;
-  --surface-container-highest: #2d3449;
-  --surface-variant: #2d3449;
+  --surface-dim: #060e20;
+  --surface-bright: #283149;
+  --surface-container-lowest: #050a18;
+  --surface-container-low: #111a30;
+  --surface-container: #182238;
+  --surface-container-high: #1f2942;
+  --surface-container-highest: #28324c;
+  --surface-variant: #232c44;
 
+  /* Primary stays warm amber.
+     `--primary` is for accent text on dark surfaces.
+     `--primary-container` is the CTA fill; `--on-primary-container` is its label.
+     The pairing must clear WCAG AA for body text (≥ 4.5:1).
+     Darker `--on-primary-container: #2a2100` on amber `#fcd34d` ≈ 12:1, comfortable AAA. */
   --primary: #fff2d6;
   --primary-container: #fcd34d;
-  --on-primary: #3c2f00;
-  --on-primary-container: #715b00;
+  --on-primary: #2a2100;
+  --on-primary-container: #2a2100;
 
   --secondary: #ffb77d;
   --secondary-container: #d97707;
@@ -47,20 +54,46 @@
   --tertiary-container: #c9d8ee;
   --on-tertiary-container: #505e71;
 
-  --on-surface: #dae2fd;
-  --on-surface-variant: #d0c6ae;
-  --on-background: #dae2fd;
+  /* On-surface text. The variant token now harmonizes with the cool navy
+     surface instead of the previous warm beige #d0c6ae which clashed. */
+  --on-surface: #e2e8fa;
+  --on-surface-variant: #b6c0d6;
+  --on-background: #e2e8fa;
 
-  --outline: #99907b;
-  --outline-variant: #4d4635;
+  --outline: #6a7493;
+  --outline-variant: #3a4361;
 
+  /* Status colors — promoted to tokens so admin/error pages stop using
+     raw bg-red-600 / bg-green-600 / amber-200. */
   --error: #ffb4ab;
   --error-container: #93000a;
+  --on-error-container: #ffdad6;
+  --success: #95d6a5;
+  --success-container: #1f5132;
+  --on-success-container: #cdebd3;
 
   --surface-tint: #eac33e;
-  --inverse-surface: #dae2fd;
+  --inverse-surface: #e2e8fa;
   --inverse-on-surface: #283044;
   --inverse-primary: #735c00;
+
+  /* Motion scale */
+  --duration-fast: 150ms;
+  --duration: 250ms;
+  --duration-slow: 400ms;
+  --duration-image: 700ms;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* Shadow scale — derived from a single rgba black, plus one branded glow.
+     Replace the inline rgba(252,211,77,0.5) / rgba(0,0,0,0.4) sprinkled
+     across components. */
+  --shadow-elevation-1: 0 4px 8px rgba(0, 0, 0, 0.25);
+  --shadow-elevation-2: 0 10px 20px rgba(0, 0, 0, 0.35);
+  --shadow-elevation-3: 0 20px 40px rgba(0, 0, 0, 0.4);
+  --shadow-elevation-4: 0 30px 60px rgba(0, 0, 0, 0.5);
+  --shadow-glow-primary: 0 0 20px rgba(252, 211, 77, 0.22);
+  --shadow-glow-primary-strong: 0 0 28px rgba(252, 211, 77, 0.4);
 }
 
 @theme inline {
@@ -96,6 +129,10 @@
 
   --color-error: var(--error);
   --color-error-container: var(--error-container);
+  --color-on-error-container: var(--on-error-container);
+  --color-success: var(--success);
+  --color-success-container: var(--success-container);
+  --color-on-success-container: var(--on-success-container);
 
   --color-surface-tint: var(--surface-tint);
   --color-inverse-surface: var(--inverse-surface);
@@ -103,6 +140,23 @@
   --font-headline: 'Noto Serif', serif;
   --font-body: 'Noto Serif', serif;
   --font-label: 'Plus Jakarta Sans', sans-serif;
+
+  /* Motion + shadow exposed as Tailwind utility-friendly tokens.
+     Use via arbitrary properties — `transition-[var(--duration)]` etc. — or
+     reference directly in component CSS-in-JSX. */
+  --transition-duration-fast: var(--duration-fast);
+  --transition-duration-DEFAULT: var(--duration);
+  --transition-duration-slow: var(--duration-slow);
+  --transition-duration-image: var(--duration-image);
+  --transition-timing-function-out: var(--ease-out);
+  --transition-timing-function-spring: var(--ease-spring);
+
+  --shadow-elevation-1: var(--shadow-elevation-1);
+  --shadow-elevation-2: var(--shadow-elevation-2);
+  --shadow-elevation-3: var(--shadow-elevation-3);
+  --shadow-elevation-4: var(--shadow-elevation-4);
+  --shadow-glow-primary: var(--shadow-glow-primary);
+  --shadow-glow-primary-strong: var(--shadow-glow-primary-strong);
 }
 
 body {
