@@ -116,6 +116,26 @@ export default function Home() {
       {/* Main Content */}
       <main id="main-content" className="max-w-7xl mx-auto px-8 py-12 space-y-20">
         <h1 className="sr-only">Priče za laku noć — najljepše bajke i basne za djecu</h1>
+
+        {/* Trust strip — the single biggest differentiator from
+            Epic / Vooks / Story Home is that this is free, ad-free,
+            and doesn't track. Surface it near the top instead of
+            burying in a privacy footer. */}
+        <div className="flex flex-wrap justify-center items-center gap-x-8 gap-y-2 text-on-surface-variant/80 font-label text-xs uppercase tracking-widest -mb-12">
+          <span className="flex items-center gap-1.5">
+            <span aria-hidden="true">·</span> Besplatno
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span aria-hidden="true">·</span> Bez reklama
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span aria-hidden="true">·</span> Bez praćenja
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span aria-hidden="true">·</span> Bez registracije
+          </span>
+        </div>
+
         <RecommendedTonight stories={stories} />
         <StoriesList stories={stories} />
       </main>

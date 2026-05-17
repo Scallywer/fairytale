@@ -297,8 +297,45 @@ export default function StoriesList({ stories }: StoriesListProps) {
     }
   }, [])
 
+  // Length-chip presets. "Bilo koja" clears the filter; the others are
+  // canonical bedtime intervals. Active state mirrors `maxReadingTime`.
+  const lengthChips: { label: string; value: number | null }[] = [
+    { label: 'Sve duljine', value: null },
+    { label: 'do 3 min', value: 3 },
+    { label: 'do 5 min', value: 5 },
+    { label: '10 min', value: 10 },
+    { label: '15+ min', value: 999 },
+  ]
+
   return (
-    <section className="space-y-8">
+    <section className="space-y-6">
+      {/* Length-by-time chip row — promoted to the most prominent
+          discovery axis. Bedtime parents shop by minutes available
+          before lights-out, not by genre. */}
+      <nav aria-label="Filtri po vremenu čitanja" className="flex flex-wrap items-center gap-2">
+        <span className="font-label text-xs uppercase tracking-widest text-on-surface-variant mr-2">
+          Vrijeme za večeras:
+        </span>
+        {lengthChips.map((c) => {
+          const isActive = maxReadingTime === c.value
+          return (
+            <button
+              key={c.label}
+              type="button"
+              onClick={() => setMaxReadingTime(c.value)}
+              aria-pressed={isActive}
+              className={`px-4 py-2 rounded-full font-label text-xs font-bold uppercase tracking-wider transition-colors motion-reduce:transition-none ${
+                isActive
+                  ? 'bg-primary-container text-on-primary-container'
+                  : 'bg-surface-container-low text-on-surface-variant hover:bg-surface-container-high'
+              }`}
+            >
+              {c.label}
+            </button>
+          )
+        })}
+      </nav>
+
       {/* Toolbar */}
       <div className="bg-surface-container-low rounded-xl p-6 flex flex-col lg:flex-row gap-6 items-center justify-between">
         <div className="w-full lg:w-1/3 relative">
