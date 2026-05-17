@@ -132,7 +132,7 @@ export default function SubmitPage() {
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-8 py-12 md:py-20">
+      <main className="max-w-2xl mx-auto px-6 py-12 md:py-16">
         <p className="text-on-surface-variant font-body mb-8">
           Vaš nacrt se automatski sprema u pregledniku tijekom pisanja.
           Možete zatvoriti karticu i nastaviti kasnije.
@@ -156,7 +156,7 @@ export default function SubmitPage() {
               maxLength={TITLE_MAX + 50}
               aria-invalid={!!fieldErrors.title || undefined}
               aria-describedby={fieldErrors.title ? 'title-error' : undefined}
-              className="w-full bg-surface-container-lowest border-none rounded-full py-4 px-8 text-on-surface placeholder:text-on-surface-variant/50 focus:ring-2 focus:ring-primary-container/20 focus:outline-none font-label text-lg"
+              className="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl py-3 px-5 text-on-surface placeholder:text-on-surface-variant/50 focus:ring-2 focus:ring-primary-container/30 focus:border-primary-container/40 focus:outline-none font-label text-base"
               placeholder="Naslov vaše priče"
             />
             {fieldErrors.title && (
@@ -182,7 +182,7 @@ export default function SubmitPage() {
               maxLength={AUTHOR_MAX + 30}
               aria-invalid={!!fieldErrors.author || undefined}
               aria-describedby={fieldErrors.author ? 'author-error' : undefined}
-              className="w-full bg-surface-container-lowest border-none rounded-full py-4 px-8 text-on-surface placeholder:text-on-surface-variant/50 focus:ring-2 focus:ring-primary-container/20 focus:outline-none font-label text-lg"
+              className="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl py-3 px-5 text-on-surface placeholder:text-on-surface-variant/50 focus:ring-2 focus:ring-primary-container/30 focus:border-primary-container/40 focus:outline-none font-label text-base"
               placeholder="Vaše ime"
             />
             {fieldErrors.author && (
@@ -211,7 +211,7 @@ export default function SubmitPage() {
               maxLength={BODY_MAX + 5_000}
               aria-invalid={!!fieldErrors.body || undefined}
               aria-describedby={fieldErrors.body ? 'body-error' : 'body-hint'}
-              className="w-full bg-surface-container-lowest border-none rounded-xl py-4 px-8 text-on-surface placeholder:text-on-surface-variant/50 focus:ring-0 focus:outline-none font-body text-xl leading-relaxed resize-none"
+              className="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl py-4 px-5 text-on-surface placeholder:text-on-surface-variant/50 focus:ring-2 focus:ring-primary-container/30 focus:border-primary-container/40 focus:outline-none font-body text-lg leading-relaxed resize-none"
               placeholder="Jednom davno, u dalekom kraljevstvu..."
             />
             {fieldErrors.body ? (

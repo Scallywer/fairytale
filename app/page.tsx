@@ -4,6 +4,8 @@ import { storiesService } from '@/lib/storiesService'
 import StoriesList from '@/components/StoriesList'
 import RecommendedTonight from '@/components/RecommendedTonight'
 import BackToTop from '@/components/BackToTop'
+import Logomark from '@/components/ui/Logomark'
+import StarDivider from '@/components/ui/StarDivider'
 import { logger } from '@/lib/logger'
 import { safeJsonLd } from '@/lib/utils'
 import { getBaseUrl } from '@/lib/constants'
@@ -90,9 +92,10 @@ export default function Home() {
           <div className="flex items-center gap-8">
             <Link
               href="/"
-              className="text-xl md:text-2xl font-headline text-primary italic tracking-wide"
+              className="flex items-center gap-2.5 text-xl md:text-2xl font-headline text-primary italic tracking-wide"
             >
-              Priče za laku noć
+              <Logomark size={28} className="text-primary-container/90 shrink-0" />
+              <span>Priče za laku noć</span>
             </Link>
             <div className="hidden md:flex gap-6 items-center">
               <Link
@@ -137,6 +140,7 @@ export default function Home() {
         </div>
 
         <RecommendedTonight stories={stories} />
+        <StarDivider className="!my-12" />
         <StoriesList stories={stories} />
       </main>
 
@@ -148,7 +152,8 @@ export default function Home() {
         <div className="flex flex-col items-center gap-8 w-full max-w-7xl mx-auto px-8">
           <div className="w-full flex flex-col md:flex-row justify-between items-center gap-8 border-b border-outline-variant/10 pb-12">
             <div className="text-center md:text-left">
-              <h3 className="text-lg font-headline italic text-primary mb-2">
+              <h3 className="flex items-center gap-2 text-lg font-headline italic text-primary mb-2">
+                <Logomark size={22} className="text-primary-container/80" />
                 Priče za laku noć
               </h3>
               <p className="text-on-surface/70 text-sm max-w-xs font-body">
