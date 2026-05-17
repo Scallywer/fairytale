@@ -1,13 +1,13 @@
 -- Apply Croatian-language fixes for two Grigor Vitez stories.
--- Generated 2026-05-17T22:51:15.921Z.
+-- Generated 2026-05-17T23:03:38.922Z.
 -- Run on the deploy host:
 --   docker exec -i fairytale-app sqlite3 /app/data/stories.db < apply-vitez-fixes.sql
 BEGIN;
 UPDATE stories SET body = 'U davna vremena, usred jedne sunčane i mirisne šume, nalazila se prostrana livada koju su svi stanovnici zvali Zeleni dvor. Na toj su se livadi životinje često sastajale, ali nitko od njih, ni najstariji medvjed ni najbrža vjeverica, nikada nije vidio predmet koji je jednog jutra tamo ostavio zaboravni putnik. Bilo je to malo, okruglo ogledalo sa srebrnim okvirom, koje je ležalo u travi i blještalo na suncu.
 
-Prvi je do ogledala doskakutao zec. Dugim je ušima micao lijevo-desno, njuškajući nepoznati predmet. Kad se nagnuo nad njega, zec se odjednom skamenio. Iz trave ga je gledao isti takav zec, s istim drhtavim nosom i dugim ušima.
+Prvi je do ogledala doskakutao zec. Dugim je ušima micao lijevo-desno, njuškajući nepoznati predmet. Kad se nagnuo nad njega, zec se odjednom skamenio. Iz trave ga je gledao isti takav zec, s istom ružičastom njuškicom i dugim ušima.
 
-„Gle ti to!" uzviknuo je zec uzbuđeno. „Pa to je moja slika iz mlađih dana! Kako sam samo lijep i naočit bio jutros, a još uvijek jesam!" Počeo se ogledavati, namještati uši i diviti se samome sebi, čvrsto držeći ogledalce šapama.
+„Gle ti to!" uzviknuo je zec uzbuđeno. „Pa to je moja slika iz mladih dana! Kako sam samo bio lijep i naočit — a takav sam i sada!" Počeo se ogledavati, namještati uši i diviti se samome sebi, čvrsto držeći ogledalce šapama.
 
 Uto naiđe vjeverica, noseći lješnjak. „Što to imaš, zecu?" upitala je radoznalo. Zec joj ponosno pokaza predmet: „Vidi, moja slika!" Vjeverica proviri preko njegova ramena, ali umjesto zeca, u staklu ugleda kitnjasti rep i bistre oči.
 
