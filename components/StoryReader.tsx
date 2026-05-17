@@ -44,6 +44,8 @@ export default function StoryReader({ storyId, title, author, body, imageUrl, av
   const [showCopied, setShowCopied] = useState(false)
   const [readAloud, setReadAloud] = useState(false)
   const [headerHidden, setHeaderHidden] = useState(false)
+  const [dyslexic, setDyslexic] = useState(false)
+  const [activeParagraph, setActiveParagraph] = useState<number | null>(null)
   const router = useRouter()
   const readCountSentRef = useRef(false)
   const readDelayTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -80,8 +82,19 @@ export default function StoryReader({ storyId, title, author, body, imageUrl, av
 
   const adjustFontSize = (delta: number) => {
     setFontSize(prev => {
-      const next = Math.max(0.875, Math.min(2, prev + delta))
-      localStorage.setItem('storyFontSize', String(next))
+      // Range raised to 1.0–2.5 rem. Floor 0.875 was below comfortable
+      // read-aloud size on phones; ceiling 2.0 wasn't enough for a propped
+      // bedside phone at arm's length.
+      const next = Math.max(1.0, Math.min(2.5, prev + delta))
+      try { localStorage.setItem('storyFontSize', String(next)) } catch { /* ignore */ }
+      return next
+    })
+  }
+
+  const toggleDyslexic = () => {
+    setDyslexic(prev => {
+      const next = !prev
+      try { localStorage.setItem('storyDyslexic', next ? '1' : '0') } catch { /* ignore */ }
       return next
     })
   }
@@ -153,6 +166,9 @@ export default function StoryReader({ storyId, title, author, body, imageUrl, av
         }
         if (localStorage.getItem('readAloudMode') === '1') {
           setReadAloud(true)
+        }
+        if (localStorage.getItem('storyDyslexic') === '1') {
+          setDyslexic(true)
         }
       }
     })
@@ -357,24 +373,33 @@ export default function StoryReader({ storyId, title, author, body, imageUrl, av
           <div className="flex items-center gap-4 bg-surface-container-low p-2 rounded-full shadow-inner print:hidden">
             <button
               onClick={toggleReadAloud}
-              className="px-4 h-10 flex items-center gap-2 rounded-full hover:bg-surface-container-high transition-all motion-reduce:transition-none text-on-surface"
+              className="px-4 h-12 sm:h-10 flex items-center gap-2 rounded-full hover:bg-surface-container-high transition-all motion-reduce:transition-none text-on-surface"
               aria-label="Uđi u mod čitanja naglas"
               aria-pressed={readAloud}
             >
               <span className="material-symbols-outlined text-sm" aria-hidden="true">menu_book</span>
               <span className="font-label text-sm font-medium">Naglas</span>
             </button>
+            <button
+              onClick={toggleDyslexic}
+              className="px-3 h-12 sm:h-10 flex items-center justify-center rounded-full hover:bg-surface-container-high transition-all motion-reduce:transition-none text-on-surface"
+              aria-label="Uključi font za disleksiju"
+              aria-pressed={dyslexic}
+              title="Font prilagođen za disleksiju"
+            >
+              <span className="font-label text-sm font-medium">Dx</span>
+            </button>
             <div className="w-px h-4 bg-surface-container-highest" />
             <button
               onClick={() => adjustFontSize(-0.125)}
-              className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container-high transition-all motion-reduce:transition-none text-on-surface"
+              className="w-12 h-12 sm:w-10 sm:h-10 flex items-center justify-center rounded-full hover:bg-surface-container-high transition-all motion-reduce:transition-none text-on-surface"
               aria-label="Smanji veličinu teksta"
             >
               <span className="font-label text-sm">A-</span>
             </button>
             <button
               onClick={() => adjustFontSize(0.125)}
-              className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container-high transition-all motion-reduce:transition-none text-on-surface font-bold"
+              className="w-12 h-12 sm:w-10 sm:h-10 flex items-center justify-center rounded-full hover:bg-surface-container-high transition-all motion-reduce:transition-none text-on-surface font-bold"
               aria-label="Povećaj veličinu teksta"
             >
               <span className="font-label text-lg">A+</span>
@@ -397,7 +422,26 @@ export default function StoryReader({ storyId, title, author, body, imageUrl, av
         </div>
 
         {/* Story Content */}
-        <article className="story-content text-on-surface font-body space-y-8 relative" style={{ fontSize: `${fontSize}rem` }}>
+        <article
+          className={`story-content text-on-surface font-body space-y-8 relative ${dyslexic ? 'story-dyslexic' : ''}`}
+          style={{ fontSize: `${fontSize}rem` }}
+          data-active-para={readAloud ? (activeParagraph ?? -1) : undefined}
+          onClick={(e) => {
+            if (!readAloud) return
+            const target = (e.target as HTMLElement).closest('p')
+            if (!target) return
+            // Walk the immediate paragraphs (and pacing-hr wrappers) of
+            // the article and find which one contains this <p>.
+            const articleEl = e.currentTarget as HTMLElement
+            const items = Array.from(articleEl.querySelectorAll(':scope > p, :scope > div')) as HTMLElement[]
+            let idx = -1
+            items.forEach((el, i) => {
+              if (el.contains(target)) idx = i
+              el.dataset.paraActive = el.contains(target) ? 'true' : 'false'
+            })
+            setActiveParagraph(idx)
+          }}
+        >
           {(() => {
             const paragraphs = splitIntoParagraphs(body)
 

@@ -164,6 +164,33 @@
   background: var(--outline-variant);
 }
 
+/* Dyslexia-friendly font stack. Uses the locally-installed OpenDyslexic
+   if present (free download), otherwise a wider sans-serif than the
+   default serif. Letter-spacing and word-spacing are nudged up because
+   slightly looser tracking helps recognition. */
+.story-dyslexic {
+  font-family: 'OpenDyslexic', 'Comic Neue', 'Verdana', sans-serif !important;
+  letter-spacing: 0.02em;
+  word-spacing: 0.06em;
+  line-height: 1.9 !important;
+}
+
+/* Current-paragraph highlight (Naglas only). Click any paragraph to
+   dim the siblings — solves the "where was I?" problem mid-yawn. */
+.story-content[data-active-para] > div > p,
+.story-content[data-active-para] > p {
+  opacity: 0.45;
+  transition: opacity var(--duration-fast) var(--ease-out);
+}
+.story-content[data-active-para='-1'] > div > p,
+.story-content[data-active-para='-1'] > p {
+  opacity: 1;
+}
+.story-content > div[data-para-active='true'] > p,
+.story-content > p[data-para-active='true'] {
+  opacity: 1 !important;
+}
+
 @theme inline {
   --color-surface: var(--surface);
   --color-surface-dim: var(--surface-dim);
