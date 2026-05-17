@@ -1,7 +1,5 @@
 -- Croatian-language pass on all 7 Grigor Vitez stories.
--- Generated 2026-05-17T23:19:31.522Z.
--- Run on the deploy host:
---   ssh root@<host> "docker exec -i fairytale-app sqlite3 /app/data/stories.db" < apply-vitez-fixes.sql
+-- Generated 2026-05-17T23:24:55.643Z.
 BEGIN;
 UPDATE stories SET body = 'Stjepan je bio keramičar koji je znao jednu stvar bolje od svakoga u selu: glina ne prašta žurbu.
 
@@ -166,21 +164,21 @@ Iva je razmislila. „Jer me podsjeća da počnem."
 Mia je nešto promrmljala i otišla. Ali Iva je znala da je to zapravo sasvim dovoljno — jer kad jednom počneš, ostalo dolazi samo.
 
 Pouka: Nema čarobne olovke koja piše umjesto nas — ali ponekad nam treba samo nešto što nam pomogne napraviti prvi korak, jer ostalo je već u nama.', updatedAt = CURRENT_TIMESTAMP WHERE id = '78547629-b896-4bc3-abca-324321803efb';
-UPDATE stories SET title = 'O zecu koji se volio smijati', body = 'Zvonko je bio zec koji se smijao na sve. Na jutarnju rosu. Na sjenu vlastitih ušiju na putu. Na ptice kad bi zamijenile note u pjesmi.
+UPDATE stories SET title = 'O zecu koji se volio smijati', body = 'Zvonko je bio zec koji se smijao na sve. Na jutarnju rosu. Na sjenu vlastitih ušiju na putu. Na ptice kad bi pobrkale glas u pjesmi.
 
 Ostali stanovnici šume su ga trpjeli s osmijehom. Starije životinje su govorile: „Joj, taj Zvonko." Mlađe su trčale za njim tražeći još jednu šalu.
 
 Nitko ga nije upozorio što se krije s one strane potoka.
 
-Jednog poslijepodneva Zvonko je prešao potok jer je čuo da tamo raste najslađa djetelina. Prošao između dva hrasta, preskočio korijen, okrenuo se za ugao — i skoro sletio nosom u sivo krzno nečega ogromnog.
+Jednog poslijepodneva Zvonko je prešao potok jer je čuo da tamo raste najslađa djetelina. Prošao između dva hrasta, preskočio korijen, skrenuo iza stabla — i gotovo sletio nosom u sivo krzno nečega ogromnog.
 
-Vuk Bruno bio je velik koliko tri Zvonka i gledao ga je onim mirnim, strpljivim pogledom koji vukovi imaju kad nisu gladni, ali bi mogli postati.
+Vuk Bruno bio je velik koliko tri Zvonka i gledao ga je onim mirnim, strpljivim pogledom kakav vukovi imaju kad nisu gladni — ali to brzo mogu postati.
 
 „Zec," rekao je Bruno staloženo. „Ovuda se ne prolazi."
 
-Svi Zvonkovi instinkti su vikali: bježi. Noge su ga već htjele ponijeti. Uši su mu se uspravile. Srce mu je bubnjalo kao da pokušava iskočiti.
+Sve u Zvonku vikalo je: bježi. Noge su ga već htjele ponijeti. Uši su mu se uspravile. Srce mu je bubnjalo kao da pokušava iskočiti.
 
-Ali nešto — možda glupost, možda hrabrost, a možda su te dvije stvari ponekad iste — zadržalo ga je na mjestu.
+Ali nešto — možda glupost, možda hrabrost, a možda je to ponekad isto — zadržalo ga je na mjestu.
 
 „Gospodine vuku," rekao je Zvonko, glasom koji je drhtao samo malo, „znate li zašto je lisica sat nosila u ruci?"
 
@@ -190,15 +188,15 @@ Bruno je nakrivio glavu. „Što?"
 
 „Jer je čula da će biti kasno."
 
-Vuk je gledao zeca pet cijelih sekundi. A onda se nešto pokrenulo u kutovima njegova ogromnog, ozbiljnog lica — i ispustio je zvuk koji nije bio urlik ni režanje, nego nešto između: kratko, iznenađeno „hah".
+Vuk je gledao zeca pet cijelih sekundi. A onda se nešto pokrenulo u kutovima njegova ogromnog, ozbiljnog lica — i začuo se zvuk koji nije bio ni urlik ni režanje, nego nešto između: kratko, iznenađeno „hah".
 
 Zvonko nije bježao. Rekao je drugu šalu. Onda treću.
 
-Bruno se spustio na prednje šape. Glava mu je bila niže, oči su mu se mijenjale. Ramena su mu se opustila. Nije više gledao kao životinja na lovu. Gledao je kao netko tko nije dugo čuo nešto što mu je nedostajalo.
+Bruno se spustio na prednje šape. Glava mu je bila niže, oči su mu se mijenjale. Ramena su mu se opustila. Nije više gledao kao životinja u lovu. Gledao je kao netko tko dugo nije čuo nešto što mu je nedostajalo.
 
 „Još jednu," rekao je Bruno — i sam se iznenadio vlastitim riječima.
 
-Sjeli su kraj potoka, vuk i zec, i Zvonko je pričao dok sunce nije palo iza drveća. Bruno je slušao, a smijeh koji je ispuštao bio je hrapav i pomalo zaboravljen, kao vrata koja se odavno nisu otvarala. Svaki put kad bi se nasmijao, izgledao je malo manji. I malo lakši.
+Sjeli su kraj potoka, vuk i zec, i Zvonko je pričao dok sunce nije palo iza drveća. Bruno je slušao i tiho se smijao — hrapavo, pomalo zaboravljeno, kao vrata koja se odavno nisu otvarala. Svaki put kad bi se nasmijao, izgledao je malo blaži. I malo lakši.
 
 Kad je Zvonko krenuo kući, Bruno je gledao za njim.
 
