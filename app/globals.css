@@ -192,6 +192,22 @@ body {
   -webkit-backdrop-filter: blur(20px);
 }
 
+/* Story drop-cap that scales with the body font-size set inline.
+   `--dropcap-size` is provided as `${fontSize * 3}rem` from
+   StoryReader so the cap remains roughly 2.5–3 body lines tall at
+   any A−/A+ stop, instead of being frozen at 5xl while the prose grows. */
+.story-dropcap::first-letter {
+  font-family: var(--font-headline);
+  font-weight: 700;
+  font-size: var(--dropcap-size, 3.5rem);
+  line-height: 0.85;
+  color: var(--primary);
+  opacity: 0.92;
+  float: left;
+  margin-right: 0.5rem;
+  margin-top: 0.1em;
+}
+
 /* Hide scrollbar utility */
 .hide-scrollbar::-webkit-scrollbar {
   display: none;

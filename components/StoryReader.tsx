@@ -42,20 +42,36 @@ export default function StoryReader({ storyId, title, author, body, imageUrl, av
   const [fontSize, setFontSize] = useState(1.125)
   const [showCopied, setShowCopied] = useState(false)
   const [readAloud, setReadAloud] = useState(false)
+  const [headerHidden, setHeaderHidden] = useState(false)
   const router = useRouter()
   const readCountSentRef = useRef(false)
   const readDelayTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [optimisticReadDelta, setOptimisticReadDelta] = useState(0)
   const displayedReadCount = (readCount ?? 0) + optimisticReadDelta
 
-  // Reading progress bar
+  // Reading progress bar + auto-hide sticky header on scroll-down.
   useEffect(() => {
+    let lastY = window.scrollY
+    let ticking = false
     const handleScroll = () => {
-      const scrollTop = window.scrollY
-      const docHeight = document.documentElement.scrollHeight - window.innerHeight
-      if (docHeight > 0) {
-        setReadProgress(Math.min(scrollTop / docHeight, 1))
-      }
+      if (ticking) return
+      ticking = true
+      window.requestAnimationFrame(() => {
+        const scrollTop = window.scrollY
+        const docHeight = document.documentElement.scrollHeight - window.innerHeight
+        if (docHeight > 0) setReadProgress(Math.min(scrollTop / docHeight, 1))
+        // After 200px of progress, hide the header when scrolling down,
+        // reveal when scrolling up. Less than 200px → always show.
+        if (scrollTop < 200) {
+          setHeaderHidden(false)
+        } else {
+          const delta = scrollTop - lastY
+          if (delta > 4) setHeaderHidden(true)
+          else if (delta < -4) setHeaderHidden(false)
+        }
+        lastY = scrollTop
+        ticking = false
+      })
     }
     window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)
@@ -221,17 +237,24 @@ export default function StoryReader({ storyId, title, author, body, imageUrl, av
 
   return (
     <div className="min-h-screen bg-surface">
-      {/* Reading Progress Bar */}
-      <div className="fixed top-0 left-0 w-full h-1 z-[60] print:hidden">
+      {/* Reading progress bar — 2px solid, no glow. Previously a 1px
+          bar with a 10px shadow that read as a yellow smear and failed
+          to register against the navy surface. */}
+      <div className="fixed top-0 left-0 w-full h-[2px] z-[60] print:hidden bg-surface-container-low">
         <div
-          className="h-full bg-primary-container shadow-[0_0_10px_rgba(252,211,77,0.5)] transition-[width] duration-150"
+          className="h-full bg-primary-container transition-[width] duration-150 motion-reduce:transition-none"
           style={{ width: `${readProgress * 100}%` }}
         />
       </div>
 
-      {/* Sticky Header — hidden in read-aloud mode */}
+      {/* Sticky Header — hidden in read-aloud mode; auto-hides on
+          scroll-down past 200px so the reader can settle into the page. */}
       {!readAloud && (
-        <header className="sticky top-0 z-50 bg-surface/60 backdrop-blur-xl shadow-[0_20px_40px_rgba(0,0,0,0.4)] print:static print:bg-transparent print:shadow-none">
+        <header
+          className={`sticky top-0 z-50 bg-surface/60 backdrop-blur-xl shadow-[var(--shadow-elevation-3)] print:static print:bg-transparent print:shadow-none transition-transform duration-[var(--duration)] motion-reduce:transition-none ${
+            headerHidden ? '-translate-y-full' : 'translate-y-0'
+          }`}
+        >
           <div className="max-w-7xl mx-auto px-8 py-4 flex justify-between items-center">
             <div className="flex items-center gap-6">
               <button
@@ -275,8 +298,12 @@ export default function StoryReader({ storyId, title, author, body, imageUrl, av
         </button>
       )}
 
-      {/* Main Content */}
-      <main className={readAloud ? 'max-w-prose mx-auto px-6 py-20' : 'max-w-4xl mx-auto px-6 py-12 md:py-20'}>
+      {/* Main Content. Default body container = max-w-prose (~65ch),
+          the read-aloud sweet spot the visual reviewers flagged. Previously
+          max-w-4xl (~90ch) produced ribbon-paragraphs that hurt line tracking
+          for parents reading aloud. The figure below still bleeds out via
+          negative margins so the illustration can be larger than the prose. */}
+      <main className={readAloud ? 'max-w-prose mx-auto px-6 py-20' : 'max-w-prose mx-auto px-6 py-12 md:py-20'}>
         {/* Tags & Controls — collapsed in read-aloud mode */}
         <div className={`flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12 ${readAloud ? 'hidden' : ''}`}>
           <div className="flex items-center gap-2">
@@ -344,7 +371,10 @@ export default function StoryReader({ storyId, title, author, body, imageUrl, av
 
             return (
               <>
-                <p className="leading-[1.8] text-on-surface/90 first-letter:text-5xl first-letter:font-bold first-letter:mr-3 first-letter:float-left first-letter:text-primary first-letter:opacity-90">
+                <p
+                  className="leading-[1.8] text-on-surface/90 story-dropcap"
+                  style={{ ['--dropcap-size' as string]: `${fontSize * 3}rem` }}
+                >
                   {firstParagraph}
                 </p>
 
