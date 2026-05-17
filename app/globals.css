@@ -1,12 +1,25 @@
 @import "tailwindcss";
 
-/* Self-hosted Material Symbols Outlined (variable woff2) — avoids CSP style-src to fonts.googleapis.com */
+/* Self-hosted Material Symbols Outlined (variable woff2) — avoids CSP style-src to fonts.googleapis.com.
+   font-display: block so the icon font never falls back to system-text — otherwise the first paint
+   reads literal ligature words ("play_arrow", "schedule") to sighted users. The icon spans are also
+   aria-hidden so screen readers don't dictate them. */
 @font-face {
   font-family: 'Material Symbols Outlined';
   font-style: normal;
   font-weight: 100 700;
-  font-display: swap;
+  font-display: block;
   src: url('/fonts/material-symbols-outlined.woff2') format('woff2');
+}
+
+/* Reduced-motion: any user who has opted in to less motion gets static UI. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 :root {

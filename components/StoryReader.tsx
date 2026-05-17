@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Comments from './Comments'
+import Dialog from './Dialog'
 import { logger } from '@/lib/logger'
 import { splitIntoParagraphs } from '@/lib/utils'
 
@@ -170,7 +171,6 @@ export default function StoryReader({ storyId, title, author, body, imageUrl, av
 
       setIsRead(true)
       setShowRating(false)
-      router.push('/')
     }
   }
 
@@ -184,8 +184,13 @@ export default function StoryReader({ storyId, title, author, body, imageUrl, av
 
       setIsRead(true)
       setShowRating(false)
-      router.push('/')
     }
+  }
+
+  const handleRatingCancel = () => {
+    setShowRating(false)
+    setRating(0)
+    sessionStorage.removeItem('scrollPosition')
   }
 
   const handleUnmarkAsRead = () => {
@@ -215,7 +220,7 @@ export default function StoryReader({ storyId, title, author, body, imageUrl, av
               onClick={() => router.push('/')}
               className="group flex items-center gap-2 text-on-surface hover:text-primary-container transition-colors duration-[400ms]"
             >
-              <span className="material-symbols-outlined">arrow_back</span>
+              <span className="material-symbols-outlined" aria-hidden="true">arrow_back</span>
               <span className="font-label font-medium hidden sm:inline">Natrag</span>
             </button>
             <div className="h-8 w-px bg-surface-container-highest hidden sm:block" />
@@ -231,7 +236,7 @@ export default function StoryReader({ storyId, title, author, body, imageUrl, av
           </div>
           <div className="hidden md:flex items-center gap-4 text-on-surface-variant font-label text-sm">
             <div className="flex items-center gap-1">
-              <span className="material-symbols-outlined text-sm">visibility</span>
+              <span className="material-symbols-outlined text-sm" aria-hidden="true">visibility</span>
               <span>{displayedReadCount} pregleda</span>
             </div>
           </div>
@@ -245,7 +250,7 @@ export default function StoryReader({ storyId, title, author, body, imageUrl, av
           <div className="flex items-center gap-2">
             {averageRating != null && averageRating > 0 && (
               <span className="px-4 py-1.5 bg-tertiary-container text-on-tertiary-container rounded-full font-label text-xs font-bold flex items-center gap-1">
-                <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
+                <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }} aria-hidden="true">star</span>
                 {averageRating.toFixed(1)}
                 {ratingCount != null && ratingCount > 0 && <span className="opacity-60 ml-1">({ratingCount})</span>}
               </span>
@@ -273,7 +278,7 @@ export default function StoryReader({ storyId, title, author, body, imageUrl, av
               className="px-6 h-10 flex items-center gap-2 rounded-full bg-surface-container-high hover:bg-surface-bright transition-all text-on-surface relative"
               aria-label="Podijeli priču"
             >
-              <span className="material-symbols-outlined text-sm">share</span>
+              <span className="material-symbols-outlined text-sm" aria-hidden="true">share</span>
               <span className="font-label text-sm font-medium">Podijeli</span>
               {showCopied && (
                 <span className="absolute -bottom-10 left-1/2 -translate-x-1/2 text-xs bg-surface-container-high text-primary px-3 py-1.5 rounded-full whitespace-nowrap font-label shadow-lg">
@@ -345,13 +350,13 @@ export default function StoryReader({ storyId, title, author, body, imageUrl, av
                 onClick={markAsRead}
                 className="group flex items-center gap-3 bg-primary-container text-on-primary-container px-8 py-4 rounded-full font-label font-bold hover:scale-[1.02] transition-all duration-[400ms] shadow-[0_10px_20px_rgba(252,211,77,0.2)]"
               >
-                <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
+                <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }} aria-hidden="true">check_circle</span>
                 Označi kao pročitano
               </button>
             ) : (
               <>
                 <div className="flex items-center gap-3 bg-surface-container-highest px-8 py-4 rounded-full">
-                  <span className="material-symbols-outlined text-primary-container" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
+                  <span className="material-symbols-outlined text-primary-container" style={{ fontVariationSettings: "'FILL' 1" }} aria-hidden="true">check_circle</span>
                   <span className="font-label font-bold text-on-surface">Pročitano</span>
                 </div>
                 <button
@@ -374,7 +379,7 @@ export default function StoryReader({ storyId, title, author, body, imageUrl, av
                       key={star}
                       className="material-symbols-outlined text-lg"
                       style={{ fontVariationSettings: star <= Math.round(averageRating) ? "'FILL' 1" : "'FILL' 0" }}
-                    >
+                     aria-hidden="true">
                       star
                     </span>
                   ))}
@@ -410,7 +415,7 @@ export default function StoryReader({ storyId, title, author, body, imageUrl, av
                   </h4>
                   {s.readingTime != null && (
                     <div className="flex items-center gap-1 text-on-surface-variant">
-                      <span className="material-symbols-outlined text-sm">schedule</span>
+                      <span className="material-symbols-outlined text-sm" aria-hidden="true">schedule</span>
                       <span className="font-label text-xs">{s.readingTime} min čitanja</span>
                     </div>
                   )}
@@ -426,7 +431,7 @@ export default function StoryReader({ storyId, title, author, body, imageUrl, av
             href="#comments"
             className="inline-flex items-center gap-2 text-primary-container hover:text-primary font-label font-bold transition-colors"
           >
-            <span className="material-symbols-outlined">chat_bubble</span>
+            <span className="material-symbols-outlined" aria-hidden="true">chat_bubble</span>
             Skok na komentare
           </a>
         </div>
@@ -437,80 +442,78 @@ export default function StoryReader({ storyId, title, author, body, imageUrl, av
         </section>
       </main>
 
-      {/* Rating Modal */}
-      {showRating && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-surface-container-high rounded-xl p-8 max-w-md w-full shadow-[0_20px_40px_rgba(0,0,0,0.4)]">
-            <h2 className="text-2xl font-bold font-headline text-primary-container mb-4">
-              Ocijeni priču
-            </h2>
-            <p className="text-on-surface-variant mb-6 font-body">
-              Koliko bi ocijenio/ocijenila ovu priču?
-            </p>
+      <Dialog
+        open={showRating}
+        onClose={handleRatingCancel}
+        ariaLabelledBy="rating-dialog-title"
+        ariaDescribedBy="rating-dialog-desc"
+        panelClassName="relative bg-surface-container-high rounded-2xl p-8 max-w-md w-full shadow-[0_30px_60px_rgba(0,0,0,0.6)] focus:outline-none"
+      >
+        <h2 id="rating-dialog-title" className="text-2xl font-bold font-headline text-primary-container mb-4">
+          Ocijeni priču
+        </h2>
+        <p id="rating-dialog-desc" className="text-on-surface-variant mb-6 font-body">
+          Koliko bi ocijenio/ocijenila ovu priču?
+        </p>
 
-            <div
-              className="flex justify-center gap-2 mb-6"
-              role="group"
-              aria-label="Ocijeni priču od 1 do 5 zvijezda"
+        <div
+          className="flex justify-center gap-2 mb-6"
+          role="group"
+          aria-label="Ocijeni priču od 1 do 5 zvijezda"
+        >
+          {[1, 2, 3, 4, 5].map((star) => (
+            <button
+              key={star}
+              type="button"
+              onClick={() => setRating(star)}
+              onMouseEnter={() => setHoverRating(star)}
+              onMouseLeave={() => setHoverRating(0)}
+              className="transition-transform motion-reduce:transition-none hover:scale-125 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-container rounded"
+              aria-label={`Ocijeni ${star} zvijezda`}
+              aria-pressed={rating === star}
             >
-              {[1, 2, 3, 4, 5].map((star) => (
-                <button
-                  key={star}
-                  type="button"
-                  onClick={() => setRating(star)}
-                  onMouseEnter={() => setHoverRating(star)}
-                  onMouseLeave={() => setHoverRating(0)}
-                  className="transition-transform hover:scale-125 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-container rounded"
-                  aria-label={`Ocijeni ${star} zvijezda`}
-                  aria-pressed={rating === star}
-                >
-                  <span
-                    className={`material-symbols-outlined text-4xl ${star <= (hoverRating || rating) ? 'text-primary-container' : 'text-surface-container-highest'}`}
-                    style={{ fontVariationSettings: star <= (hoverRating || rating) ? "'FILL' 1" : "'FILL' 0" }}
-                  >
-                    star
-                  </span>
-                </button>
-              ))}
-            </div>
-
-            {rating > 0 && (
-              <p className="text-center text-primary-container mb-6 font-label">
-                Odabrano: {rating} {rating === 1 ? 'zvijezda' : 'zvijezde'}
-              </p>
-            )}
-
-            <div className="flex gap-3 justify-end">
-              <button
-                type="button"
-                onClick={() => {
-                  setShowRating(false)
-                  setRating(0)
-                  sessionStorage.removeItem('scrollPosition')
-                }}
-                className="px-6 py-2.5 rounded-full bg-surface-container-highest text-on-surface-variant hover:bg-surface-bright font-label font-bold transition-all"
+              <span
+                className={`material-symbols-outlined text-4xl ${star <= (hoverRating || rating) ? 'text-primary-container' : 'text-surface-container-highest'}`}
+                style={{ fontVariationSettings: star <= (hoverRating || rating) ? "'FILL' 1" : "'FILL' 0" }}
+                aria-hidden="true"
               >
-                Odustani
-              </button>
-              <button
-                type="button"
-                onClick={handleSkipRating}
-                className="px-6 py-2.5 rounded-full bg-surface-container-highest text-on-surface-variant hover:bg-surface-bright font-label font-bold transition-all"
-              >
-                Preskoči
-              </button>
-              <button
-                type="button"
-                onClick={handleRatingSubmit}
-                disabled={rating === 0}
-                className="px-6 py-2.5 rounded-full bg-primary-container text-on-primary-container font-label font-bold disabled:opacity-40 disabled:cursor-not-allowed hover:scale-[1.02] transition-all"
-              >
-                Spremi
-              </button>
-            </div>
-          </div>
+                star
+              </span>
+            </button>
+          ))}
         </div>
-      )}
+
+        {rating > 0 && (
+          <p className="text-center text-primary-container mb-6 font-label">
+            Odabrano: {rating} {rating === 1 ? 'zvijezda' : 'zvijezde'}
+          </p>
+        )}
+
+        <div className="flex gap-3 justify-end">
+          <button
+            type="button"
+            onClick={handleRatingCancel}
+            className="px-6 py-2.5 rounded-full bg-surface-container-highest text-on-surface-variant hover:bg-surface-bright font-label font-bold transition-all motion-reduce:transition-none"
+          >
+            Odustani
+          </button>
+          <button
+            type="button"
+            onClick={handleSkipRating}
+            className="px-6 py-2.5 rounded-full bg-surface-container-highest text-on-surface-variant hover:bg-surface-bright font-label font-bold transition-all motion-reduce:transition-none"
+          >
+            Preskoči
+          </button>
+          <button
+            type="button"
+            onClick={handleRatingSubmit}
+            disabled={rating === 0}
+            className="px-6 py-2.5 rounded-full bg-primary-container text-on-primary-container font-label font-bold disabled:opacity-40 disabled:cursor-not-allowed hover:scale-[1.02] transition-all motion-reduce:hover:scale-100 motion-reduce:transition-none"
+          >
+            Spremi
+          </button>
+        </div>
+      </Dialog>
 
       {/* Footer */}
       <footer className="bg-surface w-full pt-20 pb-10 print:hidden">

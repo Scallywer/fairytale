@@ -291,7 +291,7 @@ export default function StoriesList({ stories }: StoriesListProps) {
       {/* Toolbar */}
       <div className="bg-surface-container-low rounded-xl p-6 flex flex-col lg:flex-row gap-6 items-center justify-between">
         <div className="w-full lg:w-1/3 relative">
-          <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+          <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant" aria-hidden="true">search</span>
           <input
             type="text"
             value={searchQuery}
@@ -310,7 +310,7 @@ export default function StoriesList({ stories }: StoriesListProps) {
               className={`flex items-center gap-2 px-4 py-2 rounded-full cursor-pointer hover:bg-surface-bright transition-colors ${selectedAuthor ? 'bg-primary-container text-on-primary-container' : 'bg-surface-container-highest text-on-surface-variant'}`}
             >
               <span className="font-label text-xs font-bold uppercase tracking-wider">{selectedAuthor || 'Autor'}</span>
-              <span className="material-symbols-outlined text-sm">expand_more</span>
+              <span className="material-symbols-outlined text-sm" aria-hidden="true">expand_more</span>
             </button>
             {showAuthorDropdown && (
               <div className="absolute top-full mt-2 left-0 bg-surface-container-high rounded-xl shadow-[0_20px_40px_rgba(0,0,0,0.4)] z-[100] min-w-[200px] py-2 max-h-64 overflow-y-auto">
@@ -334,7 +334,7 @@ export default function StoriesList({ stories }: StoriesListProps) {
               className={`flex items-center gap-2 px-4 py-2 rounded-full cursor-pointer hover:bg-surface-bright transition-colors ${maxReadingTime !== null ? 'bg-primary-container text-on-primary-container' : 'bg-surface-container-highest text-on-surface-variant'}`}
             >
               <span className="font-label text-xs font-bold uppercase tracking-wider">Vrijeme</span>
-              <span className="material-symbols-outlined text-sm">expand_more</span>
+              <span className="material-symbols-outlined text-sm" aria-hidden="true">expand_more</span>
             </button>
             {showTimeDropdown && (
               <div className="absolute top-full mt-2 left-0 bg-surface-container-high rounded-xl shadow-[0_20px_40px_rgba(0,0,0,0.4)] z-[100] min-w-[160px] py-2">
@@ -355,7 +355,7 @@ export default function StoriesList({ stories }: StoriesListProps) {
               className={`flex items-center gap-2 px-4 py-2 rounded-full cursor-pointer hover:bg-surface-bright transition-colors ${readStatus !== 'all' ? 'bg-primary-container text-on-primary-container' : 'bg-surface-container-highest text-on-surface-variant'}`}
             >
               <span className="font-label text-xs font-bold uppercase tracking-wider">Status</span>
-              <span className="material-symbols-outlined text-sm">expand_more</span>
+              <span className="material-symbols-outlined text-sm" aria-hidden="true">expand_more</span>
             </button>
             {showStatusDropdown && (
               <div className="absolute top-full mt-2 left-0 bg-surface-container-high rounded-xl shadow-[0_20px_40px_rgba(0,0,0,0.4)] z-[100] min-w-[160px] py-2">
@@ -374,7 +374,7 @@ export default function StoriesList({ stories }: StoriesListProps) {
                 onClick={clearFilters}
                 className="flex items-center gap-2 px-4 py-2 rounded-full bg-surface-container-highest text-on-surface-variant hover:bg-surface-bright transition-colors font-label text-xs font-bold"
               >
-                <span className="material-symbols-outlined text-sm">close</span>
+                <span className="material-symbols-outlined text-sm" aria-hidden="true">close</span>
                 Očisti
               </button>
             </>
@@ -389,14 +389,14 @@ export default function StoriesList({ stories }: StoriesListProps) {
               className={`p-2 rounded-full transition-colors ${viewMode === 'gallery' ? 'bg-primary-container text-on-primary-container' : 'text-on-surface-variant hover:text-on-surface'}`}
               aria-label="Prikaz galerije"
             >
-              <span className="material-symbols-outlined">grid_view</span>
+              <span className="material-symbols-outlined" aria-hidden="true">grid_view</span>
             </button>
             <button
               onClick={() => setViewMode('list')}
               className={`p-2 rounded-full transition-colors ${viewMode === 'list' ? 'bg-primary-container text-on-primary-container' : 'text-on-surface-variant hover:text-on-surface'}`}
               aria-label="Prikaz popisa"
             >
-              <span className="material-symbols-outlined">format_list_bulleted</span>
+              <span className="material-symbols-outlined" aria-hidden="true">format_list_bulleted</span>
             </button>
           </div>
         </div>
@@ -461,7 +461,7 @@ export default function StoriesList({ stories }: StoriesListProps) {
             </div>
             {hasMore && !isSearching && (
               <div ref={sentinelRef} className="mt-16 flex justify-center">
-                <span className="material-symbols-outlined animate-spin text-on-surface-variant">progress_activity</span>
+                <span className="material-symbols-outlined animate-spin text-on-surface-variant" aria-hidden="true">progress_activity</span>
               </div>
             )}
           </>

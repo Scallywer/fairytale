@@ -136,7 +136,7 @@ export default function Comments({ storyId }: CommentsProps) {
           {comments.map((comment) => (
             <div key={comment.id} className="flex gap-6">
               <div className="w-12 h-12 rounded-full bg-surface-container-highest flex-shrink-0 flex items-center justify-center border border-outline-variant/20">
-                <span className="material-symbols-outlined text-primary-container">person</span>
+                <span className="material-symbols-outlined text-primary-container" aria-hidden="true">person</span>
               </div>
               <div className="flex-1 space-y-2">
                 <div className="flex items-center justify-between">

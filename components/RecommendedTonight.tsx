@@ -107,7 +107,7 @@ export default function RecommendedTonight({ stories }: RecommendedTonightProps)
               </p>
             )}
             <span className="inline-flex items-center gap-3 bg-primary-container text-on-primary-container px-8 py-4 rounded-full font-label font-bold group-hover:scale-[1.05] transition-transform duration-[400ms]">
-              <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>
+              <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }} aria-hidden="true">
                 play_arrow
               </span>
               Započni čitanje
@@ -150,7 +150,7 @@ export default function RecommendedTonight({ stories }: RecommendedTonightProps)
               )}
               <span className="text-primary-container font-label font-bold flex items-center gap-2 group-hover:gap-4 transition-all">
                 Saznaj više
-                <span className="material-symbols-outlined text-sm">arrow_forward</span>
+                <span className="material-symbols-outlined text-sm" aria-hidden="true">arrow_forward</span>
               </span>
             </div>
           </Link>

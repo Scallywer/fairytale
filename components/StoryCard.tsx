@@ -82,7 +82,7 @@ export default function StoryCard({
                 {title}
               </h4>
               {mounted && isRead && (
-                <span className="material-symbols-outlined text-primary-container text-lg ml-2 shrink-0" style={{ fontVariationSettings: "'FILL' 1" }}>
+                <span className="material-symbols-outlined text-primary-container text-lg ml-2 shrink-0" style={{ fontVariationSettings: "'FILL' 1" }} aria-hidden="true">
                   check_circle
                 </span>
               )}
@@ -91,13 +91,13 @@ export default function StoryCard({
             <div className="flex items-center gap-4">
               {averageRating != null && averageRating > 0 && (
                 <div className="flex items-center gap-1">
-                  <span className="material-symbols-outlined text-primary-container text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
+                  <span className="material-symbols-outlined text-primary-container text-sm" style={{ fontVariationSettings: "'FILL' 1" }} aria-hidden="true">star</span>
                   <span className="font-label text-xs text-on-surface">{averageRating.toFixed(1)}</span>
                 </div>
               )}
               {readingTime != null && readingTime > 0 && (
                 <div className="flex items-center gap-1 text-on-surface-variant">
-                  <span className="material-symbols-outlined text-sm">schedule</span>
+                  <span className="material-symbols-outlined text-sm" aria-hidden="true">schedule</span>
                   <span className="font-label text-xs">{readingTime} min</span>
                 </div>
               )}
@@ -129,13 +129,13 @@ export default function StoryCard({
           )}
           {averageRating != null && averageRating > 0 && (
             <div className="absolute top-4 right-4 bg-surface-container/80 backdrop-blur-md px-3 py-1 rounded-full flex items-center gap-1">
-              <span className="material-symbols-outlined text-primary-container text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
+              <span className="material-symbols-outlined text-primary-container text-sm" style={{ fontVariationSettings: "'FILL' 1" }} aria-hidden="true">star</span>
               <span className="text-white text-xs font-bold font-label">{averageRating.toFixed(1)}</span>
             </div>
           )}
           {mounted && isRead && (
             <div className="absolute top-4 left-4 bg-surface-container/80 backdrop-blur-md p-1.5 rounded-full">
-              <span className="material-symbols-outlined text-primary-container text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
+              <span className="material-symbols-outlined text-primary-container text-sm" style={{ fontVariationSettings: "'FILL' 1" }} aria-hidden="true">check_circle</span>
             </div>
           )}
         </div>
@@ -146,7 +146,7 @@ export default function StoryCard({
             </span>
             {readingTime != null && readingTime > 0 && (
               <div className="flex items-center gap-1 text-on-surface-variant">
-                <span className="material-symbols-outlined text-sm">schedule</span>
+                <span className="material-symbols-outlined text-sm" aria-hidden="true">schedule</span>
                 <span className="text-[11px] font-label">{readingTime} min</span>
               </div>
             )}
@@ -161,13 +161,13 @@ export default function StoryCard({
             <div className="flex items-center gap-3">
               {readCount != null && (
                 <div className="flex items-center gap-1 text-on-surface-variant">
-                  <span className="material-symbols-outlined text-xs">visibility</span>
+                  <span className="material-symbols-outlined text-xs" aria-hidden="true">visibility</span>
                   <span className="text-[10px] font-label">{readCount >= 1000 ? `${(readCount / 1000).toFixed(1)}k` : readCount}</span>
                 </div>
               )}
               {commentCount != null && (
                 <div className="flex items-center gap-1 text-on-surface-variant">
-                  <span className="material-symbols-outlined text-xs">chat_bubble</span>
+                  <span className="material-symbols-outlined text-xs" aria-hidden="true">chat_bubble</span>
                   <span className="text-[10px] font-label">{commentCount}</span>
                 </div>
               )}

@@ -38,7 +38,7 @@ export default function BackToTop() {
       className="fixed bottom-8 right-8 z-50 p-3 bg-primary-container text-on-primary-container rounded-full shadow-[0_10px_20px_rgba(252,211,77,0.2)] transition-all duration-[400ms] hover:scale-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-container"
       aria-label="Povratak na vrh"
     >
-      <span className="material-symbols-outlined">arrow_upward</span>
+      <span className="material-symbols-outlined" aria-hidden="true">arrow_upward</span>
     </button>
   )
 }

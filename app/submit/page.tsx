@@ -52,7 +52,7 @@ export default function SubmitPage() {
             href="/"
             className="group flex items-center gap-2 text-on-surface hover:text-primary-container transition-colors duration-[400ms]"
           >
-            <span className="material-symbols-outlined">arrow_back</span>
+            <span className="material-symbols-outlined" aria-hidden="true">arrow_back</span>
             <span className="font-label font-medium">Natrag</span>
           </Link>
           <div className="h-8 w-px bg-surface-container-highest" />
