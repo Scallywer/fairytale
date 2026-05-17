@@ -96,6 +96,74 @@
   --shadow-glow-primary-strong: 0 0 28px rgba(252, 211, 77, 0.4);
 }
 
+/* "Candle" theme — warm dark, for read-aloud (Naglas) mode.
+   Activates when <html data-theme="candle">. Sets the entire surface
+   palette to warm browns + amber and dials primary fills back to a
+   soft candleglow tone so nothing pulses on a dark bedroom phone. */
+:root[data-theme='candle'] {
+  --surface: #1a0f08;
+  --surface-dim: #110800;
+  --surface-bright: #2c1c10;
+  --surface-container-lowest: #0d0603;
+  --surface-container-low: #1d1109;
+  --surface-container: #23170d;
+  --surface-container-high: #2c1d10;
+  --surface-container-highest: #382613;
+  --surface-variant: #322113;
+
+  --primary: #f5e6c8;
+  --primary-container: #f0a64c;
+  --on-primary: #2a1700;
+  --on-primary-container: #2a1700;
+
+  --on-surface: #e8d6b8;
+  --on-surface-variant: #b9a382;
+  --on-background: #e8d6b8;
+
+  --outline: #6a5337;
+  --outline-variant: #3a2c1a;
+
+  --shadow-glow-primary: 0 0 20px rgba(240, 166, 76, 0.22);
+  --shadow-glow-primary-strong: 0 0 28px rgba(240, 166, 76, 0.4);
+}
+
+/* Naglas reading-mode helpers. The body becomes a marker class on
+   <html> so that the entire viewport — including portal/fixed children —
+   inherits the candle theme + image dimming, not just the article. */
+:root[data-reading-mode='naglas'] img,
+:root[data-reading-mode='naglas'] figure {
+  filter: saturate(0.7) brightness(0.88);
+}
+:root[data-reading-mode='naglas'] * {
+  /* Suppress accidental hover scale/transform animations in Naglas —
+     a stray finger should not shift the reading frame. */
+  transition-duration: 0.001ms !important;
+  animation-duration: 0.001ms !important;
+}
+
+/* Pacing hairlines: faint horizontal rules with a one-word label
+   that helps a parent pace voice energy. No countdown numbers, no
+   timestamps — just "polovica" / "uskoro kraj". */
+.story-pacing-hr {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 2.5rem 0;
+  color: var(--on-surface-variant);
+  font-family: var(--font-label);
+  font-size: 0.75rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  opacity: 0.6;
+}
+.story-pacing-hr::before,
+.story-pacing-hr::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--outline-variant);
+}
+
 @theme inline {
   --color-surface: var(--surface);
   --color-surface-dim: var(--surface-dim);

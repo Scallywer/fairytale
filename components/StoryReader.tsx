@@ -6,6 +6,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Comments from './Comments'
 import Dialog from './Dialog'
+import NaglasExitPill from './NaglasExitPill'
 import Icon from './ui/Icon'
 import { logger } from '@/lib/logger'
 import { splitIntoParagraphs } from '@/lib/utils'
@@ -163,12 +164,57 @@ export default function StoryReader({ storyId, title, author, body, imageUrl, av
       try {
         localStorage.setItem('readAloudMode', next ? '1' : '0')
       } catch { /* ignore */ }
-      // In read-aloud mode, bump the floor of the font size so the
-      // letter form is easy to read from a distance / under low light.
       if (next) setFontSize((f) => Math.max(f, 1.5))
       return next
     })
   }
+
+  // Apply / remove the candle theme + reading-mode marker on <html>
+  // so the whole viewport (including any portal/fixed children) inherits
+  // the warm palette + animation suppression.
+  useEffect(() => {
+    if (typeof document === 'undefined') return
+    const root = document.documentElement
+    if (readAloud) {
+      root.setAttribute('data-theme', 'candle')
+      root.setAttribute('data-reading-mode', 'naglas')
+    } else {
+      root.removeAttribute('data-theme')
+      root.removeAttribute('data-reading-mode')
+    }
+    return () => {
+      root.removeAttribute('data-theme')
+      root.removeAttribute('data-reading-mode')
+    }
+  }, [readAloud])
+
+  // Per-story scroll memory in Naglas. Parents get interrupted at
+  // bedtime; coming back to paragraph 1 is a tax.
+  const NAGLAS_SCROLL_KEY = `naglas:scroll:${storyId}`
+  useEffect(() => {
+    if (!readAloud || typeof window === 'undefined') return
+    // Restore on mount/enter
+    const saved = sessionStorage.getItem(NAGLAS_SCROLL_KEY)
+    if (saved) {
+      const y = Number(saved)
+      if (!Number.isNaN(y) && y > 0) {
+        window.scrollTo({ top: y, behavior: 'auto' })
+      }
+    }
+    // Persist as the user scrolls — passive listener, debounced via rAF.
+    let ticking = false
+    const save = () => {
+      if (ticking) return
+      ticking = true
+      requestAnimationFrame(() => {
+        try { sessionStorage.setItem(NAGLAS_SCROLL_KEY, String(window.scrollY)) } catch { /* ignore */ }
+        ticking = false
+      })
+    }
+    window.addEventListener('scroll', save, { passive: true })
+    return () => window.removeEventListener('scroll', save)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [readAloud, storyId])
 
   const markAsRead = () => {
     if (typeof window !== 'undefined') {
@@ -285,18 +331,11 @@ export default function StoryReader({ storyId, title, author, body, imageUrl, av
         </header>
       )}
 
-      {/* Read-aloud floating exit pill */}
-      {readAloud && (
-        <button
-          type="button"
-          onClick={toggleReadAloud}
-          className="fixed top-4 right-4 z-50 bg-surface-container-high/80 backdrop-blur-md text-on-surface hover:bg-surface-bright px-4 py-2 rounded-full font-label text-sm flex items-center gap-2 shadow-lg motion-reduce:transition-none"
-          aria-label="Izađi iz moda čitanja naglas"
-        >
-          <span className="material-symbols-outlined text-sm" aria-hidden="true">close</span>
-          Izađi
-        </button>
-      )}
+      {/* Read-aloud floating exit pill — moved to top-LEFT (out of the
+          thumb's natural swipe arc) and requires a 400ms hold to confirm,
+          so an accidental tap doesn't blow the reading moment. The
+          progress fill on the pill animates during the hold. */}
+      {readAloud && <NaglasExitPill onExit={toggleReadAloud} />}
 
       {/* Main Content. Default body container = max-w-prose (~65ch),
           the read-aloud sweet spot the visual reviewers flagged. Previously
@@ -395,17 +434,33 @@ export default function StoryReader({ storyId, title, author, body, imageUrl, av
                   </figure>
                 )}
 
-                {remainingParagraphs.map((paragraph, index) => (
-                  <p key={index} className="leading-[1.8] text-on-surface/90">
-                    {paragraph}
-                  </p>
-                ))}
+                {(() => {
+                  // Pacing hairlines: render at ~50% and ~85% of the
+                  // remaining-paragraph stream when there are enough
+                  // paragraphs to make pacing meaningful (≥6 total).
+                  const total = paragraphs.length
+                  const halfIdx = total >= 6 ? Math.floor(remainingParagraphs.length * 0.5) - 1 : -1
+                  const endIdx = total >= 6 ? Math.floor(remainingParagraphs.length * 0.85) - 1 : -1
+                  return remainingParagraphs.map((paragraph, index) => (
+                    <div key={index}>
+                      {index === halfIdx && (
+                        <div className="story-pacing-hr" aria-hidden="true">polovica</div>
+                      )}
+                      {index === endIdx && index !== halfIdx && (
+                        <div className="story-pacing-hr" aria-hidden="true">uskoro kraj</div>
+                      )}
+                      <p className="leading-[1.8] text-on-surface/90">{paragraph}</p>
+                    </div>
+                  ))
+                })()}
               </>
             )
           })()}
         </article>
 
-        {/* End of Story Section */}
+        {/* End of Story Section — hidden in Naglas (Phase G adds the
+            kid-facing "Još jedna kratka priča?" CTA which lives here). */}
+        {!readAloud && (
         <div className="mt-20 flex flex-col items-center gap-12 py-16 bg-surface-container-low rounded-xl">
           <div className="text-center space-y-4">
             <h3 className="font-headline text-3xl text-primary">Kraj priče</h3>
@@ -460,6 +515,7 @@ export default function StoryReader({ storyId, title, author, body, imageUrl, av
             )}
           </div>
         </div>
+        )}
 
         {/* Related stories — hidden in read-aloud mode */}
         {!readAloud && relatedStories.length > 0 && (
@@ -496,21 +552,14 @@ export default function StoryReader({ storyId, title, author, body, imageUrl, av
           </section>
         )}
 
-        {/* Scroll to comments */}
-        <div className="mt-10 print:hidden">
-          <a
-            href="#comments"
-            className="inline-flex items-center gap-2 text-primary-container hover:text-primary font-label font-bold transition-colors"
-          >
-            <span className="material-symbols-outlined" aria-hidden="true">chat_bubble</span>
-            Skok na komentare
-          </a>
-        </div>
-
-        {/* Comments Section */}
-        <section id="comments" aria-label="Komentari">
-          <Comments storyId={storyId} />
-        </section>
+        {/* Comments — Phase G collapses these behind a <details>; in
+            Naglas they're hidden outright since a bedtime device is no
+            place to leave a moderated comment. */}
+        {!readAloud && (
+          <section id="comments" aria-label="Komentari">
+            <Comments storyId={storyId} />
+          </section>
+        )}
       </main>
 
       <Dialog
@@ -585,7 +634,8 @@ export default function StoryReader({ storyId, title, author, body, imageUrl, av
         </div>
       </Dialog>
 
-      {/* Footer */}
+      {/* Footer — hidden in Naglas to keep the page text-only. */}
+      {!readAloud && (
       <footer className="bg-surface w-full pt-20 pb-10 print:hidden">
         <div className="flex flex-col items-center gap-8 w-full max-w-7xl mx-auto px-8">
           <div className="text-lg font-headline text-primary italic">Priče za laku noć</div>
@@ -598,6 +648,7 @@ export default function StoryReader({ storyId, title, author, body, imageUrl, av
           </div>
         </div>
       </footer>
+      )}
     </div>
   )
 }
