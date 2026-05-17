@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { storiesService } from '@/lib/storiesService'
 import { createStorySchema } from '@/lib/schemas'
+import { getClientIp, checkStorySubmitRateLimit } from '@/lib/rateLimit'
 import { logger } from '@/lib/logger'
+
+const MAX_STORY_BODY_BYTES = 100_000 // ~50K chars in Zod, plus JSON overhead
 
 export const revalidate = 60
 
@@ -40,7 +43,25 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
+    const ip = getClientIp(request)
+    if (!checkStorySubmitRateLimit(ip)) {
+      return NextResponse.json(
+        { error: 'Previše predaja s ove adrese. Pokušajte za sat vremena.' },
+        { status: 429 }
+      )
+    }
+
+    const contentLength = Number(request.headers.get('content-length') ?? '0')
+    if (contentLength > MAX_STORY_BODY_BYTES) {
+      return NextResponse.json({ error: 'Priča je predugačka' }, { status: 413 })
+    }
+
+    let body: unknown
+    try {
+      body = await request.json()
+    } catch {
+      return NextResponse.json({ error: 'Nevaljani JSON' }, { status: 400 })
+    }
     const parsed = createStorySchema.safeParse(body)
     if (!parsed.success) {
       const msg = parsed.error.flatten().fieldErrors.title?.[0]

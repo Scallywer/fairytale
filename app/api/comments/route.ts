@@ -29,6 +29,8 @@ export async function GET(request: NextRequest) {
   }
 }
 
+const MAX_COMMENT_BODY_BYTES = 5_000
+
 export async function POST(request: NextRequest) {
   try {
     const ip = getClientIp(request)
@@ -37,6 +39,11 @@ export async function POST(request: NextRequest) {
         { error: 'Previše komentara s ove adrese. Pokušajte ponovno za sat vremena.' },
         { status: 429 }
       )
+    }
+
+    const contentLength = Number(request.headers.get('content-length') ?? '0')
+    if (contentLength > MAX_COMMENT_BODY_BYTES) {
+      return NextResponse.json({ error: 'Komentar je predugačak' }, { status: 413 })
     }
 
     let body: unknown

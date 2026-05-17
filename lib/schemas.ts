@@ -38,15 +38,24 @@ export const createCommentSchema = z.object({
   authorName: z.string().max(100).optional(),
   content: z.string().min(3).max(1000),
   mathAnswer: z.coerce.number().int().min(0).max(20),
+  mathToken: z.string().max(500).optional(),
   honeypot: z.string().max(0).optional(),
 })
 
 export const submitRatingSchema = z.object({
   storyId: nonEmptyString,
   rating: z.number().int().min(1).max(5),
-  userId: z.string().max(200).optional(),
+})
+
+const ANALYTICS_EVENTS = ['page_view', 'story_view', 'story_read', 'rating_open', 'rating_submit'] as const
+
+export const analyticsEventSchema = z.object({
+  event: z.enum(ANALYTICS_EVENTS),
+  storyId: z.string().max(64).optional(),
+  path: z.string().max(500).optional(),
 })
 
 export type CreateStoryInput = z.infer<typeof createStorySchema>
 export type CreateCommentInput = z.infer<typeof createCommentSchema>
 export type SubmitRatingInput = z.infer<typeof submitRatingSchema>
+export type AnalyticsEventInput = z.infer<typeof analyticsEventSchema>

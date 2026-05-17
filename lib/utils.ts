@@ -9,14 +9,30 @@ export function calculateReadingTime(body: string, wordsPerMinute: number = 120)
     return 1
   }
 
-  // Count words by splitting on whitespace and filtering empty strings
   const words = body.trim().split(/\s+/).filter(word => word.length > 0)
   const wordCount = words.length
 
-  // Calculate reading time: round up to nearest minute, minimum 1 minute
   const readingTime = Math.max(1, Math.ceil(wordCount / wordsPerMinute))
 
   return readingTime
+}
+
+/**
+ * Safely serialize a value for embedding inside a <script> tag via
+ * dangerouslySetInnerHTML. Escapes characters that would let user data
+ * close the script element, smuggle HTML comments, or insert line
+ * terminators that prematurely end a JS string.
+ *
+ * Without this, a story body containing `</script>` would terminate
+ * the JSON-LD block and allow following content to be parsed as HTML.
+ */
+export function safeJsonLd(value: unknown): string {
+  return JSON.stringify(value)
+    .replace(/</g, '\\u003c')
+    .replace(/>/g, '\\u003e')
+    .replace(/&/g, '\\u0026')
+    .replace(new RegExp('\\u2028', 'g'), '\\u2028')
+    .replace(new RegExp('\\u2029', 'g'), '\\u2029')
 }
 
 /**

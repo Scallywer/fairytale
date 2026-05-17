@@ -1,0 +1,88 @@
+import { describe, it, expect, beforeEach } from 'vitest'
+import { POST as postRating } from '@/app/api/ratings/route'
+import { GET as getStories } from '@/app/api/stories/route'
+import { __resetRateLimitsForTests } from '@/lib/rateLimit'
+
+async function firstApprovedStoryId(): Promise<string> {
+  const req = new Request('http://localhost/api/stories', { method: 'GET' })
+  // The route ignores body for GET; pass it through.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const res = await (getStories as any)(req)
+  const stories = await res.json()
+  return stories[0].id
+}
+
+function ratingRequest(storyId: string, rating: number, cookie?: string): Request {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    'content-length': '128',
+  }
+  if (cookie) headers['cookie'] = cookie
+  return new Request('http://localhost/api/ratings', {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({ storyId, rating }),
+  })
+}
+
+describe('POST /api/ratings', () => {
+  beforeEach(() => {
+    __resetRateLimitsForTests()
+  })
+
+  it('mints a rater_id cookie when missing', async () => {
+    const id = await firstApprovedStoryId()
+    const res = await (postRating as unknown as (r: Request) => Promise<Response>)(ratingRequest(id, 4))
+    expect(res.status).toBe(200)
+    const setCookie = res.headers.get('set-cookie')
+    expect(setCookie).toMatch(/rater_id=/)
+    expect(setCookie).toMatch(/HttpOnly/)
+    expect(setCookie).toMatch(/SameSite=Lax/)
+  })
+
+  it('reuses an existing rater_id cookie (no Set-Cookie)', async () => {
+    const id = await firstApprovedStoryId()
+    const res = await (postRating as unknown as (r: Request) => Promise<Response>)(ratingRequest(id, 5, 'rater_id=abc12345xyz_-AB'))
+    expect(res.status).toBe(200)
+    expect(res.headers.get('set-cookie')).toBeNull()
+  })
+
+  it('rejects malformed body', async () => {
+    const req = new Request('http://localhost/api/ratings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'content-length': '5' },
+      body: 'oops',
+    })
+    const res = await (postRating as unknown as (r: Request) => Promise<Response>)(req)
+    expect(res.status).toBe(400)
+  })
+
+  it('rejects ratings out of range', async () => {
+    const id = await firstApprovedStoryId()
+    const res = await (postRating as unknown as (r: Request) => Promise<Response>)(ratingRequest(id, 99))
+    expect(res.status).toBe(400)
+  })
+
+  it('rate-limits after many submissions', async () => {
+    const id = await firstApprovedStoryId()
+    // Burn through the per-IP budget (30/hour). All untrusted requests
+    // share a single bucket because TRUST_PROXY is unset.
+    let last = 0
+    for (let i = 0; i < 35; i++) {
+      const r = await (postRating as unknown as (r: Request) => Promise<Response>)(ratingRequest(id, 3, 'rater_id=u-' + i + 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'))
+      last = r.status
+      if (last === 429) break
+    }
+    expect(last).toBe(429)
+  })
+
+  it('rejects oversize body via content-length', async () => {
+    const req = new Request('http://localhost/api/ratings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'content-length': String(10_000) },
+      body: JSON.stringify({ storyId: 'x', rating: 5 }),
+    })
+    const res = await (postRating as unknown as (r: Request) => Promise<Response>)(req)
+    expect(res.status).toBe(413)
+  })
+})

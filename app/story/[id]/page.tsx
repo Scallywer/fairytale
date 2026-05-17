@@ -4,6 +4,7 @@ import { storiesService } from "@/lib/storiesService";
 import { dbHelpers } from "@/lib/db";
 import StoryReader from "@/components/StoryReader";
 import { logger } from "@/lib/logger";
+import { safeJsonLd } from "@/lib/utils";
 
 export const revalidate = 60;
 export const dynamicParams = true;
@@ -134,7 +135,7 @@ export default async function StoryPage({
             worstRating: 1,
           }
         : undefined,
-    wordCount: story.body.split(/\s+/).length,
+    wordCount: story.body.trim().split(/\s+/).filter(Boolean).length,
   };
 
   const breadcrumbLd = {
@@ -160,11 +161,11 @@ export default async function StoryPage({
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLd) }}
       />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
+        dangerouslySetInnerHTML={{ __html: safeJsonLd(breadcrumbLd) }}
       />
         <StoryReader
           key={story.id}

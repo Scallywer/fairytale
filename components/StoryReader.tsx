@@ -157,15 +157,11 @@ export default function StoryReader({ storyId, title, author, body, imageUrl, av
 
       if (rating > 0) {
         try {
-          const userId = localStorage.getItem('userId') || `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-          if (!localStorage.getItem('userId')) {
-            localStorage.setItem('userId', userId)
-          }
-
           await fetch('/api/ratings', {
             method: 'POST',
+            credentials: 'same-origin',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ storyId, rating, userId })
+            body: JSON.stringify({ storyId, rating })
           })
         } catch (error) {
           logger.error('Error submitting rating:', error)

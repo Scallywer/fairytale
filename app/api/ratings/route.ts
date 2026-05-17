@@ -1,11 +1,35 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { randomUUID } from 'crypto'
 import { ratingsService } from '@/lib/ratingsService'
 import { submitRatingSchema } from '@/lib/schemas'
+import { getClientIp, checkRatingRateLimit } from '@/lib/rateLimit'
+import { getOrCreateRaterId } from '@/lib/auth'
 import { logger } from '@/lib/logger'
+
+const MAX_BODY_BYTES = 2_000
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
+    const ip = getClientIp(request)
+    if (!checkRatingRateLimit(ip)) {
+      return NextResponse.json(
+        { error: 'Previše ocjena. Pokušajte za sat vremena.' },
+        { status: 429 }
+      )
+    }
+
+    const contentLength = Number(request.headers.get('content-length') ?? '0')
+    if (contentLength > MAX_BODY_BYTES) {
+      return NextResponse.json({ error: 'Zahtjev je prevelik' }, { status: 413 })
+    }
+
+    let body: unknown
+    try {
+      body = await request.json()
+    } catch {
+      return NextResponse.json({ error: 'Nevaljani JSON' }, { status: 400 })
+    }
+
     const parsed = submitRatingSchema.safeParse(body)
     if (!parsed.success) {
       const msg = parsed.error.flatten().fieldErrors.storyId?.[0]
@@ -14,22 +38,22 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: msg }, { status: 400 })
     }
 
-    const { storyId, rating, userId } = parsed.data
-    const finalUserId = userId ?? 'anonymous'
-    const { averageRating, ratingCount } = ratingsService.submitRating(storyId, finalUserId, rating)
+    const { storyId, rating } = parsed.data
 
-    return new NextResponse(JSON.stringify({
-      success: true,
-      averageRating,
-      ratingCount
-    }), {
-      status: 200,
-      headers: {
-        'Content-Type': 'application/json; charset=utf-8',
-        // Rating responses should not be cached
-        'Cache-Control': 'no-store',
-      },
-    })
+    const { raterId, setCookie } = await getOrCreateRaterId(request, () => randomUUID())
+
+    const { averageRating, ratingCount } = ratingsService.submitRating(storyId, raterId, rating)
+
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json; charset=utf-8',
+      'Cache-Control': 'no-store',
+    }
+    if (setCookie) headers['Set-Cookie'] = setCookie
+
+    return new NextResponse(
+      JSON.stringify({ success: true, averageRating, ratingCount }),
+      { status: 200, headers }
+    )
   } catch (error) {
     const msg = error instanceof Error ? error.message : ''
     if (msg === 'Story not found' || msg === 'Cannot rate an unapproved story') {

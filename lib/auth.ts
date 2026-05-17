@@ -39,7 +39,7 @@ export function createAdminSessionCookie(): { name: string; value: string; optio
 
 export function verifyAdminCookie(cookieHeader: string | null): boolean {
   if (!cookieHeader) return false
-  const match = cookieHeader.match(new RegExp(`${COOKIE_NAME}=([^;]+)`))
+  const match = cookieHeader.match(new RegExp(`(?:^|; )${COOKIE_NAME}=([^;]+)`))
   const raw = match?.[1]
   if (!raw) return false
   const decoded = decodeURIComponent(raw)
@@ -48,5 +48,41 @@ export function verifyAdminCookie(cookieHeader: string | null): boolean {
   const expiry = Number(expiryStr)
   if (Number.isNaN(expiry) || expiry <= Date.now() / 1000) return false
   const expected = sign(expiryStr)
-  return crypto.timingSafeEqual(Buffer.from(signature, 'base64url'), Buffer.from(expected, 'base64url'))
+  try {
+    return crypto.timingSafeEqual(Buffer.from(signature, 'base64url'), Buffer.from(expected, 'base64url'))
+  } catch {
+    return false
+  }
+}
+
+const RATER_COOKIE_NAME = 'rater_id'
+const RATER_MAX_AGE_SEC = 60 * 60 * 24 * 365 // 1 year
+
+/**
+ * Resolve the rater_id from request cookies, or mint a fresh one. Returns
+ * the id plus an optional Set-Cookie header value when a new id was issued.
+ *
+ * The id is opaque to the client and serves only to dedupe ratings per
+ * device. Phase 3 (auth hardening) will switch this to a signed payload
+ * using a session secret separate from ADMIN_PASSWORD.
+ */
+export async function getOrCreateRaterId(
+  request: Request,
+  newId: () => string
+): Promise<{ raterId: string; setCookie?: string }> {
+  const cookieHeader = request.headers.get('cookie')
+  if (cookieHeader) {
+    const match = cookieHeader.match(new RegExp(`(?:^|; )${RATER_COOKIE_NAME}=([^;]+)`))
+    if (match?.[1]) {
+      const decoded = decodeURIComponent(match[1])
+      // Only accept reasonable-looking values; otherwise mint anew
+      if (/^[A-Za-z0-9_-]{8,128}$/.test(decoded)) {
+        return { raterId: decoded }
+      }
+    }
+  }
+  const raterId = newId()
+  const secure = process.env.NODE_ENV === 'production' ? '; Secure' : ''
+  const setCookie = `${RATER_COOKIE_NAME}=${encodeURIComponent(raterId)}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${RATER_MAX_AGE_SEC}${secure}`
+  return { raterId, setCookie }
 }

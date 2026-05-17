@@ -4,6 +4,8 @@ import { storiesService } from '@/lib/storiesService'
 import StoriesList from '@/components/StoriesList'
 import RecommendedTonight from '@/components/RecommendedTonight'
 import BackToTop from '@/components/BackToTop'
+import { logger } from '@/lib/logger'
+import { safeJsonLd } from '@/lib/utils'
 
 const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://pricezalakunoc.hr'
 
@@ -40,7 +42,7 @@ export default function Home() {
   try {
     stories = storiesService.getApprovedStories()
   } catch (err) {
-    console.error('Failed to load stories', err)
+    logger.error('Failed to load stories', err)
   }
 
   const websiteLd = {
@@ -68,11 +70,11 @@ export default function Home() {
     <>
     <script
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteLd) }}
+      dangerouslySetInnerHTML={{ __html: safeJsonLd(websiteLd) }}
     />
     <script
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationLd) }}
+      dangerouslySetInnerHTML={{ __html: safeJsonLd(organizationLd) }}
     />
     <div className="min-h-screen">
       {/* Top App Bar */}

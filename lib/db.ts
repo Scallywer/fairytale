@@ -488,11 +488,23 @@ export const dbHelpers = {
     ).run(id, event, storyId ?? null, path ?? null, now)
   },
 
-  // Full-text search across title, author, and body using FTS5
+  // Full-text search across title, author, and body using FTS5.
+  // Each token is wrapped as a quoted prefix phrase to defuse FTS5 operators
+  // (NEAR, NOT, OR, AND, column filters like `title:`, parens, etc.).
   searchStories(query: string): string[] {
-    const escaped = query.replace(/['"*^]/g, ' ').trim()
-    if (!escaped) return []
-    const ftsQuery = escaped.split(/\s+/).filter(Boolean).map(t => `${t}*`).join(' ')
+    if (!query) return []
+    // Hard cap to prevent pathological queries
+    const trimmed = query.slice(0, 100).trim()
+    if (!trimmed) return []
+    // Split on whitespace; strip embedded double quotes which would terminate the phrase
+    const tokens = trimmed
+      .split(/\s+/)
+      .filter(Boolean)
+      .map((t) => t.replace(/"/g, ''))
+      .filter((t) => t.length >= 2)
+      .slice(0, 8)
+    if (tokens.length === 0) return []
+    const ftsQuery = tokens.map((t) => `"${t}"*`).join(' ')
     try {
       const rows = db.prepare(`
         SELECT s.id FROM stories s
