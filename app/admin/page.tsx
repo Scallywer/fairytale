@@ -135,18 +135,18 @@ export default function AdminPage() {
         <div className="max-w-md w-full">
           <Link
             href="/"
-            className="text-amber-300 hover:text-amber-200 mb-6 text-sm flex items-center gap-1"
+            className="text-on-surface-variant hover:text-primary mb-6 text-sm flex items-center gap-1"
           >
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
             Povratak na početnu
           </Link>
-          <div className="bg-slate-800 border border-slate-700 rounded-lg p-6">
-            <h1 className="text-2xl font-bold text-amber-200 mb-4">Admin pristup</h1>
+          <div className="bg-surface-container-low border border-outline-variant/30 rounded-lg p-6">
+            <h1 className="text-2xl font-bold text-primary mb-4">Admin pristup</h1>
             <form onSubmit={handleLogin}>
               <div className="mb-4">
-                <label htmlFor="password" className="block text-sm font-medium text-amber-200 mb-2">
+                <label htmlFor="password" className="block text-sm font-medium text-primary mb-2">
                   Lozinka
                 </label>
                 <input
@@ -154,13 +154,13 @@ export default function AdminPage() {
                   id="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-amber-100 focus:outline-none focus:border-amber-500"
+                  className="w-full px-4 py-2 bg-surface-container-lowest border border-outline-variant/30 rounded-lg text-on-surface focus:outline-none focus:border-primary-container"
                   required
                 />
               </div>
               <button
                 type="submit"
-                className="w-full px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-medium transition-colors"
+                className="w-full px-4 py-2 bg-primary-container hover:opacity-90 text-on-primary-container rounded-lg font-medium transition-colors"
               >
                 Prijava
               </button>
@@ -176,16 +176,16 @@ export default function AdminPage() {
 
   return (
     <div className="min-h-screen">
-      <header className="border-b border-slate-700 bg-slate-800/50 backdrop-blur-sm">
+      <header className="border-b border-outline-variant/30 bg-surface-container-low/50 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-3xl font-bold text-amber-200 mb-2">Admin panel</h1>
-              <p className="text-amber-300/90 text-sm">Upravljanje pričama</p>
+              <h1 className="text-3xl font-bold text-primary mb-2">Admin panel</h1>
+              <p className="text-on-surface-variant text-sm">Upravljanje pričama</p>
             </div>
             <Link
               href="/"
-              className="text-amber-300 hover:text-amber-200 text-sm flex items-center gap-1"
+              className="text-on-surface-variant hover:text-primary text-sm flex items-center gap-1"
             >
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -198,50 +198,50 @@ export default function AdminPage() {
 
       <main className="max-w-7xl mx-auto px-4 py-8">
         {loading ? (
-          <div className="text-center py-8 text-amber-300/90">Učitavanje...</div>
+          <div className="text-center py-8 text-on-surface-variant">Učitavanje...</div>
         ) : (
           <>
             {/* Unapproved Stories */}
             <section className="mb-12">
-              <h2 className="text-2xl font-bold text-amber-200 mb-4">
+              <h2 className="text-2xl font-bold text-primary mb-4">
                 Priče koje čekaju odobrenje ({unapprovedStories.length})
               </h2>
               {unapprovedStories.length === 0 ? (
-                <p className="text-amber-300/90">Nema priča koje čekaju odobrenje.</p>
+                <p className="text-on-surface-variant">Nema priča koje čekaju odobrenje.</p>
               ) : (
                 <div className="space-y-4">
                   {unapprovedStories.map((story) => (
                     <div
                       key={story.id}
-                      className="bg-slate-800 border border-slate-700 rounded-lg p-6"
+                      className="bg-surface-container-low border border-outline-variant/30 rounded-lg p-6"
                     >
                       <div className="flex justify-between items-start mb-4">
                         <div className="flex-1">
-                          <h3 className="text-xl font-semibold text-amber-200 mb-2">{story.title}</h3>
-                          <p className="text-amber-300/90 text-sm mb-1">
+                          <h3 className="text-xl font-semibold text-primary mb-2">{story.title}</h3>
+                          <p className="text-on-surface-variant text-sm mb-1">
                             Autor: {story.author}
                           </p>
-                          <p className="text-amber-300/70 text-xs">
+                          <p className="text-on-surface-variant/70 text-xs">
                             {new Date(story.createdAt).toLocaleDateString('hr-HR')}
                           </p>
                         </div>
                         <div className="flex gap-2">
                           <button
                             onClick={() => toggleApproval(story.id)}
-                            className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium transition-colors"
+                            className="px-4 py-2 bg-success-container hover:opacity-90 text-on-success-container rounded-lg text-sm font-medium transition-colors"
                           >
                             Odobri
                           </button>
                           <button
                             onClick={() => deleteStory(story.id, story.title)}
-                            className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors"
+                            className="px-4 py-2 bg-error-container hover:opacity-90 text-on-error-container rounded-lg text-sm font-medium transition-colors"
                           >
                             Obriši
                           </button>
                         </div>
                       </div>
-                      <div className="bg-slate-900 rounded p-4 max-h-48 overflow-y-auto">
-                        <p className="text-amber-100 text-sm whitespace-pre-line line-clamp-6">
+                      <div className="bg-surface-container-lowest rounded p-4 max-h-48 overflow-y-auto">
+                        <p className="text-on-surface text-sm whitespace-pre-line line-clamp-6">
                           {story.body}
                         </p>
                       </div>
@@ -253,22 +253,22 @@ export default function AdminPage() {
 
             {/* Pending Comments */}
             <section className="mb-12">
-              <h2 className="text-2xl font-bold text-amber-200 mb-4">
+              <h2 className="text-2xl font-bold text-primary mb-4">
                 Komentari koji čekaju odobrenje ({pendingComments.length})
               </h2>
               {pendingComments.length === 0 ? (
-                <p className="text-amber-300/90">Nema komentara koji čekaju odobrenje.</p>
+                <p className="text-on-surface-variant">Nema komentara koji čekaju odobrenje.</p>
               ) : (
                 <div className="space-y-4">
                   {pendingComments.map((comment) => (
                     <div
                       key={comment.id}
-                      className="bg-slate-800 border border-slate-700 rounded-lg p-4"
+                      className="bg-surface-container-low border border-outline-variant/30 rounded-lg p-4"
                     >
                       <div className="flex justify-between items-start mb-2">
                         <div className="flex-1">
-                          <p className="text-amber-200 font-semibold">{comment.authorName}</p>
-                          <p className="text-amber-300/70 text-xs">
+                          <p className="text-primary font-semibold">{comment.authorName}</p>
+                          <p className="text-on-surface-variant/70 text-xs">
                             Na priči: {comment.storyTitle || comment.storyId} &middot;{' '}
                             {new Date(comment.createdAt).toLocaleDateString('hr-HR')}
                           </p>
@@ -276,19 +276,19 @@ export default function AdminPage() {
                         <div className="flex gap-2">
                           <button
                             onClick={() => approveComment(comment.id)}
-                            className="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium transition-colors"
+                            className="px-3 py-1.5 bg-success-container hover:opacity-90 text-on-success-container rounded-lg text-sm font-medium transition-colors"
                           >
                             Odobri
                           </button>
                           <button
                             onClick={() => deleteComment(comment.id)}
-                            className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors"
+                            className="px-3 py-1.5 bg-error-container hover:opacity-90 text-on-error-container rounded-lg text-sm font-medium transition-colors"
                           >
                             Obriši
                           </button>
                         </div>
                       </div>
-                      <p className="text-amber-100 text-sm whitespace-pre-line">{comment.content}</p>
+                      <p className="text-on-surface text-sm whitespace-pre-line">{comment.content}</p>
                     </div>
                   ))}
                 </div>
@@ -297,35 +297,35 @@ export default function AdminPage() {
 
             {/* Approved Stories */}
             <section>
-              <h2 className="text-2xl font-bold text-amber-200 mb-4">
+              <h2 className="text-2xl font-bold text-primary mb-4">
                 Odobrene priče ({approvedStories.length})
               </h2>
               {approvedStories.length === 0 ? (
-                <p className="text-amber-300/90">Nema odobrenih priča.</p>
+                <p className="text-on-surface-variant">Nema odobrenih priča.</p>
               ) : (
                 <div className="space-y-4">
                   {approvedStories.map((story) => (
                     <div
                       key={story.id}
-                      className="bg-slate-800 border border-slate-700 rounded-lg p-6"
+                      className="bg-surface-container-low border border-outline-variant/30 rounded-lg p-6"
                     >
                       <div className="flex justify-between items-start">
                         <div className="flex-1">
-                          <h3 className="text-xl font-semibold text-amber-200 mb-2">{story.title}</h3>
-                          <p className="text-amber-300/90 text-sm">
+                          <h3 className="text-xl font-semibold text-primary mb-2">{story.title}</h3>
+                          <p className="text-on-surface-variant text-sm">
                             Autor: {story.author}
                           </p>
                         </div>
                         <div className="flex gap-2">
                           <button
                             onClick={() => toggleApproval(story.id)}
-                            className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors"
+                            className="px-4 py-2 bg-error-container hover:opacity-90 text-on-error-container rounded-lg text-sm font-medium transition-colors"
                           >
                             Poništi odobrenje
                           </button>
                           <button
                             onClick={() => deleteStory(story.id, story.title)}
-                            className="px-4 py-2 bg-red-800 hover:bg-red-900 text-white rounded-lg text-sm font-medium transition-colors"
+                            className="px-4 py-2 bg-error-container hover:opacity-80 text-on-error-container rounded-lg text-sm font-medium transition-colors"
                           >
                             Obriši
                           </button>
