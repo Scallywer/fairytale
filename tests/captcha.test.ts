@@ -17,8 +17,12 @@ describe('captcha', () => {
   it('rejects a tampered signature', () => {
     const ch = createCaptchaChallenge()
     const answer = Number(ch.token.split('.')[0])
-    const tampered = ch.token.slice(0, -1) + (ch.token.slice(-1) === 'a' ? 'b' : 'a')
-    expect(verifyCaptcha(tampered, answer)).toBe(false)
+    const parts = ch.token.split('.')
+    // Replace the signature wholesale with bytes that cannot match.
+    // Mutating only the last base64url char can be a no-op because the
+    // trailing char carries only 2–4 spare bits depending on payload length.
+    parts[3] = 'A'.repeat(parts[3].length)
+    expect(verifyCaptcha(parts.join('.'), answer)).toBe(false)
   })
 
   it('rejects a tampered answer slot', () => {
