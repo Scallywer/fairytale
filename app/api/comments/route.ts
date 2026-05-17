@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { commentsService } from '@/lib/commentsService'
 import { getClientIp, checkCommentRateLimit } from '@/lib/rateLimit'
 import { createCommentSchema } from '@/lib/schemas'
+import { verifyCaptcha } from '@/lib/captcha'
 import { logger } from '@/lib/logger'
 
 export async function GET(request: NextRequest) {
@@ -58,6 +59,13 @@ export async function POST(request: NextRequest) {
       const first = parsed.error.flatten().fieldErrors
       const msg = first.content?.[0] ?? first.mathAnswer?.[0] ?? first.storyId?.[0] ?? 'Nevaljani podaci'
       return NextResponse.json({ error: msg }, { status: 400 })
+    }
+
+    if (!verifyCaptcha(parsed.data.mathToken, parsed.data.mathAnswer)) {
+      return NextResponse.json(
+        { error: 'Netočan ili istekao odgovor na matematičko pitanje. Osvježite pitanje i pokušajte ponovno.' },
+        { status: 400 }
+      )
     }
 
     const { storyId, authorName, content } = parsed.data

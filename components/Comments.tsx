@@ -28,16 +28,20 @@ export default function Comments({ storyId }: CommentsProps) {
     honeypot: ''
   })
 
-  const [mathQuestion, setMathQuestion] = useState<{ question: string; answer: number } | null>(null)
+  const [mathChallenge, setMathChallenge] = useState<{ question: string; token: string } | null>(null)
 
-  const generateMathQuestion = () => {
-    const num1 = Math.floor(Math.random() * 10) + 1
-    const num2 = Math.floor(Math.random() * 10) + 1
-    setMathQuestion({
-      question: `Koliko je ${num1} + ${num2}?`,
-      answer: num1 + num2
-    })
-  }
+  const refreshChallenge = useCallback(async () => {
+    try {
+      const res = await fetch('/api/captcha', { credentials: 'same-origin', cache: 'no-store' })
+      if (res.ok) {
+        const data = (await res.json()) as { question: string; token: string }
+        setMathChallenge(data)
+        setFormData((prev) => ({ ...prev, mathAnswer: '' }))
+      }
+    } catch (err) {
+      logger.error('Error fetching captcha:', err)
+    }
+  }, [])
 
   const fetchComments = useCallback(async () => {
     try {
@@ -55,31 +59,32 @@ export default function Comments({ storyId }: CommentsProps) {
   }, [storyId])
 
   useEffect(() => {
-    generateMathQuestion()
+    refreshChallenge()
     fetchComments()
-  }, [storyId, fetchComments])
+  }, [storyId, fetchComments, refreshChallenge])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setSubmitting(true)
     setMessage(null)
 
-    if (!mathQuestion || Number(formData.mathAnswer) !== mathQuestion.answer) {
-      setMessage({ type: 'error', text: 'Netočan odgovor na matematičko pitanje' })
+    if (!mathChallenge) {
+      setMessage({ type: 'error', text: 'Provjera nije dostupna. Pokušajte ponovno.' })
       setSubmitting(false)
-      generateMathQuestion()
       return
     }
 
     try {
       const response = await fetch('/api/comments', {
         method: 'POST',
+        credentials: 'same-origin',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           storyId,
           authorName: formData.authorName,
           content: formData.content,
           mathAnswer: Number(formData.mathAnswer),
+          mathToken: mathChallenge.token,
           honeypot: formData.honeypot
         })
       })
@@ -87,16 +92,16 @@ export default function Comments({ storyId }: CommentsProps) {
       if (response.ok) {
         setFormData({ authorName: '', content: '', mathAnswer: '', honeypot: '' })
         setMessage({ type: 'success', text: 'Komentar je poslan i čeka odobrenje moderatora.' })
-        generateMathQuestion()
+        await refreshChallenge()
         setTimeout(() => setMessage(null), 5000)
       } else {
         const error = await response.json()
         setMessage({ type: 'error', text: error.error || 'Greška pri slanju komentara' })
-        generateMathQuestion()
+        await refreshChallenge()
       }
     } catch {
       setMessage({ type: 'error', text: 'Greška pri slanju komentara' })
-      generateMathQuestion()
+      await refreshChallenge()
     } finally {
       setSubmitting(false)
     }
@@ -185,10 +190,10 @@ export default function Comments({ storyId }: CommentsProps) {
               </p>
             </div>
 
-            {mathQuestion && (
+            {mathChallenge && (
               <div>
                 <label htmlFor="mathAnswer" className="block font-label text-sm font-medium text-on-surface mb-2">
-                  {mathQuestion.question} *
+                  {mathChallenge.question} *
                 </label>
                 <p id="math-caption" className="text-xs text-on-surface-variant/60 mb-1 font-label">
                   Jednostavno pitanje za zaštitu od robota. Unesite broj (0-20).
