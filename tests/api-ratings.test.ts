@@ -42,9 +42,15 @@ describe('POST /api/ratings', () => {
 
   it('reuses an existing rater_id cookie (no Set-Cookie)', async () => {
     const id = await firstApprovedStoryId()
-    const res = await (postRating as unknown as (r: Request) => Promise<Response>)(ratingRequest(id, 5, 'rater_id=abc12345xyz_-AB'))
-    expect(res.status).toBe(200)
-    expect(res.headers.get('set-cookie')).toBeNull()
+    // First request: mint
+    const first = await (postRating as unknown as (r: Request) => Promise<Response>)(ratingRequest(id, 5))
+    const cookieValue = first.headers.get('set-cookie')!.match(/rater_id=([^;]+)/)![1]
+    // Second request: pass it back
+    const second = await (postRating as unknown as (r: Request) => Promise<Response>)(
+      ratingRequest(id, 5, `rater_id=${cookieValue}`)
+    )
+    expect(second.status).toBe(200)
+    expect(second.headers.get('set-cookie')).toBeNull()
   })
 
   it('rejects malformed body', async () => {
