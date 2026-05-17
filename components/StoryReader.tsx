@@ -505,7 +505,7 @@ export default function StoryReader({ storyId, title, author, body, imageUrl, av
         {/* End of Story Section — hidden in Naglas (Phase G adds the
             kid-facing "Još jedna kratka priča?" CTA which lives here). */}
         {!readAloud && (
-        <div className="mt-20 flex flex-col items-center gap-12 py-16 bg-surface-container-low rounded-xl">
+        <div className="mt-20 flex flex-col items-center gap-10 py-14 bg-surface-container-low rounded-xl">
           <div className="text-center space-y-4">
             <h3 className="font-headline text-3xl text-primary">Kraj priče</h3>
             <p className="font-label text-on-surface-variant italic">
@@ -513,28 +513,56 @@ export default function StoryReader({ storyId, title, author, body, imageUrl, av
             </p>
           </div>
 
-          <div className="flex flex-wrap justify-center gap-6">
+          {/* Kid-facing primary CTA: pick the shortest unread related
+              story ≤ 3 min, otherwise the first related, otherwise hide.
+              This becomes the loudest action at end-of-story so the
+              bedtime negotiation "još jedna pa idemo spavati" has a
+              visible affordance, not a tap-back-to-list. */}
+          {(() => {
+            const nextShort = [...relatedStories]
+              .sort((a, b) => (a.readingTime ?? 99) - (b.readingTime ?? 99))[0]
+            if (!nextShort) return null
+            return (
+              <Link
+                href={`/story/${nextShort.id}`}
+                className="inline-flex flex-col items-center gap-2 bg-primary-container text-on-primary-container px-10 py-5 rounded-full font-label font-bold text-lg hover:scale-[1.02] transition-all motion-reduce:hover:scale-100 motion-reduce:transition-none shadow-[var(--shadow-glow-primary)]"
+              >
+                <span className="flex items-center gap-2">
+                  <Icon name="auto_stories" filled />
+                  Još jedna kratka priča?
+                </span>
+                <span className="font-label text-xs font-normal opacity-80">
+                  {nextShort.title}
+                  {nextShort.readingTime != null && nextShort.readingTime > 0 && (
+                    <> · {nextShort.readingTime} min</>
+                  )}
+                </span>
+              </Link>
+            )
+          })()}
+
+          <div className="flex flex-wrap justify-center gap-4">
             {!mounted || !isRead ? (
               <button
                 type="button"
                 onClick={markAsRead}
-                className="group flex items-center gap-3 bg-primary-container text-on-primary-container px-8 py-4 rounded-full font-label font-bold hover:scale-[1.02] transition-all duration-[400ms] shadow-[0_10px_20px_rgba(252,211,77,0.2)]"
+                className="group flex items-center gap-2 bg-surface-container-high text-on-surface px-6 py-3 rounded-full font-label font-bold text-sm hover:bg-surface-bright transition-all motion-reduce:transition-none"
               >
-                <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }} aria-hidden="true">check_circle</span>
+                <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }} aria-hidden="true">check_circle</span>
                 Označi kao pročitano
               </button>
             ) : (
               <>
-                <div className="flex items-center gap-3 bg-surface-container-highest px-8 py-4 rounded-full">
-                  <span className="material-symbols-outlined text-primary-container" style={{ fontVariationSettings: "'FILL' 1" }} aria-hidden="true">check_circle</span>
-                  <span className="font-label font-bold text-on-surface">Pročitano</span>
+                <div className="flex items-center gap-2 bg-surface-container-highest px-5 py-3 rounded-full">
+                  <span className="material-symbols-outlined text-sm text-primary-container/80" style={{ fontVariationSettings: "'FILL' 1" }} aria-hidden="true">check_circle</span>
+                  <span className="font-label font-bold text-sm text-on-surface">Pročitano</span>
                 </div>
                 <button
                   type="button"
                   onClick={handleUnmarkAsRead}
-                  className="px-6 py-4 bg-surface-container-highest rounded-full font-label text-sm text-on-surface-variant hover:bg-surface-bright transition-all"
+                  className="px-5 py-3 bg-surface-container-highest rounded-full font-label text-sm text-on-surface-variant hover:bg-surface-bright transition-all motion-reduce:transition-none"
                 >
-                  Poništi oznaku
+                  Poništi
                 </button>
               </>
             )}
@@ -596,13 +624,20 @@ export default function StoryReader({ storyId, title, author, body, imageUrl, av
           </section>
         )}
 
-        {/* Comments — Phase G collapses these behind a <details>; in
-            Naglas they're hidden outright since a bedtime device is no
-            place to leave a moderated comment. */}
+        {/* Comments — collapsed by default. A bedtime device is no
+            place to leave a moderated comment; the section is here for
+            parents who specifically want to read what others wrote.
+            Hidden entirely in Naglas. */}
         {!readAloud && (
-          <section id="comments" aria-label="Komentari">
-            <Comments storyId={storyId} />
-          </section>
+          <details className="mt-20 group" id="comments">
+            <summary className="cursor-pointer list-none flex items-center gap-2 text-on-surface-variant hover:text-on-surface font-label text-sm font-bold uppercase tracking-widest py-2 select-none">
+              <span className="material-symbols-outlined text-base transition-transform group-open:rotate-90 motion-reduce:transition-none" aria-hidden="true">chevron_right</span>
+              Pokaži komentare
+            </summary>
+            <section aria-label="Komentari">
+              <Comments storyId={storyId} />
+            </section>
+          </details>
         )}
       </main>
 
@@ -613,11 +648,11 @@ export default function StoryReader({ storyId, title, author, body, imageUrl, av
         ariaDescribedBy="rating-dialog-desc"
         panelClassName="relative bg-surface-container-high rounded-2xl p-8 max-w-md w-full shadow-[0_30px_60px_rgba(0,0,0,0.6)] focus:outline-none"
       >
-        <h2 id="rating-dialog-title" className="text-2xl font-bold font-headline text-primary-container mb-4">
-          Ocijeni priču
+        <h2 id="rating-dialog-title" className="text-2xl font-bold font-headline text-primary mb-4">
+          Pitaj malenog
         </h2>
         <p id="rating-dialog-desc" className="text-on-surface-variant mb-6 font-body">
-          Koliko bi ocijenio/ocijenila ovu priču?
+          Koliko zvjezdica zaslužuje ova priča?
         </p>
 
         <div
