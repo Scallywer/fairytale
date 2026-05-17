@@ -282,8 +282,19 @@ export default function StoriesList({ stories }: StoriesListProps) {
       setShowTimeDropdown(false)
       setShowStatusDropdown(false)
     }
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setShowAuthorDropdown(false)
+        setShowTimeDropdown(false)
+        setShowStatusDropdown(false)
+      }
+    }
     document.addEventListener('mousedown', close)
-    return () => document.removeEventListener('mousedown', close)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('mousedown', close)
+      document.removeEventListener('keydown', onKey)
+    }
   }, [])
 
   return (
@@ -291,12 +302,15 @@ export default function StoriesList({ stories }: StoriesListProps) {
       {/* Toolbar */}
       <div className="bg-surface-container-low rounded-xl p-6 flex flex-col lg:flex-row gap-6 items-center justify-between">
         <div className="w-full lg:w-1/3 relative">
+          <label htmlFor="story-search" className="sr-only">Pretraži priče</label>
           <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant" aria-hidden="true">search</span>
           <input
-            type="text"
+            id="story-search"
+            type="search"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Traži priču..."
+            aria-label="Pretraži priče"
             className="w-full bg-surface-container-lowest border-none rounded-full py-3 pl-12 pr-6 text-on-surface placeholder:text-on-surface-variant/50 focus:ring-2 focus:ring-primary-container/20 focus:outline-none font-label transition-all"
           />
         </div>
@@ -307,7 +321,9 @@ export default function StoriesList({ stories }: StoriesListProps) {
             <button
               type="button"
               onClick={() => { setShowAuthorDropdown(!showAuthorDropdown); setShowTimeDropdown(false); setShowStatusDropdown(false) }}
-              className={`flex items-center gap-2 px-4 py-2 rounded-full cursor-pointer hover:bg-surface-bright transition-colors ${selectedAuthor ? 'bg-primary-container text-on-primary-container' : 'bg-surface-container-highest text-on-surface-variant'}`}
+              aria-haspopup="menu"
+              aria-expanded={showAuthorDropdown}
+              className={`flex items-center gap-2 px-4 py-2 rounded-full cursor-pointer hover:bg-surface-bright transition-colors motion-reduce:transition-none ${selectedAuthor ? 'bg-primary-container text-on-primary-container' : 'bg-surface-container-highest text-on-surface-variant'}`}
             >
               <span className="font-label text-xs font-bold uppercase tracking-wider">{selectedAuthor || 'Autor'}</span>
               <span className="material-symbols-outlined text-sm" aria-hidden="true">expand_more</span>
@@ -331,7 +347,9 @@ export default function StoriesList({ stories }: StoriesListProps) {
             <button
               type="button"
               onClick={() => { setShowTimeDropdown(!showTimeDropdown); setShowAuthorDropdown(false); setShowStatusDropdown(false) }}
-              className={`flex items-center gap-2 px-4 py-2 rounded-full cursor-pointer hover:bg-surface-bright transition-colors ${maxReadingTime !== null ? 'bg-primary-container text-on-primary-container' : 'bg-surface-container-highest text-on-surface-variant'}`}
+              aria-haspopup="menu"
+              aria-expanded={showTimeDropdown}
+              className={`flex items-center gap-2 px-4 py-2 rounded-full cursor-pointer hover:bg-surface-bright transition-colors motion-reduce:transition-none ${maxReadingTime !== null ? 'bg-primary-container text-on-primary-container' : 'bg-surface-container-highest text-on-surface-variant'}`}
             >
               <span className="font-label text-xs font-bold uppercase tracking-wider">Vrijeme</span>
               <span className="material-symbols-outlined text-sm" aria-hidden="true">expand_more</span>
@@ -352,7 +370,9 @@ export default function StoriesList({ stories }: StoriesListProps) {
             <button
               type="button"
               onClick={() => { setShowStatusDropdown(!showStatusDropdown); setShowAuthorDropdown(false); setShowTimeDropdown(false) }}
-              className={`flex items-center gap-2 px-4 py-2 rounded-full cursor-pointer hover:bg-surface-bright transition-colors ${readStatus !== 'all' ? 'bg-primary-container text-on-primary-container' : 'bg-surface-container-highest text-on-surface-variant'}`}
+              aria-haspopup="menu"
+              aria-expanded={showStatusDropdown}
+              className={`flex items-center gap-2 px-4 py-2 rounded-full cursor-pointer hover:bg-surface-bright transition-colors motion-reduce:transition-none ${readStatus !== 'all' ? 'bg-primary-container text-on-primary-container' : 'bg-surface-container-highest text-on-surface-variant'}`}
             >
               <span className="font-label text-xs font-bold uppercase tracking-wider">Status</span>
               <span className="material-symbols-outlined text-sm" aria-hidden="true">expand_more</span>
@@ -383,17 +403,23 @@ export default function StoriesList({ stories }: StoriesListProps) {
           <div className="h-8 w-[1px] bg-outline-variant/30 mx-2 hidden lg:block" />
 
           {/* View Toggle */}
-          <div className="flex bg-surface-container-lowest p-1 rounded-full">
+          <div role="radiogroup" aria-label="Način prikaza priča" className="flex bg-surface-container-lowest p-1 rounded-full">
             <button
+              type="button"
+              role="radio"
+              aria-checked={viewMode === 'gallery'}
               onClick={() => setViewMode('gallery')}
-              className={`p-2 rounded-full transition-colors ${viewMode === 'gallery' ? 'bg-primary-container text-on-primary-container' : 'text-on-surface-variant hover:text-on-surface'}`}
+              className={`p-2 rounded-full transition-colors motion-reduce:transition-none ${viewMode === 'gallery' ? 'bg-primary-container text-on-primary-container' : 'text-on-surface-variant hover:text-on-surface'}`}
               aria-label="Prikaz galerije"
             >
               <span className="material-symbols-outlined" aria-hidden="true">grid_view</span>
             </button>
             <button
+              type="button"
+              role="radio"
+              aria-checked={viewMode === 'list'}
               onClick={() => setViewMode('list')}
-              className={`p-2 rounded-full transition-colors ${viewMode === 'list' ? 'bg-primary-container text-on-primary-container' : 'text-on-surface-variant hover:text-on-surface'}`}
+              className={`p-2 rounded-full transition-colors motion-reduce:transition-none ${viewMode === 'list' ? 'bg-primary-container text-on-primary-container' : 'text-on-surface-variant hover:text-on-surface'}`}
               aria-label="Prikaz popisa"
             >
               <span className="material-symbols-outlined" aria-hidden="true">format_list_bulleted</span>

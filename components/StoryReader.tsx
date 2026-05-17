@@ -38,14 +38,9 @@ export default function StoryReader({ storyId, title, author, body, imageUrl, av
   const [rating, setRating] = useState(0)
   const [hoverRating, setHoverRating] = useState(0)
   const [readProgress, setReadProgress] = useState(0)
-  const [fontSize, setFontSize] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('storyFontSize')
-      if (saved) return parseFloat(saved)
-    }
-    return 1.125
-  })
+  const [fontSize, setFontSize] = useState(1.125)
   const [showCopied, setShowCopied] = useState(false)
+  const [readAloud, setReadAloud] = useState(false)
   const router = useRouter()
   const readCountSentRef = useRef(false)
   const readDelayTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -133,9 +128,30 @@ export default function StoryReader({ storyId, title, author, body, imageUrl, av
         if (storyRatings[storyId]) {
           setRating(storyRatings[storyId])
         }
+        const savedFont = localStorage.getItem('storyFontSize')
+        if (savedFont) {
+          const parsed = parseFloat(savedFont)
+          if (!Number.isNaN(parsed)) setFontSize(parsed)
+        }
+        if (localStorage.getItem('readAloudMode') === '1') {
+          setReadAloud(true)
+        }
       }
     })
   }, [storyId])
+
+  const toggleReadAloud = () => {
+    setReadAloud((prev) => {
+      const next = !prev
+      try {
+        localStorage.setItem('readAloudMode', next ? '1' : '0')
+      } catch { /* ignore */ }
+      // In read-aloud mode, bump the floor of the font size so the
+      // letter form is easy to read from a distance / under low light.
+      if (next) setFontSize((f) => Math.max(f, 1.5))
+      return next
+    })
+  }
 
   const markAsRead = () => {
     if (typeof window !== 'undefined') {
@@ -212,41 +228,56 @@ export default function StoryReader({ storyId, title, author, body, imageUrl, av
         />
       </div>
 
-      {/* Sticky Header */}
-      <header className="sticky top-0 z-50 bg-surface/60 backdrop-blur-xl shadow-[0_20px_40px_rgba(0,0,0,0.4)] print:static print:bg-transparent print:shadow-none">
-        <div className="max-w-7xl mx-auto px-8 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-6">
-            <button
-              onClick={() => router.push('/')}
-              className="group flex items-center gap-2 text-on-surface hover:text-primary-container transition-colors duration-[400ms]"
-            >
-              <span className="material-symbols-outlined" aria-hidden="true">arrow_back</span>
-              <span className="font-label font-medium hidden sm:inline">Natrag</span>
-            </button>
-            <div className="h-8 w-px bg-surface-container-highest hidden sm:block" />
-            <div className="min-w-0">
-              <h1 className="font-headline text-xl md:text-2xl font-bold text-primary-container tracking-tight truncate">
-                {title}
-              </h1>
-              <p className="font-label text-xs uppercase tracking-widest text-on-surface-variant">
-                Autor: {author}
-                {readingTime != null && readingTime > 0 && <> &bull; {readingTime} min čitanja</>}
-              </p>
+      {/* Sticky Header — hidden in read-aloud mode */}
+      {!readAloud && (
+        <header className="sticky top-0 z-50 bg-surface/60 backdrop-blur-xl shadow-[0_20px_40px_rgba(0,0,0,0.4)] print:static print:bg-transparent print:shadow-none">
+          <div className="max-w-7xl mx-auto px-8 py-4 flex justify-between items-center">
+            <div className="flex items-center gap-6">
+              <button
+                onClick={() => router.push('/')}
+                className="group flex items-center gap-2 text-on-surface hover:text-primary-container transition-colors duration-[400ms] motion-reduce:transition-none"
+              >
+                <span className="material-symbols-outlined" aria-hidden="true">arrow_back</span>
+                <span className="font-label font-medium hidden sm:inline">Natrag</span>
+              </button>
+              <div className="h-8 w-px bg-surface-container-highest hidden sm:block" />
+              <div className="min-w-0">
+                <h1 className="font-headline text-xl md:text-2xl font-bold text-primary-container tracking-tight truncate">
+                  {title}
+                </h1>
+                <p className="font-label text-xs uppercase tracking-widest text-on-surface-variant">
+                  Autor: {author}
+                  {readingTime != null && readingTime > 0 && <> &bull; {readingTime} min naglas</>}
+                </p>
+              </div>
+            </div>
+            <div className="hidden md:flex items-center gap-4 text-on-surface-variant font-label text-sm">
+              <div className="flex items-center gap-1">
+                <span className="material-symbols-outlined text-sm" aria-hidden="true">visibility</span>
+                <span>{displayedReadCount} čitanja</span>
+              </div>
             </div>
           </div>
-          <div className="hidden md:flex items-center gap-4 text-on-surface-variant font-label text-sm">
-            <div className="flex items-center gap-1">
-              <span className="material-symbols-outlined text-sm" aria-hidden="true">visibility</span>
-              <span>{displayedReadCount} pregleda</span>
-            </div>
-          </div>
-        </div>
-      </header>
+        </header>
+      )}
+
+      {/* Read-aloud floating exit pill */}
+      {readAloud && (
+        <button
+          type="button"
+          onClick={toggleReadAloud}
+          className="fixed top-4 right-4 z-50 bg-surface-container-high/80 backdrop-blur-md text-on-surface hover:bg-surface-bright px-4 py-2 rounded-full font-label text-sm flex items-center gap-2 shadow-lg motion-reduce:transition-none"
+          aria-label="Izađi iz moda čitanja naglas"
+        >
+          <span className="material-symbols-outlined text-sm" aria-hidden="true">close</span>
+          Izađi
+        </button>
+      )}
 
       {/* Main Content */}
-      <main className="max-w-4xl mx-auto px-6 py-12 md:py-20">
-        {/* Tags & Controls */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
+      <main className={readAloud ? 'max-w-prose mx-auto px-6 py-20' : 'max-w-4xl mx-auto px-6 py-12 md:py-20'}>
+        {/* Tags & Controls — collapsed in read-aloud mode */}
+        <div className={`flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12 ${readAloud ? 'hidden' : ''}`}>
           <div className="flex items-center gap-2">
             {averageRating != null && averageRating > 0 && (
               <span className="px-4 py-1.5 bg-tertiary-container text-on-tertiary-container rounded-full font-label text-xs font-bold flex items-center gap-1">
@@ -258,16 +289,25 @@ export default function StoryReader({ storyId, title, author, body, imageUrl, av
           </div>
           <div className="flex items-center gap-4 bg-surface-container-low p-2 rounded-full shadow-inner print:hidden">
             <button
+              onClick={toggleReadAloud}
+              className="px-4 h-10 flex items-center gap-2 rounded-full hover:bg-surface-container-high transition-all motion-reduce:transition-none text-on-surface"
+              aria-label="Uđi u mod čitanja naglas"
+              aria-pressed={readAloud}
+            >
+              <span className="material-symbols-outlined text-sm" aria-hidden="true">menu_book</span>
+              <span className="font-label text-sm font-medium">Naglas</span>
+            </button>
+            <div className="w-px h-4 bg-surface-container-highest" />
+            <button
               onClick={() => adjustFontSize(-0.125)}
-              className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container-high transition-all text-on-surface"
+              className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container-high transition-all motion-reduce:transition-none text-on-surface"
               aria-label="Smanji veličinu teksta"
             >
               <span className="font-label text-sm">A-</span>
             </button>
-            <div className="w-px h-4 bg-surface-container-highest" />
             <button
               onClick={() => adjustFontSize(0.125)}
-              className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container-high transition-all text-on-surface font-bold"
+              className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container-high transition-all motion-reduce:transition-none text-on-surface font-bold"
               aria-label="Povećaj veličinu teksta"
             >
               <span className="font-label text-lg">A+</span>
@@ -275,7 +315,7 @@ export default function StoryReader({ storyId, title, author, body, imageUrl, av
             <div className="w-px h-4 bg-surface-container-highest" />
             <button
               onClick={handleShare}
-              className="px-6 h-10 flex items-center gap-2 rounded-full bg-surface-container-high hover:bg-surface-bright transition-all text-on-surface relative"
+              className="px-6 h-10 flex items-center gap-2 rounded-full bg-surface-container-high hover:bg-surface-bright transition-all motion-reduce:transition-none text-on-surface relative"
               aria-label="Podijeli priču"
             >
               <span className="material-symbols-outlined text-sm" aria-hidden="true">share</span>
@@ -390,8 +430,8 @@ export default function StoryReader({ storyId, title, author, body, imageUrl, av
           </div>
         </div>
 
-        {/* Related stories */}
-        {relatedStories.length > 0 && (
+        {/* Related stories — hidden in read-aloud mode */}
+        {!readAloud && relatedStories.length > 0 && (
           <section aria-label="Ostale priče" className="mt-24">
             <div className="flex items-center justify-between mb-10">
               <h2 className="font-headline text-3xl text-primary">Slične priče</h2>
