@@ -104,6 +104,7 @@ export default function Home() {
 
       {/* Main Content */}
       <main id="main-content" className="max-w-7xl mx-auto px-8 py-12 space-y-20">
+        <h1 className="sr-only">Priče za laku noć — najljepše bajke i basne za djecu</h1>
         <RecommendedTonight stories={stories} />
         <StoriesList stories={stories} />
       </main>

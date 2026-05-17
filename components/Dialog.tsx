@@ -65,8 +65,10 @@ export default function Dialog({
   useEffect(() => {
     if (!open) return
     previouslyFocusedRef.current = (document.activeElement as HTMLElement) ?? null
+    // Snapshot the caller-provided return target now; ref.current may
+    // have unmounted by cleanup time.
+    const explicitReturnTarget = returnFocusRef?.current ?? null
 
-    // Defer initial focus one tick so children have mounted.
     const id = window.requestAnimationFrame(() => {
       if (initialFocusRef?.current) {
         initialFocusRef.current.focus()
@@ -81,7 +83,7 @@ export default function Dialog({
 
     return () => {
       window.cancelAnimationFrame(id)
-      const target = returnFocusRef?.current ?? previouslyFocusedRef.current
+      const target = explicitReturnTarget ?? previouslyFocusedRef.current
       if (target && typeof target.focus === 'function') {
         try {
           target.focus()

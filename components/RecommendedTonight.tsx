@@ -11,6 +11,7 @@ interface Story {
   imageUrl?: string
   readingTime?: number
   body?: string
+  createdAt?: string
 }
 
 interface RecommendedTonightProps {
@@ -36,6 +37,10 @@ export default function RecommendedTonight({ stories }: RecommendedTonightProps)
     queueMicrotask(next)
   }, [])
 
+  // Lazy state init runs once on mount (treated as pure by the React rules)
+  // and gives us a stable "now" timestamp for the New-badge cutoff.
+  const [nowMs] = useState(() => Date.now())
+
   const recommended = useMemo(() => {
     const unread = stories.filter((s) => !readIds.has(s.id))
     if (unread.length === 0) return []
@@ -47,6 +52,12 @@ export default function RecommendedTonight({ stories }: RecommendedTonightProps)
 
   const featured = recommended[0]
   const secondary = recommended.length > 1 ? recommended[1] : null
+
+  const isNew = (createdAt?: string): boolean => {
+    if (!createdAt) return false
+    return nowMs - new Date(createdAt).getTime() < 1000 * 60 * 60 * 24 * 30
+  }
+  const isShortRead = (rt?: number): boolean => typeof rt === 'number' && rt > 0 && rt <= 5
   const featuredExcerpt = featured.body
     ? featured.body.slice(0, 120).replace(/\s+\S*$/, '') + '...'
     : ''
@@ -59,11 +70,14 @@ export default function RecommendedTonight({ stories }: RecommendedTonightProps)
       <div className="flex items-end justify-between mb-8">
         <div>
           <span className="font-label text-primary-container text-sm font-bold tracking-[0.2em] uppercase mb-2 block">
-            Izbor urednika
+            Za večeras
           </span>
           <h2 className="text-4xl md:text-5xl font-headline font-bold text-on-surface">
-            Preporučeno večeras
+            Preporučeno za laku noć
           </h2>
+          <p className="font-label text-on-surface-variant/70 text-sm mt-2">
+            Kratke nepročitane priče — za brzo uspavljivanje.
+          </p>
         </div>
       </div>
 
@@ -89,12 +103,19 @@ export default function RecommendedTonight({ stories }: RecommendedTonightProps)
           <div className="absolute inset-0 bg-gradient-to-t from-surface via-surface/20 to-transparent" />
           <div className="absolute bottom-0 left-0 p-8 md:p-12 max-w-2xl">
             <div className="flex gap-2 mb-4">
-              <span className="px-3 py-1 rounded-full bg-tertiary-container text-on-tertiary-container font-label text-xs font-bold uppercase tracking-wider">
-                Novo
-              </span>
+              {isNew(featured.createdAt) && (
+                <span className="px-3 py-1 rounded-full bg-tertiary-container text-on-tertiary-container font-label text-xs font-bold uppercase tracking-wider">
+                  Novo
+                </span>
+              )}
+              {isShortRead(featured.readingTime) && !isNew(featured.createdAt) && (
+                <span className="px-3 py-1 rounded-full bg-primary-container/20 text-primary-container font-label text-xs font-bold uppercase tracking-wider">
+                  Kratko
+                </span>
+              )}
               {featured.readingTime && (
                 <span className="px-3 py-1 rounded-full bg-surface-container-highest text-on-surface font-label text-xs">
-                  {featured.readingTime} min čitanja
+                  {featured.readingTime} min naglas
                 </span>
               )}
             </div>
@@ -137,7 +158,7 @@ export default function RecommendedTonight({ stories }: RecommendedTonightProps)
             <div className="absolute inset-0 p-8 flex flex-col justify-end">
               {secondary.readingTime && (
                 <span className="px-3 py-1 rounded-full bg-surface-container-highest text-on-surface font-label text-xs w-fit mb-4">
-                  {secondary.readingTime} min čitanja
+                  {secondary.readingTime} min naglas
                 </span>
               )}
               <h3 className="text-2xl font-headline font-bold text-white mb-2">

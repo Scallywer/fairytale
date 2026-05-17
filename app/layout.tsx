@@ -27,12 +27,20 @@ export const metadata: Metadata = {
     template: "%s | Priče za laku noć",
   },
   description: siteDescription,
+  alternates: {
+    canonical: baseUrl,
+    languages: {
+      hr: baseUrl,
+      "x-default": baseUrl,
+    },
+  },
   openGraph: {
     type: "website",
     siteName,
     title: siteName,
     description: siteDescription,
     url: baseUrl,
+    locale: "hr_HR",
   },
   twitter: {
     card: "summary_large_image",

@@ -440,7 +440,7 @@ export default function StoriesList({ stories }: StoriesListProps) {
         {stories.length === 0 ? (
           <div className="text-center py-16">
             <p className="text-on-surface-variant text-lg">
-              Još nema odobrenih priča. Provjeri admin stranicu!
+              Trenutno nema priča. Vratite se uskoro.
             </p>
           </div>
         ) : filteredStories.length === 0 ? (
