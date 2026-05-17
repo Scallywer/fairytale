@@ -6,15 +6,25 @@ services:
     ports:
       - "8889:3000"
     environment:
-      # Admin password should be provided via environment, not hardcoded.
-      # Set ADMIN_PASSWORD in your local .env or deployment secrets.
       - ADMIN_PASSWORD=${ADMIN_PASSWORD}
-    # Database is included in the Docker image, no volume mount needed
-    # volumes:
-    #   - ./data:/app/data
+      - ADMIN_SESSION_SECRET=${ADMIN_SESSION_SECRET}
+      - NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL:-}
+      - LOG_JSON=${LOG_JSON:-1}
+      # Set to "true" only when a known reverse proxy in front strips
+      # incoming X-Forwarded-For / X-Real-IP headers. Without this the
+      # values are spoofable and rate limits collapse into a single
+      # shared bucket.
+      - TRUST_PROXY=${TRUST_PROXY:-false}
+    # The SQLite DB and runtime cache must live on a host-mounted volume
+    # so user submissions, ratings, comments and analytics survive
+    # `docker compose pull && up -d`. Disabling this mount means all
+    # writes go into the container's ephemeral layer and are destroyed
+    # on every image refresh.
+    volumes:
+      - ./data:/app/data
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/"]
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/api/health"]
       interval: 30s
-      timeout: 10s
+      timeout: 5s
       retries: 3
-      start_period: 10s
+      start_period: 30s

@@ -148,9 +148,72 @@ npx vitest tests/api-stories.test.ts
 
 ## GitHub Actions
 
-- **CI** (`.github/workflows/ci.yml`) – on push/PR to `main`/`master`: `npm ci`, `npm run lint`, `npm test`.
+- **CI** (`.github/workflows/ci.yml`) – on push/PR to `main`/`master`: `npm ci`, `npm run lint`, `npx tsc --noEmit`, `npm test`.
 - **Docker** (`.github/workflows/docker-build.yml`) – build and push image to GitHub Container Registry; image `ghcr.io/scallywer/fairytale:latest`, tags for branch, SHA, and version.
+
+## Operations / runbook
+
+### Backups
+
+The SQLite DB lives at `./data/stories.db` and is mounted into the
+container. WAL mode is enabled, so plain file copies can corrupt the
+backup — always use the `.backup` command. A helper is included:
+
+```bash
+docker exec fairytale-app /app/scripts/backup-db.sh
+# → writes /app/data/backups/stories-<UTC-timestamp>.db inside the volume
+```
+
+Suggested host-side cron (daily at 03:00, 14-day retention):
+
+```cron
+0 3 * * * docker exec fairytale-app /app/scripts/backup-db.sh
+```
+
+### Restore
+
+```bash
+docker compose stop
+cp ./data/backups/stories-<timestamp>.db ./data/stories.db
+docker compose start
+```
+
+### Rotate `ADMIN_PASSWORD`
+
+```bash
+# Set new value in your .env / secret store, then:
+docker compose up -d
+```
+
+Sessions issued under the old password remain valid until they expire
+naturally (24h) because session signing now uses `ADMIN_SESSION_SECRET`,
+which is independent of the password. To revoke immediately, also
+rotate `ADMIN_SESSION_SECRET`.
+
+### Update the public image
+
+```bash
+docker compose pull
+docker compose up -d
+```
+
+The `./data` host bind mount preserves the SQLite DB across image
+refreshes. If you ever see "first-run" behavior after a pull, verify
+the volume mount in `docker-compose.yml` is uncommented.
+
+### Seed DB for fresh installs
+
+Before publishing a Docker image, scrub private moderation state from
+the seed DB:
+
+```bash
+./scripts/scrub-seed-db.sh
+```
+
+This drops unapproved stories/comments, all ratings, and all analytics
+events. The result is what new operators receive on first boot.
 
 ## License
 
-Private project – all rights reserved.
+See [LICENSE](./LICENSE). Source code is proprietary; user-submitted
+content is licensed to the operator under the terms stated there.
