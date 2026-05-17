@@ -37,8 +37,12 @@ describe('admin session cookie', () => {
 
   it('rejects a tampered cookie', () => {
     const c = createAdminSessionCookie()
-    const tampered = c.value.slice(0, -1) + (c.value.slice(-1) === 'a' ? 'b' : 'a')
-    expect(verifyAdminCookie(`${c.name}=${tampered}`)).toBe(false)
+    // Replace the signature segment wholesale. Flipping a single
+    // base64url char at the end of the payload can be a no-op because
+    // trailing chars carry only 2–4 spare bits.
+    const parts = c.value.split('.')
+    parts[parts.length - 1] = 'A'.repeat(parts[parts.length - 1].length)
+    expect(verifyAdminCookie(`${c.name}=${parts.join('.')}`)).toBe(false)
   })
 
   it('rejects malformed cookie payload', () => {
