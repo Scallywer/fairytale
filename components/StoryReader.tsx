@@ -6,6 +6,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Comments from './Comments'
 import Dialog from './Dialog'
+import Icon from './ui/Icon'
 import { logger } from '@/lib/logger'
 import { splitIntoParagraphs } from '@/lib/utils'
 
@@ -512,13 +513,12 @@ export default function StoryReader({ storyId, title, author, body, imageUrl, av
               aria-label={`Ocijeni ${star} zvijezda`}
               aria-pressed={rating === star}
             >
-              <span
-                className={`material-symbols-outlined text-4xl ${star <= (hoverRating || rating) ? 'text-primary-container' : 'text-surface-container-highest'}`}
-                style={{ fontVariationSettings: star <= (hoverRating || rating) ? "'FILL' 1" : "'FILL' 0" }}
-                aria-hidden="true"
-              >
-                star
-              </span>
+              <Icon
+                name="star"
+                size="4xl"
+                filled={star <= (hoverRating || rating)}
+                className={star <= (hoverRating || rating) ? 'text-primary-container' : 'text-surface-container-highest'}
+              />
             </button>
           ))}
         </div>

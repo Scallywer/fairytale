@@ -8,6 +8,9 @@ import { logger } from '@/lib/logger'
 import { safeJsonLd } from '@/lib/utils'
 import { getBaseUrl } from '@/lib/constants'
 
+const linkPrimary =
+  'inline-flex items-center justify-center gap-2 h-11 px-6 rounded-full font-label font-bold text-sm bg-primary-container text-on-primary-container transition-all motion-reduce:transition-none hover:scale-[1.02] active:scale-95 motion-reduce:hover:scale-100 motion-reduce:active:scale-100 shadow-[var(--shadow-glow-primary)] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-container'
+
 const baseUrl = getBaseUrl()
 
 export const revalidate = 60
@@ -92,10 +95,7 @@ export default function Home() {
             </div>
           </div>
           <div className="flex items-center gap-4">
-            <Link
-              href="/submit"
-              className="bg-primary-container text-on-primary-container px-6 py-2.5 rounded-full font-label font-bold text-sm hover:scale-[1.02] active:scale-95 transition-all duration-[400ms] shadow-[0_0_20px_rgba(252,211,77,0.2)]"
-            >
+            <Link href="/submit" className={linkPrimary}>
               Predloži priču
             </Link>
           </div>
