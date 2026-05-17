@@ -1,9 +1,10 @@
 import { describe, it, expect } from 'vitest'
 import { GET as getStories } from '@/app/api/stories/route'
+import { callRouteNoReq } from './helpers'
 
 describe('GET /api/stories', () => {
   it('returns approved stories with 200 status', async () => {
-    const res = await getStories()
+    const res = await callRouteNoReq(getStories)
     expect(res.status).toBe(200)
 
     const json = await res.json()
@@ -16,4 +17,3 @@ describe('GET /api/stories', () => {
     }
   })
 })
-
