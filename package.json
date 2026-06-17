@@ -40,7 +40,7 @@
     "eslint": "^9",
     "eslint-config-next": "^16.2.6",
     "jsdom": "^29.0.0",
-    "openai": "^6.16.0",
+    "openai": "^6.38.0",
     "sharp": "^0.34.5",
     "tailwindcss": "^4",
     "tsx": "^4.21.0",
